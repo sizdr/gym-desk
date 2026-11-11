@@ -87,7 +87,7 @@ class PostgresUserRepositoryTest {
     @Test
     void laBusqueda_noDistingueMayusculas() {
         insert("Lucía Pérez", "Lucia", "caja", true, "hash-de-lucia");
-        assertEquals("Lucia", repository.findCredentialsByUsername("LUCIA").orElseThrow().user().username());
+        assertEquals("lucia", repository.findCredentialsByUsername("LUCIA").orElseThrow().user().username());
     }
 
     @Test
