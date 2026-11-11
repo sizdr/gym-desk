@@ -1,8 +1,9 @@
 package dev.gimnasio.sistemagimnasio.application.usecase.authenticate;
 
+import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryUsers;
+import dev.gimnasio.sistemagimnasio.application.fakes.ReversingHasher;
 import dev.gimnasio.sistemagimnasio.application.port.out.PasswordHasher;
 import dev.gimnasio.sistemagimnasio.application.port.out.UserCredentials;
-import dev.gimnasio.sistemagimnasio.application.port.out.UserRepository;
 import dev.gimnasio.sistemagimnasio.application.shared.ValidationException;
 import dev.gimnasio.sistemagimnasio.domain.user.Role;
 import dev.gimnasio.sistemagimnasio.domain.user.User;
@@ -10,10 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,46 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AuthenticateTest {
 
-    /** Hash falso pero distinto de la contraseña, para detectar comparaciones en claro. */
-    private static final class FakeHasher implements PasswordHasher {
-        @Override
-        public String hash(String rawPassword) {
-            return "hash(" + new StringBuilder(rawPassword).reverse() + ")";
-        }
-
-        @Override
-        public boolean matches(String rawPassword, String passwordHash) {
-            return hash(rawPassword).equals(passwordHash);
-        }
-    }
-
-    private static final class InMemoryUsers implements UserRepository {
-        private final Map<String, UserCredentials> byUsername = new HashMap<>();
-        int lookups;
-
-        void add(User user, String passwordHash) {
-            byUsername.put(user.username(), new UserCredentials(user, passwordHash));
-        }
-
-        @Override
-        public Optional<UserCredentials> findCredentialsByUsername(String username) {
-            lookups++;
-            return Optional.ofNullable(byUsername.get(username));
-        }
-
-        @Override
-        public Optional<User> findById(long id) {
-            return byUsername.values().stream().map(UserCredentials::user)
-                    .filter(user -> user.id() == id).findFirst();
-        }
-    }
-
-    private final FakeHasher hasher = new FakeHasher();
+    private final ReversingHasher hasher = new ReversingHasher();
     private final InMemoryUsers users = new InMemoryUsers();
     private final Authenticate authenticate = new Authenticate(users, hasher);
 
     private User register(String username, String password, Role role, boolean active) {
-        User user = new User((long) (users.byUsername.size() + 1), "Persona " + username, username, role, active);
+        User user = new User((long) (users.size() + 1), "Persona " + username, username, role, active);
         users.add(user, hasher.hash(password));
         return user;
     }
@@ -79,14 +44,14 @@ class AuthenticateTest {
 
         User result = authenticate.execute(new AuthenticateCommand("lucia", "Mostrador#2026"));
 
-        assertSame(caja, result);
+        assertEquals(caja, result);
         assertEquals(Role.CAJA, result.role());
     }
 
     @Test
     void espaciosAlrededorDelUsuario_seIgnoran() {
         User admin = register("admin", "Gym-Admin-1", Role.ADMINISTRADOR, true);
-        assertSame(admin, authenticate.execute(new AuthenticateCommand("  admin \t", "Gym-Admin-1")));
+        assertEquals(admin, authenticate.execute(new AuthenticateCommand("  admin \t", "Gym-Admin-1")));
     }
 
 
@@ -114,13 +79,13 @@ class AuthenticateTest {
     @Test
     void contrasenaQueContieneEspacios_funcionaSiSeEscribeIgual() {
         User user = register("pedro", "mi clave segura", Role.RECEPCION, true);
-        assertSame(user, authenticate.execute(new AuthenticateCommand("pedro", "mi clave segura")));
+        assertEquals(user, authenticate.execute(new AuthenticateCommand("pedro", "mi clave segura")));
     }
 
     @Test
     void escribirElHashGuardado_noDaAcceso() {
         register("lucia", "Mostrador#2026", Role.CAJA, true);
-        String storedHash = users.byUsername.get("lucia").passwordHash();
+        String storedHash = users.findCredentialsByUsername("lucia").orElseThrow().passwordHash();
         assertEquals(Authenticate.INVALID_CREDENTIALS, rejection("lucia", storedHash));
     }
 
