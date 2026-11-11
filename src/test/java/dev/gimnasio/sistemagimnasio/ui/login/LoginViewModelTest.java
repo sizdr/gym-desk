@@ -1,7 +1,5 @@
 package dev.gimnasio.sistemagimnasio.ui.login;
 
-import dev.gimnasio.sistemagimnasio.application.port.out.UserCredentials;
-import dev.gimnasio.sistemagimnasio.application.port.out.UserRepository;
 import dev.gimnasio.sistemagimnasio.application.usecase.authenticate.Authenticate;
 import dev.gimnasio.sistemagimnasio.domain.user.Role;
 import dev.gimnasio.sistemagimnasio.domain.user.User;
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -165,17 +162,8 @@ class LoginViewModelTest {
 
     @Test
     void aTechnicalFailureShowsTheGenericMessage() throws Exception {
-        UserRepository broken = new UserRepository() {
-            @Override
-            public Optional<UserCredentials> findCredentialsByUsername(String username) {
-                throw new IllegalStateException("base caída");
-            }
-
-            @Override
-            public Optional<User> findById(long id) {
-                return Optional.empty();
-            }
-        };
+        UiFakes.Users broken = new UiFakes.Users();
+        broken.failure = new IllegalStateException("base caída");
         var failing = new LoginViewModel(new Authenticate(broken, UiFakes.HASHER), background, signedIn::add);
         failing.usernameProperty().set("ana");
         failing.passwordProperty().set(UiFakes.PASSWORD);

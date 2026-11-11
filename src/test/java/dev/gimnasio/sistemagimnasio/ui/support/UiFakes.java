@@ -34,8 +34,11 @@ import dev.gimnasio.sistemagimnasio.ui.common.UseCases;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +58,8 @@ public final class UiFakes {
         /** Si se pone, cada búsqueda de credenciales espera a que se libere (para ver el estado «Entrando…»). */
         public volatile CountDownLatch gate;
         public volatile int lookups;
+        /** Si se pone, cada búsqueda de credenciales lanza este error (para simular la base caída). */
+        public volatile RuntimeException failure;
 
         public User add(String name, String username, Role role, boolean active) {
             User user = new User((long) byId.size() + 1, name, username, role, active);
@@ -65,6 +70,9 @@ public final class UiFakes {
         @Override
         public Optional<UserCredentials> findCredentialsByUsername(String username) {
             lookups++;
+            if (failure != null) {
+                throw failure;
+            }
             CountDownLatch wait = gate;
             if (wait != null) {
                 try {
@@ -82,6 +90,52 @@ public final class UiFakes {
         @Override
         public Optional<User> findById(long id) {
             return Optional.ofNullable(byId.get(id));
+        }
+
+        @Override
+        public List<User> findAll() {
+            return new ArrayList<>(byId.values());
+        }
+
+        @Override
+        public int count() {
+            return byId.size();
+        }
+
+        @Override
+        public boolean existsByUsername(String username, Long excludeId) {
+            return byId.values().stream()
+                    .anyMatch(user -> user.username().equalsIgnoreCase(username) && !Objects.equals(user.id(), excludeId));
+        }
+
+        @Override
+        public int countActiveAdmins() {
+            return (int) byId.values().stream().filter(user -> user.active() && user.role() == Role.ADMINISTRADOR).count();
+        }
+
+        @Override
+        public User insert(User user, String passwordHash) {
+            return add(user.name(), user.username(), user.role(), user.active());
+        }
+
+        @Override
+        public void update(User user) {
+            byId.put(user.id(), user);
+        }
+
+        @Override
+        public void updatePasswordHash(long id, String passwordHash) {
+            // Todas las cuentas de prueba usan PASSWORD; el hash no se guarda.
+        }
+
+        @Override
+        public boolean hasOperations(long id) {
+            return false;
+        }
+
+        @Override
+        public void delete(long id) {
+            byId.remove(id);
         }
     }
 
