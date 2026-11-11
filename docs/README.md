@@ -9,7 +9,7 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | Capa | Estado |
 |---|---|
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
-| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago y los planes (con su ahorro); `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
+| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro) y los usuarios (con el primer administrador); `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
 | `infrastructure` | Conexión a PostgreSQL, migraciones (esquema y datos iniciales), repositorios de usuarios, configuración y métodos de pago, y `Argon2PasswordHasher` |
 | `ui` | Vacía (solo queda la plantilla `HelloApplication` de IntelliJ) |
 

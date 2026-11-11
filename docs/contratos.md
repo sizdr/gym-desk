@@ -7,7 +7,7 @@ ui ──(actor + command)──▶ caso de uso ──(puerto de salida)──�
    ◀──(resultado o excepción)──      ◀──────(datos)──────
 ```
 
-Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago y Planes. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
+Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago, Planes y Usuarios. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
 
 ## Reglas generales
 
@@ -657,24 +657,25 @@ La existencia no se edita aquí: solo cambia con ventas y movimientos. Si `initi
 | `minStock` | Escribe el mínimo: un número entero, 0 o mayor. |
 | `initialStock` | Escribe la existencia inicial: un número entero, 0 o mayor. |
 
-## Usuarios
+## Usuarios · *implementado*
 
-Permiso: `MANAGE_USERS` en todos.
+Permiso: `MANAGE_USERS` en todos, salvo `CreateInitialAdmin`.
 
 | Caso de uso | Entrada | Salida |
 |---|---|---|
-| `ListUsers` | solo `actor` | `List<UserRow(id, name, username, role, active)>` |
+| `ListUsers` | solo `actor` | `List<UserRow(id, name, username, role, active)>`: activos primero, luego por nombre |
 | `CreateUser` | `CreateUserCommand(name, username, role, password, passwordConfirmation)` | `UserRow` |
 | `UpdateUser` | `long userId` + `UpdateUserCommand(name, username, role, newPassword, newPasswordConfirmation)` | `UserRow` |
 | `SetUserActive` | `long userId`, `boolean active` | `UserRow` |
+| `DeleteUser` | `long userId` | nada |
 
-`newPassword` es *opcional*: `null` o vacío conserva la actual. El nombre de usuario se guarda en minúsculas. Desactivar a un usuario conserva sus cobros, ventas y movimientos. La matriz de permisos de la pantalla sale de `Role.permissions()`, sin caso de uso.
+`newPassword` es *opcional*: `null` o vacío conserva la actual (y entonces no se revisa la confirmación). Las contraseñas no se recortan. El nombre de usuario se recorta y se guarda en minúsculas; «Admin» y «admin» son el mismo. Todos los errores del formulario se reportan juntos. Los que escriben corren en una transacción, que protege la regla del último administrador. `CreateUser` deja al usuario activo; `UpdateUser` no cambia si está activo; `SetUserActive` con el estado que ya tiene no hace nada. Un cambio de rol o una desactivación se aplica en la siguiente operación de ese usuario. Desactivar a un usuario conserva sus cobros, ventas y movimientos. La matriz de permisos de la pantalla sale de `Role.permissions()`, sin caso de uso.
 
 **Errores:**
 
 | Situación | Excepción | Mensaje |
 |---|---|---|
-| Nombre vacío | `ValidationException` (`name`) | Escribe el nombre de la persona. |
+| Nombre vacío o largo | `ValidationException` (`name`) | Escribe el nombre de la persona. · Usa 100 caracteres o menos. |
 | Usuario vacío, inválido o repetido | `ValidationException` (`username`) | Escribe el nombre de usuario. · Usa de 3 a 20 letras minúsculas, números, punto o guion, sin espacios. · Ese nombre de usuario ya está en uso. |
 | Sin rol | `ValidationException` (`role`) | Elige un rol. |
 | Contraseña vacía al crear o corta | `ValidationException` (`password` / `newPassword`) | Escribe una contraseña. · La contraseña debe tener al menos 8 caracteres. |
@@ -682,11 +683,14 @@ Permiso: `MANAGE_USERS` en todos.
 | Quitar el rol al último administrador activo | `ValidationException` (`role`) | Debe quedar al menos un administrador activo. |
 | Desactivar al último administrador activo | `DomainException` | Debe quedar al menos un administrador activo. |
 | Desactivarse a sí mismo | `DomainException` | No puedes desactivar tu propio usuario mientras lo usas. |
-| Usuario inexistente | `NotFoundException` | El usuario no existe. |
+| Eliminarse a sí mismo | `DomainException` | No puedes eliminar tu propio usuario mientras lo usas. |
+| Eliminar a quien ya registró cobros, ventas o movimientos | `DomainException` | No puedes eliminar a «Lucía Pérez»: ya tiene cobros, ventas o movimientos registrados. Desactívalo para que no pueda entrar. |
+| Eliminar al último administrador activo | `DomainException` | Debe quedar al menos un administrador activo. |
+| Usuario inexistente | `NotFoundException` | El usuario ya no existe. Recarga la pantalla. |
 
 ### `CreateInitialAdmin` · Primer administrador
 
-Sin `actor` ni permiso: solo funciona mientras no exista **ningún** usuario. La UI lo ofrece en el primer arranque y, mientras no haya UI, lo llama el punto de entrada con `ADMIN_NAME`, `ADMIN_USERNAME` y `ADMIN_PASSWORD` del `.env` (nunca en git).
+Sin `actor` ni permiso: solo funciona mientras no exista **ningún** usuario. La UI lo ofrecerá en el primer arranque. Que el punto de entrada lo llame con `ADMIN_NAME`, `ADMIN_USERNAME` y `ADMIN_PASSWORD` del `.env` (nunca en git) queda para el paso del arranque.
 
 **Entrada:** `CreateInitialAdminCommand(name, username, password, passwordConfirmation)`. **Salida:** `UserRow` del administrador creado, con rol `ADMINISTRADOR` y activo.
 
@@ -787,6 +791,15 @@ Lo que los casos de uso piden a `infrastructure`. Los puertos de los casos plane
 |---|---|
 | `Optional<UserCredentials> findCredentialsByUsername(String username)` | Busca sin distinguir mayúsculas. Devuelve vacío si no existe; incluye usuarios desactivados (decidir qué hacer con ellos es del caso de uso). |
 | `Optional<User> findById(long id)` | Sin hash. Vacío si no existe; incluye usuarios desactivados. |
+| `List<User> findAll()` | Activos e inactivos, sin orden garantizado (el caso de uso ordena). |
+| `int count()` | Todos los usuarios. |
+| `boolean existsByUsername(String username, Long excludeId)` | Sin distinguir mayúsculas; `excludeId` (opcional) no cuenta. |
+| `int countActiveAdmins()` | Administradores activos. |
+| `User insert(User user, String passwordHash)` | Lo devuelve con su id. |
+| `void update(User user)` | Nombre, usuario, rol y activo; no toca el hash. Lanza `IllegalStateException` si el id no existe. |
+| `void updatePasswordHash(long id, String passwordHash)` | Solo el hash. Lanza `IllegalStateException` si el id no existe. |
+| `boolean hasOperations(long id)` | `true` si tiene cobros, ventas o movimientos de inventario. |
+| `void delete(long id)` | Borra el usuario. |
 
 `UserCredentials(User user, String passwordHash)` va separado de `User` para que el hash solo viaje entre el repositorio y el caso de uso. Implementación: `PostgresUserRepository`.
 
