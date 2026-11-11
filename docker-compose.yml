@@ -3,14 +3,14 @@ services:
     image: postgres:16
     environment:
       POSTGRES_DB: gimnasio
-      POSTGRES_USER: gimnasio
-      POSTGRES_PASSWORD: 12345
+      POSTGRES_USER: ${DB_USER:-gimnasio}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gimnasio -d gimnasio"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-gimnasio} -d gimnasio"]
       interval: 5s
       retries: 10
 
