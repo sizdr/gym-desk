@@ -107,18 +107,37 @@ La app corre en el classpath, sin `module-info.java`: Flyway y `argon2-jvm` no s
 
 ## Base de datos (Docker)
 
+Primera vez:
+
 ```bash
-docker compose up -d
+cp .env.example .env
 ```
 
-`docker-compose.yml` levanta solo PostgreSQL 16 (base y usuario `gimnasio`, puerto 5432, volumen persistente `pgdata`). La app se ejecuta en el equipo con `./mvnw javafx:run`.
+Edita `.env` y pon una contraseña propia en `DB_PASSWORD`. Después:
 
-La app lee la conexión de variables de entorno:
+```bash
+docker compose up -d
+./mvnw javafx:run
+```
+
+`docker-compose.yml` levanta solo PostgreSQL 16 (base `gimnasio`, puerto 5432, volumen persistente `pgdata`) con el usuario y la contraseña del `.env`; sin `DB_PASSWORD` no arranca. La app lee el mismo `.env`, así que la contraseña se escribe una sola vez.
+
+### Variables de entorno
 
 | Variable | Por defecto |
 |---|---|
 | `DB_URL` | `jdbc:postgresql://localhost:5432/gimnasio` |
 | `DB_USER` | `gimnasio` |
-| `DB_PASSWORD` | ninguno: es obligatoria y debe coincidir con `POSTGRES_PASSWORD` del compose |
+| `DB_PASSWORD` | ninguno: es obligatoria |
+
+Cada variable se toma, en este orden, de las variables del sistema, del `.env` del directorio desde donde se ejecuta la app y, al final, del valor por defecto. Así puedes cambiar una sin editar el archivo (por ejemplo, en la configuración de ejecución de IntelliJ).
+
+El `.env` tiene secretos y nunca se sube a git (`.gitignore` lo excluye); en el repositorio solo está `.env.example`, sin valores reales.
+
+Para cambiar la contraseña de una base que ya existe, cambiar el `.env` no basta: PostgreSQL solo la toma al crear el volumen. Cámbiala también dentro del contenedor y luego en `.env`:
+
+```bash
+docker compose exec db psql -U gimnasio -d gimnasio -c "ALTER USER gimnasio PASSWORD 'nueva-contraseña'"
+```
 
 `Database.migrate` aplica con Flyway las migraciones de `db/migration`; `App` la llama al arrancar. Las pruebas de `infrastructure/persistence` levantan su propio PostgreSQL con Testcontainers y se omiten si Docker no está corriendo o si su API no es compatible (ver [ui.md](ui.md#pruebas)).
