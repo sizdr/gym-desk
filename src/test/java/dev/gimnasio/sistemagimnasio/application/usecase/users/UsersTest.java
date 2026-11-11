@@ -154,6 +154,7 @@ class UsersTest {
             UserRow row = update.execute(admin, lucia.id(), new UpdateUserCommand("Lucía P.", "LPerez", Role.RECEPCION, "", null));
 
             assertEquals(new UserRow(lucia.id(), "Lucía P.", "lperez", Role.RECEPCION, false), row);
+            assertEquals(new User(lucia.id(), "Lucía P.", "lperez", Role.RECEPCION, false), users.get(lucia.id()));
             assertEquals(hasher.hash("Mostrador#2026"), users.hashOf(lucia.id()));
         }
 
