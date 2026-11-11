@@ -25,9 +25,9 @@ public final class DeleteUser {
 
     public void execute(User actor, long id) {
         transactions.run(() -> {
-            User current = authorizer.require(actor, Permission.MANAGE_USERS);
+            User actingUser = authorizer.require(actor, Permission.MANAGE_USERS);
             User target = UserRules.find(users, id);
-            if (target.id().equals(current.id())) {
+            if (target.id().equals(actingUser.id())) {
                 throw new DomainException(SELF);
             }
             if (users.hasOperations(id)) {

@@ -25,13 +25,13 @@ public final class SetUserActive {
 
     public UserRow execute(User actor, long id, boolean active) {
         return transactions.inTransaction(() -> {
-            User current = authorizer.require(actor, Permission.MANAGE_USERS);
+            User actingUser = authorizer.require(actor, Permission.MANAGE_USERS);
             User target = UserRules.find(users, id);
             if (target.active() == active) {
                 return UserRules.toRow(target);
             }
             if (!active) {
-                if (target.id().equals(current.id())) {
+                if (target.id().equals(actingUser.id())) {
                     throw new DomainException(SELF);
                 }
                 if (UserRules.isLastActiveAdmin(target, users)) {
