@@ -270,7 +270,8 @@ class UsersTest {
     }
 
     @Test
-    void losCasosQueEscriben_abrenCadaUnoSuTransaccion() {
+    void losCasosQueEscriben_leenYEscribenSoloDentroDeSuTransaccion() {
+        users.guard.watch(transactions);
         UserRow row = create.execute(admin, newUser("Pedro", "pedro", Role.CAJA, "12345678", "12345678"));
         update.execute(admin, row.id(), new UpdateUserCommand("Pedro Ruiz", "pedro", Role.CAJA, null, null));
         setActive.execute(admin, row.id(), false);

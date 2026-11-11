@@ -8,6 +8,7 @@ import java.util.Map;
 
 public final class InMemoryFolioSeries implements FolioSeriesRepository {
     private final Map<String, FolioSeries> bySeries = new HashMap<>();
+    public final TransactionGuard guard = new TransactionGuard();
 
     public InMemoryFolioSeries() {
         put(new FolioSeries(FolioSeries.MEMBERSHIP_PAYMENTS, "GYM-", 4));
@@ -19,6 +20,7 @@ public final class InMemoryFolioSeries implements FolioSeriesRepository {
 
     @Override
     public FolioSeries get(String series) {
+        guard.check("get");
         FolioSeries found = bySeries.get(series);
         if (found == null) {
             throw new IllegalStateException("Falta la serie de folios " + series + ".");
@@ -28,6 +30,7 @@ public final class InMemoryFolioSeries implements FolioSeriesRepository {
 
     @Override
     public void save(FolioSeries series) {
+        guard.check("save");
         put(series);
     }
 }

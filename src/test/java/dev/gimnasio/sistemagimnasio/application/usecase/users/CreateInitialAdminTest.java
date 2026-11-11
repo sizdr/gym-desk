@@ -69,7 +69,8 @@ class CreateInitialAdminTest {
     }
 
     @Test
-    void ocurreEnUnaTransaccion() {
+    void revisarQueNoHayUsuarios_yCrearlo_ocurrenEnLaMismaTransaccion() {
+        users.guard.watch(transactions);
         createInitialAdmin.execute(command("Dueño", "admin", "Gym-Admin-1", "Gym-Admin-1"));
         assertEquals(1, transactions.started);
     }
