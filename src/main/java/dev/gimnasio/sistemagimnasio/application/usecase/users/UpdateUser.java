@@ -35,8 +35,7 @@ public final class UpdateUser {
             String name = UserRules.name(command.name(), errors);
             String username = UserRules.username(command.username(), id, users, errors);
             UserRules.role(command.role(), errors);
-            if (command.role() != null && command.role() != Role.ADMINISTRADOR
-                    && UserRules.isLastActiveAdmin(current, users)) {
+            if (command.role() != null && command.role() != Role.ADMINISTRADOR && UserRules.isLastActiveAdmin(current, users)) {
                 errors.put("role", UserRules.LAST_ADMIN);
             }
             boolean changesPassword = command.newPassword() != null && !command.newPassword().isEmpty();
