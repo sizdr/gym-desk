@@ -1,5 +1,7 @@
 package dev.gimnasio.sistemagimnasio.infrastructure.persistence;
 
+import dev.gimnasio.sistemagimnasio.infrastructure.config.Environment;
+
 import java.util.Map;
 
 public record DatabaseConfig(String url, String user, String password) {
@@ -12,9 +14,12 @@ public record DatabaseConfig(String url, String user, String password) {
         requireValue(password, "DB_PASSWORD");
     }
 
-    /** La contraseña no tiene valor por defecto para no dejarla escrita en el código. */
+    /**
+     * Del sistema y del {@code .env} del directorio de trabajo (gana el sistema).
+     * La contraseña no tiene valor por defecto para no dejarla escrita en el código.
+     */
     public static DatabaseConfig fromEnvironment() {
-        return from(System.getenv());
+        return from(Environment.load());
     }
 
     static DatabaseConfig from(Map<String, String> env) {
