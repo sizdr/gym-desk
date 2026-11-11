@@ -684,6 +684,17 @@ Permiso: `MANAGE_USERS` en todos.
 | Desactivarse a sí mismo | `DomainException` | No puedes desactivar tu propio usuario mientras lo usas. |
 | Usuario inexistente | `NotFoundException` | El usuario no existe. |
 
+### `CreateInitialAdmin` · Primer administrador
+
+Sin `actor` ni permiso: solo funciona mientras no exista **ningún** usuario. La UI lo ofrece en el primer arranque y, mientras no haya UI, lo llama el punto de entrada con `ADMIN_NAME`, `ADMIN_USERNAME` y `ADMIN_PASSWORD` del `.env` (nunca en git).
+
+**Entrada:** `CreateInitialAdminCommand(name, username, password, passwordConfirmation)`. **Salida:** `UserRow` del administrador creado, con rol `ADMINISTRADOR` y activo.
+
+- Las reglas de nombre, usuario y contraseña, y sus mensajes, son las de `CreateUser`.
+- Revisar que no hay usuarios y crear el administrador van en la misma transacción: si dos estaciones arrancan a la vez, solo una lo crea.
+- Si ya hay usuarios: `DomainException` con «El sistema ya tiene usuarios; un administrador debe crear las cuentas nuevas.».
+- `boolean needsInitialAdmin()` (consulta sin actor) dice si la UI debe mostrar la pantalla de primer arranque.
+
 ## Configuración
 
 Permiso: `MANAGE_SETTINGS` en todos.
@@ -757,7 +768,6 @@ Motivos y categorías siguen la misma forma con `MovementReasonCommand(name)` / 
 |---|---|---|
 | Folios de ventas | Una serie para cobros y ventas, o dos (`GYM-` y `GYM-V-`). Hoy solo existe la serie `COBRO`. | `folioExample` y la numeración; los contratos no cambian. |
 | Deshacer un cobro | Si se podrá, quién y durante cuánto tiempo. | Un caso de uso `VoidMembershipPayment`. |
-| Primer arranque | Cómo se crea el primer Administrador cuando no hay usuarios. | Un caso de uso de instalación o una migración con usuario inicial. |
 
 ## Cambios que estos contratos piden al código
 
