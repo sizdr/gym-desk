@@ -1,0 +1,658 @@
+/*
+ * Tema de la app, tomado del prototipo funcional («Gimnasio – Prototipo funcional»).
+ *
+ * Los colores se definen una vez como colores con nombre (-gd-*) y el resto de las reglas los usa por nombre.
+ * El tema claro vive en .root y el nocturno en .tema-oscuro, que ui.common.Themes pone en la raíz de cada
+ * ventana (principal y diálogos). Las listas desplegables y menús heredan los colores del control que las abre.
+ *
+ * Diferencias con el prototipo:
+ * - JavaFX no tiene backdrop-filter: el vidrio esmerilado se reemplaza por superficies opacas, como la
+ *   variante «transparencia reducida» del propio prototipo. Se conservan el fondo con color y la rejilla.
+ * - El CSS de JavaFX no admite variables de tamaño: radios, espacios y tamaños se escriben en cada regla
+ *   con los valores del prototipo (panel 14, control 10, chico 7; textos 11.5 a 30 px).
+ * - Los pesos 500 y 600 se eligen por familia («Instrument Sans Medium», «Instrument Sans SemiBold»):
+ *   JavaFX solo distingue normal y negrita al buscar una fuente por peso.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Colores: tema claro                                                 */
+/* ------------------------------------------------------------------ */
+.root, .tema-claro {
+    -gd-fondo: #E8ECF2;
+    -gd-mancha-1: #C7D7F4;
+    -gd-mancha-1t: #C7D7F400;
+    -gd-mancha-2: #D5DEEC;
+    -gd-mancha-2t: #D5DEEC00;
+    -gd-mancha-3: #CFE2E6;
+    -gd-mancha-3t: #CFE2E600;
+    -gd-mancha-4: #DCE2EC;
+    -gd-mancha-4t: #DCE2EC00;
+    -gd-rejilla: rgba(29, 86, 204, 0.06);
+
+    -gd-superficie: #FFFFFF;
+    -gd-superficie-2: #F6F8FA;
+    -gd-superficie-3: #EEF1F5;
+    -gd-linea: #DCE1E8;
+    -gd-linea-fuerte: #B9C1CC;
+    -gd-texto: #121821;
+    -gd-texto-2: #444E5D;
+    -gd-texto-3: #5B6575;
+
+    -gd-acento: #1D56CC;
+    -gd-acento-hover: #1646A8;
+    -gd-acento-texto: #1646A8;
+    -gd-acento-suave: #E7EEFC;
+    -gd-acento-borde: #A9C0EF;
+    -gd-acento-anillo: rgba(29, 86, 204, 0.18);
+    -gd-sobre-acento: #FFFFFF;
+
+    -gd-ok: #0A6532;
+    -gd-ok-fondo: #E1F2E7;
+    -gd-aviso: #774400;
+    -gd-aviso-fondo: #FCEED1;
+    -gd-peligro: #A8231A;
+    -gd-peligro-fondo: #FBE7E5;
+    -gd-peligro-boton: #A8231A;
+    -gd-peligro-boton-hover: #8E1D16;
+    -gd-neutro: #444E5D;
+    -gd-neutro-fondo: #E9ECF1;
+    -gd-nota-info: #18346F;
+    -gd-nota-aviso: #5A3400;
+    -gd-nota-error: #7E1913;
+    -gd-nota-ok: #064D25;
+
+    -gd-foco: #1D56CC;
+    -gd-foco-anillo: rgba(29, 86, 204, 0.22);
+    -gd-error-anillo: rgba(168, 35, 26, 0.14);
+    -gd-entrada-fondo: #FFFFFF;
+    -gd-entrada-hover: #9AA3B0;
+    -gd-placeholder: #6B7483;
+    -gd-fila-hover: #FAFBFC;
+    -gd-hover-suave: rgba(18, 24, 33, 0.06);
+    -gd-segmento-activo: #FFFFFF;
+    -gd-contenido-filo: rgba(18, 24, 33, 0.06);
+    -gd-sombra-panel: rgba(18, 24, 33, 0.05);
+    -gd-sombra-flotante: rgba(18, 24, 33, 0.16);
+    -gd-riel: #F7F9FC;
+    -gd-riel-filo: rgba(255, 255, 255, 0.9);
+    -gd-capsula: #FBFCFE;
+    -gd-marco: #F3F6FA;
+    -gd-nav-hover: rgba(18, 24, 33, 0.05);
+    -gd-nav-activo: #FFFFFF;
+    -gd-linea-riel: rgba(18, 24, 33, 0.08);
+    -gd-velo: rgba(30, 38, 52, 0.20);
+    -gd-kbd-fondo: rgba(255, 255, 255, 0.75);
+    -gd-kbd-borde: rgba(18, 24, 33, 0.14);
+
+    /* JavaFX: colores base de modena para lo que no se estiliza aquí (barras de desplazamiento, etc.). */
+    -fx-base: -gd-superficie-3;
+    -fx-background: -gd-superficie;
+    -fx-control-inner-background: -gd-entrada-fondo;
+    -fx-accent: -gd-acento;
+    -fx-focus-color: -gd-foco;
+    -fx-faint-focus-color: -gd-foco-anillo;
+    -fx-text-base-color: -gd-texto;
+    -fx-selection-bar: -gd-acento-suave;
+    -fx-selection-bar-non-focused: -gd-superficie-3;
+}
+
+/* ------------------------------------------------------------------ */
+/* Colores: tema nocturno                                              */
+/* ------------------------------------------------------------------ */
+.tema-oscuro {
+    -gd-fondo: #0C1118;
+    -gd-mancha-1: #1A3061;
+    -gd-mancha-1t: #1A306100;
+    -gd-mancha-2: #172640;
+    -gd-mancha-2t: #17264000;
+    -gd-mancha-3: #10303A;
+    -gd-mancha-3t: #10303A00;
+    -gd-mancha-4: #151F30;
+    -gd-mancha-4t: #151F3000;
+    -gd-rejilla: rgba(140, 170, 255, 0.06);
+
+    -gd-superficie: #151B24;
+    -gd-superficie-2: #1A212B;
+    -gd-superficie-3: #232B37;
+    -gd-linea: #2A3340;
+    -gd-linea-fuerte: #3D4757;
+    -gd-texto: #E9EDF3;
+    -gd-texto-2: #B7C0CD;
+    -gd-texto-3: #9AA4B4;
+
+    -gd-acento: #2F66DD;
+    -gd-acento-hover: #3C74EE;
+    -gd-acento-texto: #8DB2FF;
+    -gd-acento-suave: #1C2742;
+    -gd-acento-borde: #3A5698;
+    -gd-acento-anillo: rgba(141, 178, 255, 0.28);
+    -gd-sobre-acento: #FFFFFF;
+
+    -gd-ok: #6BD69A;
+    -gd-ok-fondo: #12301F;
+    -gd-aviso: #F3C46E;
+    -gd-aviso-fondo: #362812;
+    -gd-peligro: #FF8F86;
+    -gd-peligro-fondo: #3A1816;
+    -gd-peligro-boton: #B3261E;
+    -gd-peligro-boton-hover: #C93A31;
+    -gd-neutro: #B7C0CD;
+    -gd-neutro-fondo: #252D39;
+    -gd-nota-info: #C9D9FF;
+    -gd-nota-aviso: #F6DBA4;
+    -gd-nota-error: #FFC6C0;
+    -gd-nota-ok: #B9ECCD;
+
+    -gd-foco: #8DB2FF;
+    -gd-foco-anillo: rgba(141, 178, 255, 0.30);
+    -gd-error-anillo: rgba(255, 143, 134, 0.22);
+    -gd-entrada-fondo: #10151D;
+    -gd-entrada-hover: #55627A;
+    -gd-placeholder: #8C96A6;
+    -gd-fila-hover: #1B222D;
+    -gd-hover-suave: rgba(255, 255, 255, 0.07);
+    -gd-segmento-activo: #303B4C;
+    -gd-contenido-filo: rgba(255, 255, 255, 0.07);
+    -gd-sombra-panel: rgba(0, 0, 0, 0.45);
+    -gd-sombra-flotante: rgba(0, 0, 0, 0.55);
+    -gd-riel: #161D27;
+    -gd-riel-filo: rgba(255, 255, 255, 0.11);
+    -gd-capsula: #18202B;
+    -gd-marco: #1B2330;
+    -gd-nav-hover: rgba(255, 255, 255, 0.07);
+    -gd-nav-activo: #232B37;
+    -gd-linea-riel: rgba(255, 255, 255, 0.09);
+    -gd-velo: rgba(3, 6, 11, 0.55);
+    -gd-kbd-fondo: rgba(255, 255, 255, 0.08);
+    -gd-kbd-borde: rgba(255, 255, 255, 0.18);
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+.root {
+    -fx-font-family: "Instrument Sans";
+    -fx-font-size: 14.5px;
+    -fx-background-color: -gd-fondo;
+}
+
+.label, .text {
+    -fx-text-fill: -gd-texto;
+}
+
+/* Fondo con color y rejilla tenue (JavaFX pinta la primera capa al fondo). */
+.fondo-app {
+    -fx-background-color:
+        -gd-fondo,
+        radial-gradient(center 0% 0%, radius 60%, -gd-mancha-1, -gd-mancha-1t),
+        radial-gradient(center 100% 0%, radius 60%, -gd-mancha-2, -gd-mancha-2t),
+        radial-gradient(center 0% 100%, radius 60%, -gd-mancha-3, -gd-mancha-3t),
+        radial-gradient(center 100% 100%, radius 60%, -gd-mancha-4, -gd-mancha-4t),
+        linear-gradient(from 0px 0px to 0px 36px, repeat, -gd-rejilla 0px, -gd-rejilla 1px, transparent 1px, transparent 36px),
+        linear-gradient(from 0px 0px to 36px 0px, repeat, -gd-rejilla 0px, -gd-rejilla 1px, transparent 1px, transparent 36px);
+}
+
+/* Pesos (ver nota del encabezado). */
+.peso-500 { -fx-font-family: "Instrument Sans Medium"; }
+.peso-600 { -fx-font-family: "Instrument Sans SemiBold"; }
+.peso-700 { -fx-font-family: "Instrument Sans"; -fx-font-weight: bold; }
+
+/* Texto */
+.titulo-30 { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 30px; }
+.titulo-24 { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 24px; }
+.titulo-19 { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 19px; }
+.titulo-16 { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 16px; }
+.texto-2 { -fx-text-fill: -gd-texto-2; }
+.texto-3 { -fx-text-fill: -gd-texto-3; }
+.chico { -fx-font-size: 12.5px; }
+.t-13 { -fx-font-size: 13.5px; }
+
+/* Iconos (ui.common.Icons): trazo sin relleno, del color del texto que acompañan. */
+.icono {
+    -fx-fill: transparent;
+    -fx-stroke: -gd-texto-2;
+    -fx-stroke-width: 1.75;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+
+/* ------------------------------------------------------------------ */
+/* Superficies                                                         */
+/* ------------------------------------------------------------------ */
+.panel {
+    -fx-background-color: -gd-linea, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 14, 13;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-panel, 2, 0, 0, 1);
+}
+
+/* Marco: en el prototipo es vidrio con contenido opaco; aquí, superficie opaca con el mismo radio y sombra. */
+.marco {
+    -fx-background-color: -gd-riel-filo, -gd-marco;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 28, 27;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 34, 0, 0, 14);
+}
+
+.marco-contenido {
+    -fx-background-color: -gd-contenido-filo, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 18, 17;
+}
+
+/* Logotipo o iniciales del gimnasio */
+.logo {
+    -fx-background-color: -gd-acento;
+    -fx-background-radius: 10;
+    -fx-min-width: 36; -fx-min-height: 36; -fx-pref-width: 36; -fx-pref-height: 36; -fx-max-width: 36; -fx-max-height: 36;
+}
+.logo .label {
+    -fx-text-fill: -gd-sobre-acento;
+    -fx-font-family: "Instrument Sans";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+.logo.logo-48 {
+    -fx-background-radius: 13;
+    -fx-min-width: 48; -fx-min-height: 48; -fx-pref-width: 48; -fx-pref-height: 48; -fx-max-width: 48; -fx-max-height: 48;
+}
+.logo.logo-48 .label { -fx-font-size: 18px; }
+.logo.con-imagen { -fx-background-color: #FFFFFF; }
+
+/* Avisos dentro de pantalla */
+.nota {
+    -fx-background-color: -gd-acento-suave;
+    -fx-background-radius: 10;
+    -fx-padding: 10 12;
+    -fx-spacing: 10;
+}
+.nota .label { -fx-text-fill: -gd-nota-info; -fx-font-size: 13.5px; }
+.nota .icono { -fx-stroke: -gd-nota-info; }
+.nota-error { -fx-background-color: -gd-peligro-fondo; }
+.nota-error .label { -fx-text-fill: -gd-nota-error; }
+.nota-error .icono { -fx-stroke: -gd-nota-error; }
+.nota-aviso { -fx-background-color: -gd-aviso-fondo; }
+.nota-aviso .label { -fx-text-fill: -gd-nota-aviso; }
+.nota-aviso .icono { -fx-stroke: -gd-nota-aviso; }
+.nota-neutra { -fx-background-color: -gd-superficie-3; }
+.nota-neutra .label { -fx-text-fill: -gd-texto-2; }
+.nota-neutra .icono { -fx-stroke: -gd-texto-2; }
+
+/* ------------------------------------------------------------------ */
+/* Botones                                                             */
+/* ------------------------------------------------------------------ */
+.button, .toggle-button {
+    -fx-font-family: "Instrument Sans Medium";
+    -fx-font-size: 14.5px;
+    -fx-text-fill: -gd-texto;
+    -fx-background-color: -gd-linea-fuerte, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-padding: 0 14;
+    -fx-min-height: 38;
+    -fx-graphic-text-gap: 7;
+    -fx-cursor: hand;
+}
+.button:hover { -fx-background-color: -gd-linea-fuerte, -gd-superficie-2; }
+.button:armed { -fx-background-color: -gd-linea-fuerte, -gd-superficie-3; }
+.button .icono { -fx-stroke: -gd-texto; }
+
+/* Anillo de foco solo con teclado */
+.button:focus-visible, .toggle-button:focus-visible {
+    -fx-background-color: -gd-foco, -gd-superficie, -gd-linea-fuerte, -gd-superficie;
+    -fx-background-insets: -3, -1, 0, 1;
+    -fx-background-radius: 13, 11, 10, 9;
+}
+
+.button.primario, .button:default {
+    -fx-text-fill: -gd-sobre-acento;
+    -fx-background-color: -gd-acento;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(22, 70, 168, 0.25), 2, 0, 0, 1);
+}
+.button.primario:hover, .button:default:hover { -fx-background-color: -gd-acento-hover; }
+.button.primario:focus-visible, .button:default:focus-visible {
+    -fx-background-color: -gd-foco, -gd-superficie, -gd-acento;
+    -fx-background-insets: -3, -1, 0;
+    -fx-background-radius: 13, 11, 10;
+}
+.button.primario .icono, .button:default .icono { -fx-stroke: -gd-sobre-acento; }
+.button.primario:disabled, .button:default:disabled { -fx-opacity: 0.55; }
+
+.button.texto {
+    -fx-text-fill: -gd-acento-texto;
+    -fx-background-color: transparent;
+    -fx-padding: 0 8;
+}
+.button.texto:hover { -fx-background-color: -gd-acento-suave; }
+.button.texto .icono { -fx-stroke: -gd-acento-texto; }
+
+.button.peligro { -fx-text-fill: #FFFFFF; -fx-background-color: -gd-peligro-boton; -fx-background-insets: 0; }
+.button.peligro:hover { -fx-background-color: -gd-peligro-boton-hover; }
+
+.button.grande { -fx-min-height: 48; -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 16px; -fx-padding: 0 18; }
+.button.chico { -fx-min-height: 32; -fx-padding: 0 10; -fx-font-size: 13.5px; -fx-background-radius: 8, 7; }
+.button.ancho { -fx-max-width: Infinity; }
+
+/* Botón redondo solo con icono */
+.button.boton-icono {
+    -fx-background-color: transparent;
+    -fx-background-radius: 999;
+    -fx-min-width: 34; -fx-min-height: 34; -fx-pref-width: 34; -fx-pref-height: 34;
+    -fx-padding: 0;
+}
+.button.boton-icono .icono { -fx-stroke: -gd-texto-2; }
+.button.boton-icono:hover { -fx-background-color: -gd-hover-suave; }
+.button.boton-icono:hover .icono { -fx-stroke: -gd-texto; }
+.button.boton-icono:focus-visible {
+    -fx-background-color: -gd-foco, -gd-capsula;
+    -fx-background-insets: -2, 0;
+    -fx-background-radius: 999, 999;
+}
+
+.button:disabled, .toggle-button:disabled { -fx-opacity: 0.55; }
+
+/* Selector de tema (ui.common.ThemeSelector) */
+.tema {
+    -fx-background-color: -gd-hover-suave;
+    -fx-background-radius: 999;
+    -fx-padding: 3;
+    -fx-spacing: 2;
+}
+.tema .toggle-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 999;
+    -fx-min-width: 30; -fx-min-height: 30; -fx-pref-width: 30; -fx-pref-height: 30;
+    -fx-padding: 0;
+}
+.tema .toggle-button .icono { -fx-stroke: -gd-texto-2; }
+.tema .toggle-button:hover .icono { -fx-stroke: -gd-texto; }
+.tema .toggle-button:selected {
+    -fx-background-color: -gd-contenido-filo, -gd-segmento-activo;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 999, 999;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 2, 0, 0, 1);
+}
+.tema .toggle-button:selected .icono { -fx-stroke: -gd-texto; }
+.tema .toggle-button:focus-visible {
+    -fx-background-color: -gd-foco, -gd-segmento-activo;
+    -fx-background-insets: -1, 1;
+    -fx-background-radius: 999, 999;
+}
+
+/* ------------------------------------------------------------------ */
+/* Campos                                                              */
+/* ------------------------------------------------------------------ */
+.campo { -fx-spacing: 6; }
+.campo > .label, .etiqueta {
+    -fx-font-family: "Instrument Sans Medium";
+    -fx-font-size: 13.5px;
+    -fx-text-fill: -gd-texto;
+}
+.ayuda { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-3; }
+
+.text-field, .password-field, .text-area {
+    -fx-font-size: 14.5px;
+    -fx-text-fill: -gd-texto;
+    -fx-prompt-text-fill: -gd-placeholder;
+    -fx-highlight-fill: -gd-acento;
+    -fx-highlight-text-fill: -gd-sobre-acento;
+    -fx-background-color: -gd-linea-fuerte, -gd-entrada-fondo;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-padding: 0 12;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+}
+.text-field:hover, .password-field:hover { -fx-background-color: -gd-entrada-hover, -gd-entrada-fondo; }
+.text-field:focused, .password-field:focused {
+    -fx-background-color: -gd-foco-anillo, -gd-acento, -gd-entrada-fondo;
+    -fx-background-insets: -3, 0, 1;
+    -fx-background-radius: 13, 10, 9;
+}
+.text-field.invalid, .password-field.invalid {
+    -fx-background-color: -gd-error-anillo, -gd-peligro, -gd-entrada-fondo;
+    -fx-background-insets: -3, 0, 1;
+    -fx-background-radius: 13, 10, 9;
+}
+.text-field:disabled, .password-field:disabled { -fx-opacity: 1; -fx-background-color: -gd-linea, -gd-superficie-2; -fx-text-fill: -gd-texto-2; }
+
+/* Mensaje de error bajo el campo (ui.common.FieldErrors) */
+.label.field-error {
+    -fx-text-fill: -gd-peligro;
+    -fx-font-family: "Instrument Sans Medium";
+    -fx-font-size: 12.5px;
+    -fx-wrap-text: true;
+}
+
+/* ------------------------------------------------------------------ */
+/* Diálogos, menús y listas desplegables                               */
+/* ------------------------------------------------------------------ */
+.dialog-pane {
+    -fx-background-color: -gd-superficie;
+    -fx-padding: 0;
+    -fx-min-width: 420;
+}
+.dialog-pane > .content { -fx-padding: 20 22 18 22; }
+.dialog-pane > .content.label { -fx-text-fill: -gd-texto; -fx-font-size: 14.5px; -fx-wrap-text: true; }
+.dialog-pane .header-panel { -fx-background-color: transparent; -fx-padding: 20 22 0 22; }
+.dialog-pane .header-panel .label { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 19px; -fx-text-fill: -gd-texto; }
+.dialog-pane > .button-bar > .container {
+    -fx-padding: 14 22 18 22;
+    -fx-background-color: -gd-superficie-3, -gd-superficie;
+    -fx-background-insets: 0, 1 0 0 0;
+}
+.dialog-pane:no-header .graphic-container { -fx-padding: 0; }
+
+.context-menu, .tooltip, .combo-box-popup .list-view {
+    -fx-font-family: "Instrument Sans";
+}
+.context-menu {
+    -fx-background-color: -gd-linea, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12, 11;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 24, 0, 0, 8);
+}
+.menu-item { -fx-background-radius: 8; -fx-padding: 8 12; }
+.menu-item .label { -fx-text-fill: -gd-texto; }
+.menu-item .icono { -fx-stroke: -gd-texto-2; }
+.menu-item:focused, .menu-item:hover { -fx-background-color: -gd-superficie-3; }
+.menu-item:focused .label, .menu-item:hover .label { -fx-text-fill: -gd-texto; }
+.menu-item:disabled .label { -fx-text-fill: -gd-texto-3; }
+.separator-menu-item .line { -fx-border-color: -gd-linea transparent transparent transparent; }
+
+.combo-box-base, .choice-box {
+    -fx-background-color: -gd-linea-fuerte, -gd-entrada-fondo;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-min-height: 40;
+}
+.combo-box-base:focused, .choice-box:focused {
+    -fx-background-color: -gd-foco-anillo, -gd-acento, -gd-entrada-fondo;
+    -fx-background-insets: -3, 0, 1;
+    -fx-background-radius: 13, 10, 9;
+}
+.combo-box .list-cell { -fx-text-fill: -gd-texto; -fx-background-color: transparent; -fx-padding: 0 12; }
+.combo-box-popup .list-view {
+    -fx-background-color: -gd-linea, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 24, 0, 0, 8);
+}
+.combo-box-popup .list-view .list-cell { -fx-font-family: "Instrument Sans"; -fx-font-size: 14.5px; -fx-padding: 8 12; -fx-background-color: transparent; -fx-text-fill: -gd-texto; }
+.combo-box-popup .list-view .list-cell:filled:hover,
+.combo-box-popup .list-view .list-cell:filled:selected { -fx-background-color: -gd-acento-suave; -fx-text-fill: -gd-acento-texto; }
+.combo-box-base .arrow, .choice-box .open-button .arrow { -fx-background-color: -gd-texto-2; }
+
+.tooltip {
+    -fx-background-color: -gd-texto;
+    -fx-text-fill: -gd-superficie;
+    -fx-background-radius: 7;
+    -fx-padding: 6 10;
+    -fx-font-size: 12.5px;
+}
+
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
+.scroll-bar { -fx-background-color: transparent; }
+.scroll-bar .thumb { -fx-background-color: -gd-linea-fuerte; -fx-background-radius: 999; -fx-background-insets: 0; }
+.scroll-bar:vertical { -fx-pref-width: 8; -fx-padding: 0; }
+.scroll-bar:horizontal { -fx-pref-height: 8; -fx-padding: 0; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-padding: 0; -fx-pref-height: 0; -fx-pref-width: 0; }
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow { -fx-padding: 0; -fx-shape: null; }
+
+.progress-indicator { -fx-progress-color: -gd-acento; }
+
+/* ------------------------------------------------------------------ */
+/* Arranque y acceso                                                   */
+/* ------------------------------------------------------------------ */
+.acceso { -fx-padding: 32 16; }
+.acceso-centro { -fx-spacing: 18; -fx-max-width: 420; -fx-pref-width: 420; }
+.acceso-marca { -fx-spacing: 12; -fx-padding: 0 6; -fx-alignment: center-left; }
+.acceso-nombre { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 19px; }
+.acceso-form { -fx-padding: 26 26 22 26; -fx-spacing: 16; }
+.acceso-tema { -fx-spacing: 10; -fx-alignment: center; }
+.acceso-tema > .label { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-2; }
+
+.arranque-detalle {
+    -fx-background-color: -gd-peligro-fondo;
+    -fx-background-radius: 10;
+    -fx-text-fill: -gd-nota-error;
+    -fx-font-size: 13.5px;
+    -fx-padding: 10 12;
+    -fx-max-width: Infinity;
+}
+
+/* Indicador dentro del botón mientras se envía */
+.progreso-boton {
+    -fx-pref-width: 18; -fx-pref-height: 18; -fx-max-width: 18; -fx-max-height: 18;
+    -fx-progress-color: -gd-sobre-acento;
+}
+.button.primario:disabled .progreso-boton { -fx-opacity: 1; }
+
+/* ------------------------------------------------------------------ */
+/* Menú lateral, cabecera y contenido (ui.shell)                       */
+/* ------------------------------------------------------------------ */
+.riel {
+    -fx-background-color: -gd-riel-filo, -gd-riel;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 26, 25;
+    -fx-padding: 18 14 14 14;
+    -fx-spacing: 18;
+    -fx-min-width: 236; -fx-pref-width: 236; -fx-max-width: 236;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 34, 0, 0, 14);
+}
+.marca { -fx-spacing: 10; -fx-padding: 2 6; -fx-alignment: center-left; }
+.marca-nombre { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 14.5px; }
+.marca-sub { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-2; }
+
+.nav { -fx-spacing: 14; }
+.nav-desplazable, .nav-desplazable > .viewport { -fx-background-color: transparent; -fx-padding: 0; }
+.nav-desplazable .scroll-bar:vertical { -fx-pref-width: 6; -fx-padding: 0; }
+.nav-grupo { -fx-spacing: 2; }
+.nav-titulo {
+    -fx-padding: 0 10 4 10;
+    -fx-font-family: "Instrument Sans Medium";
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -gd-texto-2;
+}
+.button.nav-enlace {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+    -fx-min-height: 38;
+    -fx-padding: 0 10;
+    -fx-alignment: center-left;
+    -fx-graphic-text-gap: 10;
+    -fx-text-fill: -gd-texto-2;
+}
+.button.nav-enlace .icono { -fx-stroke: -gd-texto-2; }
+.button.nav-enlace:hover { -fx-background-color: -gd-nav-hover; -fx-text-fill: -gd-texto; }
+.button.nav-enlace:hover .icono { -fx-stroke: -gd-texto; }
+.button.nav-enlace:actual {
+    -fx-background-color: -gd-acento-anillo, -gd-nav-activo;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-text-fill: -gd-acento-texto;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 2, 0, 0, 1);
+}
+.button.nav-enlace:actual .icono { -fx-stroke: -gd-acento-texto; }
+.button.nav-enlace:focus-visible {
+    -fx-background-color: -gd-foco, -gd-riel;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 10, 8;
+}
+.button.nav-enlace:actual:focus-visible {
+    -fx-background-color: -gd-foco, -gd-nav-activo;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 10, 8;
+}
+
+.riel-pie {
+    -fx-spacing: 10;
+    -fx-padding: 12 6 0 6;
+    -fx-border-color: -gd-linea-riel transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+.sesion { -fx-spacing: 10; -fx-alignment: center-left; }
+.avatar {
+    -fx-background-color: -gd-acento-suave;
+    -fx-background-radius: 999;
+    -fx-min-width: 32; -fx-min-height: 32; -fx-pref-width: 32; -fx-pref-height: 32; -fx-max-width: 32; -fx-max-height: 32;
+}
+.avatar .label { -fx-text-fill: -gd-acento-texto; -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 12.5px; }
+.sesion-nombre { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 13.5px; }
+.sesion-rol { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-2; }
+.riel-pie > .button { -fx-max-width: Infinity; }
+
+.cabecera { -fx-padding: 14 28 12 28; -fx-spacing: 12; -fx-alignment: center-left; }
+.capsula {
+    -fx-background-color: -gd-riel-filo, -gd-capsula;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 999, 999;
+    -fx-min-height: 46; -fx-pref-height: 46; -fx-max-height: 46;
+    -fx-padding: 0 8 0 16;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 24, 0, 0, 8);
+}
+.capsula-busqueda { -fx-max-width: 560; -fx-padding: 0 10 0 16; }
+.capsula-busqueda .icono { -fx-stroke: -gd-texto-3; }
+.capsula-sesion { -fx-padding: 0 6 0 16; -fx-spacing: 6; }
+.capsula-fecha { -fx-padding: 0 6 0 0; -fx-alignment: center-left; }
+.capsula-fecha .fecha { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 13.5px; }
+.capsula-fecha .fecha-nota { -fx-font-size: 11.5px; -fx-text-fill: -gd-texto-2; }
+
+.etiqueta-pendiente {
+    -fx-background-color: -gd-aviso-fondo;
+    -fx-background-radius: 999;
+    -fx-text-fill: -gd-aviso;
+    -fx-font-family: "Instrument Sans SemiBold";
+    -fx-font-size: 12.5px;
+    -fx-padding: 3 10;
+}
+
+.contenido { -fx-padding: 6 28 48 28; -fx-spacing: 20; -fx-max-width: 1480; }
+.encabezado .sub { -fx-font-size: 14.5px; }
+.vacio { -fx-padding: 36 20; -fx-spacing: 8; }
+.vacio .label { -fx-text-fill: -gd-texto-2; }
+.vacio .vacio-titulo { -fx-text-fill: -gd-texto; -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 14.5px; }
+.vacio .icono { -fx-stroke: -gd-texto-3; }
+.vacio .texto-3 { -fx-text-fill: -gd-texto-3; }
+
+/* Atajos de teclado */
+.atajos-lista { -fx-hgap: 16; -fx-vgap: 10; }
+.atajos-lista .label { -fx-font-size: 13.5px; }
+.kbd {
+    -fx-background-color: -gd-kbd-borde, -gd-kbd-fondo;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+    -fx-padding: 2 7;
+    -fx-min-width: 22;
+    -fx-alignment: center;
+    -fx-font-family: "Instrument Sans Medium";
+    -fx-text-fill: -gd-texto-2;
+}
+.atajos-lista .label.kbd { -fx-font-size: 11.5px; }

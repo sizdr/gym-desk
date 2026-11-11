@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Acceso: marca, formulario y selector de tema, como en el prototipo (sin las cuentas de demostración). -->
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" styleClass="fondo-app,acceso">
+    <VBox styleClass="acceso-centro" maxHeight="-Infinity">
+        <HBox fx:id="brand" styleClass="acceso-marca">
+            <VBox>
+                <Label fx:id="gymName" styleClass="acceso-nombre"/>
+                <Label text="Sistema de gestión del gimnasio" styleClass="texto-3,chico"/>
+            </VBox>
+        </HBox>
+
+        <StackPane styleClass="marco">
+            <VBox styleClass="marco-contenido,acceso-form">
+                <VBox spacing="4">
+                    <Label fx:id="title" text="Iniciar sesión" styleClass="titulo-24"/>
+                    <Label text="Entra con tu nombre de usuario y tu contraseña." styleClass="texto-2" wrapText="true"/>
+                </VBox>
+
+                <HBox fx:id="errorNote" styleClass="nota,nota-error">
+                    <Label fx:id="errorText" wrapText="true"/>
+                </HBox>
+
+                <VBox styleClass="campo">
+                    <Label text="Usuario" labelFor="$username"/>
+                    <TextField fx:id="username" accessibleText="Usuario"/>
+                    <Label fx:id="usernameError"/>
+                </VBox>
+
+                <VBox styleClass="campo">
+                    <Label text="Contraseña" labelFor="$password"/>
+                    <PasswordField fx:id="password" accessibleText="Contraseña"/>
+                    <Label fx:id="passwordError"/>
+                </VBox>
+
+                <Button fx:id="submit" text="Entrar" defaultButton="true" onAction="#submit"
+                        styleClass="primario,grande,ancho" maxWidth="Infinity"/>
+
+                <Label text="¿Olvidaste tu contraseña? Pide a un administrador que la cambie en Usuarios."
+                       styleClass="ayuda" wrapText="true"/>
+            </VBox>
+        </StackPane>
+
+        <HBox fx:id="themeRow" styleClass="acceso-tema">
+            <Label text="Tema"/>
+        </HBox>
+    </VBox>
+</StackPane>

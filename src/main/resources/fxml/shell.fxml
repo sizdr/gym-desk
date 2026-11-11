@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Menú lateral y cabecera del prototipo; el contenido de cada sección lo pone ShellController. -->
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" styleClass="fondo-app,app">
+    <left>
+        <VBox fx:id="rail" styleClass="riel" accessibleText="Menú principal">
+            <BorderPane.margin>
+                <Insets top="14" right="0" bottom="14" left="14"/>
+            </BorderPane.margin>
+            <HBox fx:id="brand" styleClass="marca">
+                <VBox>
+                    <Label fx:id="gymName" styleClass="marca-nombre" wrapText="true"/>
+                    <Label text="Sistema de gestión" styleClass="marca-sub"/>
+                </VBox>
+            </HBox>
+            <!-- Con muchas secciones y la ventana al mínimo, la lista se desplaza y la sesión sigue a la vista. -->
+            <ScrollPane fx:id="navScroll" styleClass="nav-desplazable" fitToWidth="true" hbarPolicy="NEVER"
+                        VBox.vgrow="ALWAYS" focusTraversable="false">
+                <VBox fx:id="nav" styleClass="nav" accessibleText="Secciones"/>
+            </ScrollPane>
+            <VBox styleClass="riel-pie">
+                <HBox styleClass="sesion">
+                    <StackPane styleClass="avatar">
+                        <Label fx:id="avatar"/>
+                    </StackPane>
+                    <VBox>
+                        <Label fx:id="userName" styleClass="sesion-nombre"/>
+                        <Label fx:id="userRole" styleClass="sesion-rol"/>
+                    </VBox>
+                </HBox>
+                <Button fx:id="signOut" text="Cerrar sesión" onAction="#signOut" styleClass="chico"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <VBox styleClass="lienzo">
+            <HBox styleClass="cabecera">
+                <HBox fx:id="search" styleClass="capsula,capsula-busqueda" HBox.hgrow="ALWAYS">
+                    <Label text="Buscar socio por nombre o teléfono" styleClass="texto-3" minWidth="0"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="searchPending" text="Pendiente" styleClass="etiqueta-pendiente" minWidth="-Infinity"/>
+                </HBox>
+                <HBox fx:id="sessionCapsule" styleClass="capsula,capsula-sesion" minWidth="-Infinity">
+                    <VBox styleClass="capsula-fecha">
+                        <Label fx:id="today" styleClass="fecha"/>
+                        <Label text="Hoy" styleClass="fecha-nota"/>
+                    </VBox>
+                </HBox>
+            </HBox>
+            <ScrollPane fx:id="scroll" fitToWidth="true" VBox.vgrow="ALWAYS" focusTraversable="false">
+                <StackPane fx:id="content" styleClass="contenido-caja"/>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

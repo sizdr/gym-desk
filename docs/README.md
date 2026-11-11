@@ -11,11 +11,15 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
 | `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro) y los usuarios (con el primer administrador); `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
 | `infrastructure` | Conexión a PostgreSQL, migraciones (esquema y datos iniciales), repositorios de usuarios, configuración y métodos de pago, y `Argon2PasswordHasher` |
-| `ui` | Vacía (solo queda la plantilla `HelloApplication` de IntelliJ) |
+| `ui` | Arranque (conexión, migraciones y reintento) y piezas comunes en `ui/common/`; detalle y validación en [ui.md](ui.md) |
 
 ## Modelo de datos
 
 Tablas, relaciones y reglas de la base: [modelo-de-datos.md](modelo-de-datos.md). El DBML de origen está en [modelo-de-datos.dbml](modelo-de-datos.dbml).
+
+## UI
+
+Cómo está armada la capa de UI, cómo se arranca y qué se comprobó en cada entrega: [ui.md](ui.md).
 
 ## Contratos
 
@@ -31,7 +35,7 @@ sistema-gimnasio/
 ├── docs/README.md
 └── src/
     ├── main/java/dev/gimnasio/sistemagimnasio/
-    │   ├── HelloApplication, HelloController, Launcher   plantilla de IntelliJ; se reemplaza por App.java
+    │   ├── Launcher, App, Wiring        arranque y raíz de composición (conecta infraestructura y UI)
     │   │
     │   ├── domain/                      Java puro: reglas y conceptos del negocio
     │   │   ├── payment/                 Folio, CashPayment, PaymentMethod (lo comparten billing y sales)
@@ -63,15 +67,18 @@ sistema-gimnasio/
     │   │   ├── backup/                  (planeado) pg_dump diario
     │   │   └── time/                    (planeado) reloj del sistema (implementa AppClock)
     │   │
-    │   └── ui/                          una carpeta por pantalla (FXML + controlador + ViewModel) (vacía)
-    │       ├── login/  dashboard/  billing/  sales/  members/  deactivations/     (planeado)
-    │       ├── plans/  products/  inventory/  users/  settings/                   (planeado)
-    │       └── common/                  navegación, diálogos, formatos, atajos     (planeado)
+    │   └── ui/                          una carpeta por pantalla (controlador + ViewModel); ver docs/ui.md
+    │       ├── GymDeskUi                entrada de la capa de UI
+    │       ├── startup/                 conexión, migraciones y reintento
+    │       ├── common/                  Background, ErrorReport, FieldErrors, Session, Formats, Inputs, Dialogs…
+    │       ├── login/  dashboard/  billing/  sales/  members/                    (planeado)
+    │       └── plans/  products/  inventory/  users/  settings/                   (planeado)
     │
     ├── main/resources/
     │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual)
     │   ├── i18n/messages_es.properties  (planeado)
-    │   └── fxml/   css/app.css   logback.xml   (planeado)
+    │   ├── fxml/   css/app.css           vistas y tema de la UI
+    │   └── logback.xml                   (planeado)
     │
     └── test/java/dev/gimnasio/sistemagimnasio/
         ├── domain/member/               MembershipRulesTest
@@ -114,4 +121,4 @@ La app lee la conexión de variables de entorno:
 | `DB_USER` | `gimnasio` |
 | `DB_PASSWORD` | ninguno: es obligatoria y debe coincidir con `POSTGRES_PASSWORD` del compose |
 
-`Database.migrate` aplica con Flyway las migraciones de `db/migration`. Todavía nadie la llama al arrancar: falta el punto de entrada que conecte las capas. Las pruebas de `infrastructure/persistence` levantan su propio PostgreSQL con Testcontainers y se omiten si Docker no está corriendo.
+`Database.migrate` aplica con Flyway las migraciones de `db/migration`; `App` la llama al arrancar. Las pruebas de `infrastructure/persistence` levantan su propio PostgreSQL con Testcontainers y se omiten si Docker no está corriendo o si su API no es compatible (ver [ui.md](ui.md#pruebas)).

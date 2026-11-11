@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" styleClass="fondo-app,acceso">
+    <StackPane styleClass="marco" maxWidth="460" maxHeight="-Infinity">
+        <VBox styleClass="marco-contenido,acceso-form" alignment="CENTER" spacing="14">
+            <Label text="Sistema Gimnasio" styleClass="titulo-24"/>
+            <ProgressIndicator fx:id="progress" prefWidth="36" prefHeight="36"/>
+            <Label fx:id="status" styleClass="peso-500" wrapText="true"/>
+            <Label fx:id="detail" styleClass="arranque-detalle" wrapText="true"/>
+            <HBox fx:id="actions" spacing="8" alignment="CENTER">
+                <Button text="Salir" onAction="#exit" cancelButton="true"/>
+                <Button fx:id="retryButton" text="Reintentar" onAction="#retry" defaultButton="true"
+                        styleClass="primario"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+</StackPane>
