@@ -52,10 +52,14 @@ class CapturasUiTest {
     }
 
     private Scene open(UiFakes.Users users) throws Exception {
+        return open(new UiFakes.Backend(users));
+    }
+
+    private Scene open(UiFakes.Backend backend) throws Exception {
         themes = UiFakes.themes(Themes.Theme.CLARO);
         stage = FxHarness.onFx(Stage::new);
         ui = FxHarness.onFx(() -> {
-            GymDeskUi created = new GymDeskUi(stage, () -> UiFakes.useCases(users), themes);
+            GymDeskUi created = new GymDeskUi(stage, backend::useCases, themes);
             created.start();
             return created;
         });
@@ -169,7 +173,11 @@ class CapturasUiTest {
     }
 
     private Scene signIn(UiFakes.Users users, String username) throws Exception {
-        Scene scene = open(users);
+        return signIn(new UiFakes.Backend(users), username);
+    }
+
+    private Scene signIn(UiFakes.Backend backend, String username) throws Exception {
+        Scene scene = open(backend);
         FxHarness.waitUntil("pantalla de acceso", () -> scene.lookup("#username") != null);
         typeInto(scene, "username", username);
         typeInto(scene, "password", UiFakes.PASSWORD);
@@ -177,14 +185,8 @@ class CapturasUiTest {
         FxHarness.press(scene, KeyCode.ENTER, false);
         FxHarness.waitUntil("menú", () -> FxHarness.onFxUnchecked(stage::getScene).lookup("#nav-cobro") != null);
         Scene shell = FxHarness.onFx(stage::getScene);
-        try {
-            FxHarness.waitUntil("foco en el menú", () -> shell.getFocusOwner() != null
-                    && shell.getFocusOwner().getId() != null && shell.getFocusOwner().getId().startsWith("nav-"));
-        } catch (AssertionError e) {
-            System.out.println("[diag] foco=" + FxHarness.focusOwner(shell) + " stageFocused=" + FxHarness.onFx(stage::isFocused)
-                    + " owner=" + FxHarness.onFx(() -> String.valueOf(shell.getFocusOwner())));
-            throw e;
-        }
+        FxHarness.waitUntil("foco en el menú", () -> shell.getFocusOwner() != null
+                && shell.getFocusOwner().getId() != null && shell.getFocusOwner().getId().startsWith("nav-"));
         return shell;
     }
 
@@ -239,15 +241,15 @@ class CapturasUiTest {
                 "nav-inventario", "nav-usuarios", "nav-configuracion", "signOut", "tema-claro", "atajos", "nav-tablero"), order);
 
         // Espacio sobre una sección la abre.
-        FxHarness.runFx(() -> scene.lookup("#nav-configuracion").requestFocus());
-        FxHarness.press(scene, KeyCode.SPACE, false);
-        assertEquals("Configuración", text(scene, "titulo-pagina"));
-        assertEquals("Pantalla en preparación", text(scene, "estado-pendiente"));
-        captureAll("entrega-3", "configuracion-administrador");
         FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
+        FxHarness.press(scene, KeyCode.SPACE, false);
+        assertEquals("Planes de membresía", text(scene, "titulo-pagina"));
+        assertEquals("Pantalla en preparación", text(scene, "estado-pendiente"));
+        captureAll("entrega-3", "planes-administrador");
+        FxHarness.runFx(() -> scene.lookup("#nav-configuracion").requestFocus());
         FxHarness.press(scene, KeyCode.ENTER, false);
-        assertEquals("Planes de membresía", text(scene, "titulo-pagina"), "Enter también abre la sección, como un enlace");
-        assertEquals("nav-planes", FxHarness.focusOwner(scene), "el foco se queda en el menú");
+        assertEquals("Configuración", text(scene, "titulo-pagina"), "Enter también abre la sección, como un enlace");
+        assertEquals("nav-configuracion", FxHarness.focusOwner(scene), "el foco se queda en el menú");
 
         // «?» abre los atajos; el diálogo toma el tema y Esc lo cierra.
         FxHarness.typeLater(scene, "?");
@@ -395,5 +397,330 @@ class CapturasUiTest {
         FxHarness.press(scene, KeyCode.LEFT, false);
         assertEquals(Themes.Theme.CLARO, FxHarness.onFx(themes::current), "flecha izquierda vuelve al claro");
         System.out.println("[teclado] acceso: Mayús+Tab → tema-claro; → elige nocturno; Espacio lo mantiene; ← vuelve a claro");
+    }
+
+    // ---------- Fase 2 · Entrega 1: Configuración, datos del gimnasio ----------
+
+    /** Un PNG real de 96×96 (un cuadrado con un círculo), para probar el logotipo sin archivos del repositorio. */
+    private static java.io.File samplePng() throws Exception {
+        var image = new java.awt.image.BufferedImage(96, 96, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        var g = image.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new java.awt.Color(0x0A, 0x65, 0x32));
+        g.fillRect(0, 0, 96, 96);
+        g.setColor(java.awt.Color.WHITE);
+        g.fillOval(22, 22, 52, 52);
+        g.dispose();
+        java.nio.file.Path file = java.nio.file.Files.createTempFile("logo-prueba", ".png");
+        file.toFile().deleteOnExit();
+        javax.imageio.ImageIO.write(image, "png", file.toFile());
+        return file.toFile();
+    }
+
+    private Scene openSettings(UiFakes.Backend backend) throws Exception {
+        Scene scene = signIn(backend, "admin");
+        FxHarness.runFx(() -> scene.lookup("#nav-configuracion").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("formulario cargado", () -> scene.lookup("#cf-nombre") != null && scene.lookup("#cf-nombre").isVisible());
+        return scene;
+    }
+
+    private boolean visible(Scene scene, String id) throws Exception {
+        return FxHarness.onFx(() -> shown(scene, id));
+    }
+
+    /** Para condiciones de {@code waitUntil}, que ya corren en el hilo de JavaFX. */
+    private static boolean shown(Scene scene, String id) {
+        var node = scene.lookup("#" + id);
+        return node != null && node.isVisible();
+    }
+
+    private static String title(Scene scene) {
+        return ((javafx.scene.control.Labeled) scene.lookup("#titulo-pagina")).getText();
+    }
+
+    private Scene dialogWithButton(String text) {
+        Scene dialog = dialogScene();
+        if (dialog == null) {
+            return null;
+        }
+        boolean has = dialog.getRoot().lookupAll(".button").stream()
+                .anyMatch(n -> n instanceof javafx.scene.control.Button b && text.equals(b.getText()));
+        return has ? dialog : null;
+    }
+
+    private void clickInDialog(Scene dialog, String text) {
+        javafx.application.Platform.runLater(() -> dialog.getRoot().lookupAll(".button").stream()
+                .filter(n -> n instanceof javafx.scene.control.Button b && text.equals(b.getText()))
+                .map(n -> (javafx.scene.control.Button) n).findFirst().orElseThrow().fire());
+    }
+
+    @Test
+    void fase2Entrega1Configuracion() throws Exception {
+        UiFakes.Backend backend = new UiFakes.Backend(staff());
+        backend.settings.settings = new dev.gimnasio.sistemagimnasio.domain.settings.GymSettings("Gimnasio Fuerza",
+                "Av. Juárez 120, Centro", "555 010 2233", null, "Gracias por entrenar con nosotros.",
+                java.util.Currency.getInstance("MXN"), 7, 30);
+
+        // 1. Mientras carga.
+        Scene scene = signIn(backend, "admin");
+        // El aviso de «guardado» dura lo suficiente para capturarlo en los cuatro tamaños y temas.
+        FxHarness.runFx(() -> ui.shell().setToastTime(javafx.util.Duration.minutes(1)));
+        java.util.concurrent.CountDownLatch slow = new java.util.concurrent.CountDownLatch(1);
+        backend.users.idGate = slow;
+        FxHarness.runFx(() -> scene.lookup("#nav-configuracion").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("cargando", () -> shown(scene, "loading"));
+        captureAll("fase-2-entrega-1", "cargando");
+        backend.users.idGate = null;
+        slow.countDown();
+        FxHarness.waitUntil("formulario cargado", () -> shown(scene, "cf-nombre"));
+
+        // 2. Lo guardado, sin barra de cambios.
+        assertEquals("Gimnasio Fuerza", text(scene, "cf-nombre"));
+        assertEquals("Ejemplo de folio: GYM-0001. Los folios ya emitidos no cambian.", text(scene, "folioHelp"));
+        assertEquals("Solo se puede elegir mientras no haya cobros ni ventas.", text(scene, "currencyHelp"));
+        assertEquals(false, visible(scene, "barra-guardar"));
+        assertEquals("nav-configuracion", FxHarness.focusOwner(scene), "abrir la sección deja el foco en el menú");
+        captureAll("fase-2-entrega-1", "configuracion");
+
+        // 3. Teclado: Tab recorre el formulario en orden de lectura.
+        FxHarness.runFx(() -> scene.lookup("#cf-nombre").requestFocus());
+        List<String> order = tabOrder(scene, 8);
+        System.out.println("[teclado] configuración, Tab: " + order);
+        assertEquals(List.of("cf-nombre", "cf-direccion", "cf-telefono", "cf-logo", "cf-leyenda", "cf-aviso",
+                "cf-plazo", "cf-moneda", "cf-prefijo"), order);
+
+        // 4. Cambios: nombre, logotipo (con el selector de archivos de prueba) y prefijo en minúsculas.
+        java.io.File png = samplePng();
+        FxHarness.runFx(() -> ui.useLogoChooser(owner -> png));
+        typeInto(scene, "cf-nombre", "Gimnasio Fuerza Centro");
+        FxHarness.runFx(() -> ((javafx.scene.control.Button) scene.lookup("#cf-logo")).fire());
+        FxHarness.runFx(() -> ((javafx.scene.control.TextInputControl) scene.lookup("#cf-prefijo")).setText(""));
+        FxHarness.runFx(() -> ((javafx.scene.control.TextInputControl) scene.lookup("#cf-prefijo")).insertText(0, "fza-"));
+        FxHarness.settle();
+        assertEquals("FZA-", text(scene, "cf-prefijo"), "el prefijo se escribe en mayúsculas");
+        assertEquals("Ejemplo de folio: FZA-0001. Los folios ya emitidos no cambian.", text(scene, "folioHelp"));
+        assertEquals("Logotipo nuevo, sin guardar", text(scene, "logoStatus"));
+        assertEquals(true, visible(scene, "barra-guardar"));
+        assertEquals(true, visible(scene, "removeLogo"));
+        captureAll("fase-2-entrega-1", "cambios-sin-guardar");
+
+        // 5. Errores del caso de uso, enviados con Enter desde un campo: cada uno en su campo y el foco al primero.
+        typeInto(scene, "cf-nombre", "");
+        typeInto(scene, "cf-aviso", "0");
+        typeInto(scene, "cf-leyenda", "x".repeat(170));
+        FxHarness.runFx(() -> scene.lookup("#cf-aviso").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("errores por campo", () -> shown(scene, "gymNameError"));
+        assertEquals("Escribe el nombre del gimnasio.", text(scene, "gymNameError"));
+        assertEquals("Usa 160 caracteres o menos.", text(scene, "receiptFooterError"));
+        assertEquals("Escribe un número de días entre 1 y 60.", text(scene, "warningDaysError"));
+        assertEquals("170 de 160 caracteres.", text(scene, "receiptFooterCount"));
+        assertEquals("cf-nombre", FxHarness.focusOwner(scene));
+        assertEquals("Gimnasio Fuerza", backend.settings.settings.gymName(), "no se guardó nada");
+        FxHarness.runFx(() -> ((javafx.scene.control.ScrollPane) scene.lookup(".lienzo .scroll-pane")).setVvalue(0));
+        captureAll("fase-2-entrega-1", "errores");
+
+        // 6. Corregido y guardado: aviso flotante, sin barra, y el menú ya muestra el nombre y el logotipo nuevos.
+        typeInto(scene, "cf-nombre", "Gimnasio Fuerza Centro");
+        typeInto(scene, "cf-aviso", "10");
+        typeInto(scene, "cf-leyenda", "Gracias por entrenar con nosotros.");
+        FxHarness.runFx(() -> scene.lookup("#cf-nombre").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("guardado", () -> !shown(scene, "barra-guardar") && shown(scene, "aviso"));
+        FxHarness.waitUntil("menú actualizado", () -> "Gimnasio Fuerza Centro".equals(
+                ((javafx.scene.control.Label) scene.lookup(".marca-nombre")).getText()));
+        assertEquals("Gimnasio Fuerza Centro", backend.settings.settings.gymName());
+        assertEquals(10, backend.settings.settings.warningDays());
+        assertEquals("FZA-", backend.folios.get("COBRO").prefix());
+        assertEquals(true, backend.settings.settings.logo().length > 0);
+        assertEquals("Configuración guardada. Ya se ve en el menú y en el acceso.",
+                FxHarness.onFx(() -> ((javafx.scene.control.Label) scene.lookup("#aviso .label")).getText()));
+        assertEquals("Logotipo actual", text(scene, "logoStatus"));
+        assertEquals(true, FxHarness.onFx(() -> scene.lookup(".marca .logo").getStyleClass().contains("con-imagen")),
+                "el logotipo del menú es la imagen nueva");
+        assertEquals("Gimnasio Fuerza Centro · Sistema Gimnasio", FxHarness.onFx(stage::getTitle));
+        captureAll("fase-2-entrega-1", "guardado");
+
+        // 7. Salir con cambios sin guardar pide confirmación; «Seguir editando» (o Esc) conserva lo escrito.
+        typeInto(scene, "cf-telefono", "555 999 0000");
+        FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación al salir", () -> dialogWithButton("Salir sin guardar") != null);
+        for (Themes.Theme theme : Themes.Theme.values()) {
+            FxHarness.runFx(() -> themes.set(theme));
+            FxHarness.settle();
+            Scene dialog = FxHarness.onFx(() -> dialogWithButton("Salir sin guardar"));
+            FxHarness.capture(dialog, OUT.resolve("fase-2-entrega-1").resolve("salir-sin-guardar-" + theme.name().toLowerCase() + ".png"));
+        }
+        FxHarness.runFx(() -> themes.set(Themes.Theme.CLARO));
+        Scene dialog = FxHarness.onFx(() -> dialogWithButton("Salir sin guardar"));
+        assertEquals("Seguir editando", FxHarness.onFx(() -> {
+            var owner = dialog.getFocusOwner();
+            return owner instanceof javafx.scene.control.Button b ? b.getText() : String.valueOf(owner);
+        }), "el foco empieza en la opción que no pierde nada");
+        FxHarness.pressLater(dialog, KeyCode.ESCAPE);
+        FxHarness.waitUntil("diálogo cerrado", () -> dialogScene() == null);
+        assertEquals("Configuración", text(scene, "titulo-pagina"));
+        assertEquals("555 999 0000", text(scene, "cf-telefono"), "lo escrito sigue ahí");
+
+        // «Salir sin guardar» cambia de sección y descarta.
+        FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación al salir", () -> dialogWithButton("Salir sin guardar") != null);
+        clickInDialog(FxHarness.onFx(() -> dialogWithButton("Salir sin guardar")), "Salir sin guardar");
+        FxHarness.waitUntil("en Planes", () -> "Planes de membresía".equals(title(scene)));
+        assertEquals("555 010 2233", backend.settings.settings.phone(), "el cambio descartado no se guardó");
+        System.out.println("[teclado] configuración: Enter desde un campo guarda; foco al primer error; al salir con "
+                + "cambios, el diálogo abre en «Seguir editando» y Esc lo cierra sin perder nada");
+    }
+
+    @Test
+    void fase2Entrega1MonedaBloqueada() throws Exception {
+        UiFakes.Backend backend = new UiFakes.Backend(staff());
+        backend.payments.count = 41;
+        backend.sales.count = 18;
+        Scene scene = openSettings(backend);
+        assertEquals(true, FxHarness.onFx(() -> scene.lookup("#cf-moneda").isDisabled()));
+        assertEquals("Bloqueada: ya hay 41 cobros y 18 ventas registrados en MXN. Cambiarla alteraría el "
+                + "significado de esos importes.", text(scene, "currencyHelp"));
+        FxHarness.runFx(() -> {
+            var sp = (javafx.scene.control.ScrollPane) scene.lookup(".lienzo .scroll-pane");
+            sp.setVvalue(1);
+        });
+        captureAll("fase-2-entrega-1", "moneda-bloqueada");
+    }
+
+    // ---------- Fase 2 · Entrega 2: Configuración, métodos de pago ----------
+
+    private void fire(Scene scene, String id) throws Exception {
+        FxHarness.runFx(() -> ((javafx.scene.control.ButtonBase) scene.lookup("#" + id)).fire());
+        FxHarness.settle();
+    }
+
+    private void scrollToBottom(Scene scene) throws Exception {
+        FxHarness.runFx(() -> ((javafx.scene.control.ScrollPane) scene.lookup(".lienzo .scroll-pane")).setVvalue(1));
+        FxHarness.settle();
+    }
+
+    private static String toastText(Scene scene, String id) {
+        var toast = scene.lookup("#" + id);
+        return toast == null ? null : ((javafx.scene.control.Label) toast.lookup(".label")).getText();
+    }
+
+    /** Quita los avisos flotantes que siguen en pantalla, para que la siguiente captura muestre solo el nuevo. */
+    private void clearToasts(Scene scene) throws Exception {
+        FxHarness.runFx(() -> scene.getRoot().lookupAll(".aviso-flotante").stream().toList()
+                .forEach(n -> ((javafx.scene.layout.Pane) n.getParent()).getChildren().remove(n)));
+    }
+
+    private void captureDialog(String name) throws Exception {
+        for (Themes.Theme theme : Themes.Theme.values()) {
+            FxHarness.runFx(() -> themes.set(theme));
+            FxHarness.settle();
+            Scene dialog = FxHarness.onFx(this::dialogScene);
+            FxHarness.capture(dialog, OUT.resolve("fase-2-entrega-2").resolve(name + "-" + theme.name().toLowerCase() + ".png"));
+        }
+        FxHarness.runFx(() -> themes.set(Themes.Theme.CLARO));
+        FxHarness.settle();
+    }
+
+    @Test
+    void fase2Entrega2MetodosDePago() throws Exception {
+        UiFakes.Backend backend = new UiFakes.Backend(staff());
+        long efectivo = backend.methods.add("Efectivo", true, true).id();
+        long tarjeta = backend.methods.add("Tarjeta", false, true).id();
+        long transferencia = backend.methods.add("Transferencia", false, false).id();
+        backend.methods.markUsed(efectivo);
+        Scene scene = openSettings(backend);
+        FxHarness.runFx(() -> ui.shell().setToastTime(javafx.util.Duration.minutes(1)));
+        FxHarness.waitUntil("lista de métodos", () -> shown(scene, "mp-tabla"));
+        scrollToBottom(scene);
+        assertEquals("Pide el efectivo recibido y calcula el cambio",
+                FxHarness.onFx(() -> ((javafx.scene.control.Label) scene.lookup("#mp-tabla .celda-detalle")).getText()));
+        assertEquals("Activar", text(scene, "mp-estado-" + transferencia), "un inactivo se puede activar");
+        captureAll("fase-2-entrega-2", "metodos-de-pago");
+
+        // 1. Teclado: Tab recorre «Agregar método» y las acciones de cada fila, en orden.
+        FxHarness.runFx(() -> scene.lookup("#mp-agregar").requestFocus());
+        List<String> order = tabOrder(scene, 9);
+        System.out.println("[teclado] métodos de pago, Tab: " + order);
+        assertEquals(List.of("mp-agregar",
+                "mp-editar-" + efectivo, "mp-estado-" + efectivo, "mp-eliminar-" + efectivo,
+                "mp-editar-" + tarjeta, "mp-estado-" + tarjeta, "mp-eliminar-" + tarjeta,
+                "mp-editar-" + transferencia, "mp-estado-" + transferencia, "mp-eliminar-" + transferencia), order);
+
+        // 2. Agregar: el diálogo abre con el foco en Nombre; un nombre repetido se marca en su campo.
+        fire(scene, "mp-agregar");
+        FxHarness.waitUntil("diálogo de alta", () -> dialogScene() != null && dialogScene().getFocusOwner() != null
+                && "mp-nombre".equals(dialogScene().getFocusOwner().getId()));
+        Scene dialog = FxHarness.onFx(this::dialogScene);
+        captureDialog("dialogo-agregar");
+        typeInto(dialog, "mp-nombre", "tarjeta");
+        FxHarness.press(dialog, KeyCode.ENTER, false);
+        FxHarness.waitUntil("error de nombre", () -> dialog.lookup(".field-error") != null && dialog.lookup(".field-error").isVisible()
+                && !((javafx.scene.control.Label) dialog.lookup(".field-error")).getText().isEmpty());
+        assertEquals("Ya existe uno con ese nombre.", FxHarness.onFx(() -> ((javafx.scene.control.Label) dialog.lookup(".field-error")).getText()));
+        assertEquals("mp-nombre", FxHarness.focusOwner(dialog));
+        captureDialog("dialogo-error");
+
+        // Corregido y enviado con Enter: se cierra, avisa y aparece en su lugar (por nombre).
+        typeInto(dialog, "mp-nombre", "Vales de despensa");
+        FxHarness.press(dialog, KeyCode.ENTER, false);
+        FxHarness.waitUntil("diálogo cerrado", () -> dialogScene() == null);
+        FxHarness.waitUntil("fila nueva", () -> scene.lookup("#mp-editar-4") != null);
+        assertEquals("Se agregó «Vales de despensa». Ya se ofrece al cobrar y al vender.", FxHarness.onFx(() -> toastText(scene, "aviso")));
+        scrollToBottom(scene);
+        captureAll("fase-2-entrega-2", "agregado");
+        clearToasts(scene);
+
+        // 3. Editar: cambiar «es efectivo» en uno ya usado se rechaza en su campo; Esc cancela sin cambios.
+        fire(scene, "mp-editar-" + efectivo);
+        FxHarness.waitUntil("diálogo de edición", () -> dialogScene() != null);
+        Scene edit = FxHarness.onFx(this::dialogScene);
+        FxHarness.runFx(() -> ((javafx.scene.control.CheckBox) edit.lookup("#mp-efectivo")).setSelected(false));
+        FxHarness.runFx(() -> edit.lookup("#mp-nombre").requestFocus());
+        FxHarness.press(edit, KeyCode.ENTER, false);
+        FxHarness.waitUntil("error de efectivo", () -> edit.lookup("#mp-efectivo").getStyleClass().contains("invalid"));
+        assertEquals("mp-efectivo", FxHarness.focusOwner(edit));
+        FxHarness.pressLater(edit, KeyCode.ESCAPE);
+        FxHarness.waitUntil("edición cancelada", () -> dialogScene() == null);
+        assertEquals(true, backend.methods.get(efectivo).cash());
+
+        // 4. Desactivar al momento, con aviso; el foco se queda en la misma fila («Activar»).
+        FxHarness.runFx(() -> scene.lookup("#mp-estado-" + tarjeta).requestFocus());
+        FxHarness.press(scene, KeyCode.SPACE, false);
+        FxHarness.waitUntil("desactivado", () -> "Activar".equals(((javafx.scene.control.Button) scene.lookup("#mp-estado-" + tarjeta)).getText()));
+        assertEquals(false, backend.methods.get(tarjeta).active());
+        assertEquals("mp-estado-" + tarjeta, FxHarness.focusOwner(scene));
+
+        clearToasts(scene);
+
+        // 5. Eliminar pide confirmación; uno ya usado se rechaza con el mensaje del caso de uso.
+        FxHarness.runFx(() -> scene.lookup("#mp-eliminar-" + efectivo).requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación de borrado", () -> dialogWithButton("Eliminar") != null);
+        assertEquals("Cancelar", FxHarness.onFx(() -> {
+            var owner = dialogScene().getFocusOwner();
+            return owner instanceof javafx.scene.control.Button b ? b.getText() : String.valueOf(owner);
+        }), "la confirmación abre en Cancelar");
+        captureDialog("confirmar-eliminar");
+        clickInDialog(FxHarness.onFx(() -> dialogWithButton("Eliminar")), "Eliminar");
+        FxHarness.waitUntil("aviso de error", () -> toastText(scene, "aviso-error") != null);
+        assertEquals("No puedes eliminar «Efectivo»: ya se usó en cobros o ventas. Desactívalo para dejar de ofrecerlo.",
+                FxHarness.onFx(() -> toastText(scene, "aviso-error")));
+        scrollToBottom(scene);
+        captureAll("fase-2-entrega-2", "eliminar-rechazado");
+
+        // Uno sin uso sí se elimina.
+        FxHarness.runFx(() -> scene.lookup("#mp-eliminar-" + transferencia).requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación de borrado", () -> dialogWithButton("Eliminar") != null);
+        clickInDialog(FxHarness.onFx(() -> dialogWithButton("Eliminar")), "Eliminar");
+        FxHarness.waitUntil("fila quitada", () -> scene.lookup("#mp-editar-" + transferencia) == null);
+        assertEquals(null, backend.methods.get(transferencia));
+        System.out.println("[teclado] métodos de pago: Enter envía el diálogo; foco al campo con error; Esc cancela; "
+                + "Espacio desactiva y el foco sigue en la fila; la confirmación de borrado abre en Cancelar");
     }
 }

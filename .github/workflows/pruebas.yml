@@ -1,0 +1,50 @@
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # Las pruebas de PostgreSQL usan el Docker del runner (Testcontainers).
+      # Las capturas de la UI (CapturasUiTest) son opcionales y aquí no corren.
+      - name: Pruebas
+        run: ./mvnw -B -ntp test
+
+      # Si Testcontainers no logra hablar con Docker, esas pruebas se omiten y Maven termina en verde.
+      # En CI eso cuenta como fallo: aquí siempre debe haber Docker.
+      - name: Las pruebas de PostgreSQL corrieron
+        run: |
+          omitidas=$(grep -l 'skipped="[1-9]' target/surefire-reports/TEST-*.infrastructure.persistence.*.xml || true)
+          if [ -n "$omitidas" ]; then
+            echo "::error::Se omitieron pruebas de PostgreSQL; revisa Docker y Testcontainers:"
+            echo "$omitidas"
+            exit 1
+          fi
+
+      - name: Reportes de pruebas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-surefire
+          path: target/surefire-reports/
+          retention-days: 7

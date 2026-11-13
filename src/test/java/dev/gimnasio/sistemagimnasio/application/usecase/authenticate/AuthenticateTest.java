@@ -1,7 +1,6 @@
 package dev.gimnasio.sistemagimnasio.application.usecase.authenticate;
 
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryUsers;
-import dev.gimnasio.sistemagimnasio.application.fakes.ReversingHasher;
 import dev.gimnasio.sistemagimnasio.application.port.out.PasswordHasher;
 import dev.gimnasio.sistemagimnasio.application.port.out.UserCredentials;
 import dev.gimnasio.sistemagimnasio.application.shared.ValidationException;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +18,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AuthenticateTest {
 
-    private final ReversingHasher hasher = new ReversingHasher();
+    /** Hash falso pero distinto de la contraseña, para detectar comparaciones en claro. */
+    private static final class FakeHasher implements PasswordHasher {
+        int hashes;
+        final List<String> verifiedAgainst = new ArrayList<>();
+
+        @Override
+        public String hash(String rawPassword) {
+            hashes++;
+            return encode(rawPassword);
+        }
+
+        @Override
+        public boolean matches(String rawPassword, String passwordHash) {
+            verifiedAgainst.add(passwordHash);
+            return encode(rawPassword).equals(passwordHash);
+        }
+
+        private static String encode(String rawPassword) {
+            return "hash(" + new StringBuilder(rawPassword).reverse() + ")";
+        }
+    }
+
+    private final FakeHasher hasher = new FakeHasher();
     private final InMemoryUsers users = new InMemoryUsers();
     private final Authenticate authenticate = new Authenticate(users, hasher);
 
@@ -67,6 +90,43 @@ class AuthenticateTest {
     void usuarioInexistente_yContrasenaIncorrecta_danExactamenteElMismoMensaje() {
         register("lucia", "Mostrador#2026", Role.CAJA, true);
         assertEquals(rejection("lucia", "otra"), rejection("nadie", "otra"));
+    }
+
+    /** Lo lento es verificar el hash: si solo se hiciera con usuarios existentes, el tiempo los delataría. */
+    @Test
+    void usuarioInexistente_tambienVerificaUnHash_igualQueUnoExistente() {
+        register("lucia", "Mostrador#2026", Role.CAJA, true);
+        hasher.verifiedAgainst.clear();
+
+        rejection("lucia", "otra");
+        rejection("nadie", "otra");
+
+        assertEquals(2, hasher.verifiedAgainst.size(), "una verificación por intento, exista o no el usuario");
+        assertEquals(hasher.hash(Authenticate.DUMMY_PASSWORD), hasher.verifiedAgainst.get(1));
+    }
+
+    @Test
+    void elHashDeRelleno_seCalculaUnaVez_enElPrimerIntentoAunqueElUsuarioExista() {
+        register("lucia", "Mostrador#2026", Role.CAJA, true);
+        int before = hasher.hashes;
+
+        authenticate.execute(new AuthenticateCommand("lucia", "Mostrador#2026"));
+        rejection("nadie", "otra");
+        rejection("nadie", "otra");
+
+        assertEquals(before + 1, hasher.hashes);
+    }
+
+    @Test
+    void laContrasenaDeRelleno_noDaAccesoConUnUsuarioInexistente() {
+        assertEquals(Authenticate.INVALID_CREDENTIALS, rejection("nadie", Authenticate.DUMMY_PASSWORD));
+    }
+
+    @Test
+    void camposVacios_noCalculanNiVerificanHashes() {
+        missing("", "");
+        assertEquals(0, hasher.hashes);
+        assertTrue(hasher.verifiedAgainst.isEmpty());
     }
 
     @ParameterizedTest

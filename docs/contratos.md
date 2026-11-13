@@ -198,7 +198,7 @@ Sin permiso: es lo que abre la sesión.
 | El usuario no existe o la contraseña no coincide | `AuthenticationException` | Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo. |
 | Credenciales correctas, pero el usuario está desactivado | `AuthenticationException` | Tu usuario está desactivado. Pide a un administrador que lo active. |
 
-Los dos campos vacíos se reportan juntos. Usuario inexistente y contraseña incorrecta dan el mismo mensaje para no revelar qué nombres de usuario existen.
+Los dos campos vacíos se reportan juntos. Usuario inexistente y contraseña incorrecta dan el mismo mensaje y tardan lo mismo, para no revelar qué nombres de usuario existen: con un usuario inexistente también se verifica la contraseña, contra un hash de relleno.
 
 **Cerrar sesión** no es un caso de uso: la UI descarta el `actor` y vuelve al login.
 
@@ -718,7 +718,7 @@ Permiso: `MANAGE_SETTINGS` en todos.
 | `gymName` | `String` | Obligatorio, 100 caracteres o menos. |
 | `address`, `phone` | `String` | *opcionales*; 200 y 30 caracteres o menos. |
 | `receiptFooter` | `String` | *opcional*, 160 caracteres o menos. |
-| `logo` | `byte[]` | *opcional*. PNG, JPG, WEBP o SVG de hasta 300 KB, reconocido por sus primeros bytes. |
+| `logo` | `byte[]` | *opcional*. PNG o JPG de hasta 300 KB, reconocido por sus primeros bytes. Son los formatos que JavaFX dibuja en la app y en recibos y tickets; WEBP y SVG se rechazan porque nunca se verían. |
 | `currency` | `Currency` | No se puede cambiar si ya hay cobros o ventas. |
 | `warningDays` | `int` | De 1 a 60. |
 | `autoDeactivationDays` | `int` | De 1 a 365. |
@@ -739,7 +739,7 @@ Permiso: `MANAGE_SETTINGS` en todos.
 | `currency` | Elige una moneda. · No se puede cambiar: ya hay cobros o ventas registrados en MXN. |
 | `folioPrefix` | Usa de 1 a 8 letras mayúsculas, números o guiones, por ejemplo GYM-. |
 | `receiptFooter` | Usa 160 caracteres o menos. |
-| `logo` | Usa una imagen PNG, JPG, WEBP o SVG de hasta 300 KB. |
+| `logo` | Usa una imagen PNG o JPG de hasta 300 KB. |
 
 ### Catálogos
 

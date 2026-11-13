@@ -57,6 +57,8 @@ public final class UiFakes {
         private final Map<Long, User> byId = new LinkedHashMap<>();
         /** Si se pone, cada búsqueda de credenciales espera a que se libere (para ver el estado «Entrando…»). */
         public volatile CountDownLatch gate;
+        /** Igual, pero para la relectura del actor que hace cada caso de uso al revisar el permiso. */
+        public volatile CountDownLatch idGate;
         public volatile int lookups;
         /** Si se pone, cada búsqueda de credenciales lanza este error (para simular la base caída). */
         public volatile RuntimeException failure;
@@ -89,6 +91,14 @@ public final class UiFakes {
 
         @Override
         public Optional<User> findById(long id) {
+            CountDownLatch wait = idGate;
+            if (wait != null) {
+                try {
+                    wait.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             return Optional.ofNullable(byId.get(id));
         }
 
@@ -152,31 +162,44 @@ public final class UiFakes {
     };
 
     public static UseCases useCases(Users users) {
-        var settings = new InMemorySettings();
-        var folios = new InMemoryFolioSeries();
-        var payments = new InMemoryMembershipPayments();
-        var sales = new InMemorySales();
-        var methods = new InMemoryPaymentMethods();
-        var plans = new InMemoryPlans();
-        var transactions = new ImmediateTransactions();
-        var authorizer = new Authorizer(users);
-        Clock clock = Clock.fixed(TODAY.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-        return new UseCases(
-                new Authenticate(users, HASHER),
-                new GetGymInfo(settings, clock),
-                new GetSettings(settings, folios, payments, sales, authorizer),
-                new UpdateSettings(settings, folios, payments, sales, transactions, authorizer),
-                new ListPaymentMethods(methods, authorizer),
-                new CreatePaymentMethod(methods, transactions, authorizer),
-                new UpdatePaymentMethod(methods, transactions, authorizer),
-                new SetPaymentMethodActive(methods, transactions, authorizer),
-                new DeletePaymentMethod(methods, transactions, authorizer),
-                new ListPlans(plans, authorizer),
-                new PreviewPlanSavings(plans, authorizer),
-                new CreatePlan(plans, transactions, authorizer),
-                new UpdatePlan(plans, transactions, authorizer),
-                new SetPlanActive(plans, transactions, authorizer),
-                new DeletePlan(plans, transactions, authorizer));
+        return new Backend(users).useCases();
+    }
+
+    /** Los repositorios en memoria detrás de los casos de uso, para prepararlos o revisarlos en una prueba. */
+    public static final class Backend {
+        public final Users users;
+        public final InMemorySettings settings = new InMemorySettings();
+        public final InMemoryFolioSeries folios = new InMemoryFolioSeries();
+        public final InMemoryMembershipPayments payments = new InMemoryMembershipPayments();
+        public final InMemorySales sales = new InMemorySales();
+        public final InMemoryPaymentMethods methods = new InMemoryPaymentMethods();
+        public final InMemoryPlans plans = new InMemoryPlans();
+
+        public Backend(Users users) {
+            this.users = users;
+        }
+
+        public UseCases useCases() {
+            var transactions = new ImmediateTransactions();
+            var authorizer = new Authorizer(users);
+            Clock clock = Clock.fixed(TODAY.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
+            return new UseCases(
+                    new Authenticate(users, HASHER),
+                    new GetGymInfo(settings, clock),
+                    new GetSettings(settings, folios, payments, sales, authorizer),
+                    new UpdateSettings(settings, folios, payments, sales, transactions, authorizer),
+                    new ListPaymentMethods(methods, authorizer),
+                    new CreatePaymentMethod(methods, transactions, authorizer),
+                    new UpdatePaymentMethod(methods, transactions, authorizer),
+                    new SetPaymentMethodActive(methods, transactions, authorizer),
+                    new DeletePaymentMethod(methods, transactions, authorizer),
+                    new ListPlans(plans, authorizer),
+                    new PreviewPlanSavings(plans, authorizer),
+                    new CreatePlan(plans, transactions, authorizer),
+                    new UpdatePlan(plans, transactions, authorizer),
+                    new SetPlanActive(plans, transactions, authorizer),
+                    new DeletePlan(plans, transactions, authorizer));
+        }
     }
 
     /** Tema que no se guarda en ningún lado. */

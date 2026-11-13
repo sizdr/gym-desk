@@ -53,11 +53,15 @@ class NavigationTest {
     }
 
     @Test
-    void onlyPlansAndSettingsHaveTheirUseCasesAlready() {
-        List<Route> ready = Arrays.stream(Route.values()).filter(r -> r.status() == Route.Status.SCREEN_PENDING).toList();
-        assertEquals(List.of(Route.PLANES, Route.CONFIGURACION), ready);
+    void settingsWorks_plansHasItsUseCases_andTheRestAreMissingThem() {
+        assertEquals(List.of(Route.CONFIGURACION), withStatus(Route.Status.READY));
+        assertEquals(List.of(Route.PLANES), withStatus(Route.Status.SCREEN_PENDING));
         for (Route route : Route.values()) {
             assertFalse(route.useCases().isEmpty(), route.name());
         }
+    }
+
+    private static List<Route> withStatus(Route.Status status) {
+        return Arrays.stream(Route.values()).filter(r -> r.status() == status).toList();
     }
 }

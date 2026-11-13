@@ -27,7 +27,7 @@ public final class UpdateSettings {
     static final String CURRENCY_REQUIRED = "Elige una moneda.";
     static final String FOLIO_PREFIX_FORMAT = "Usa de 1 a " + FolioSeries.MAX_PREFIX_LENGTH
             + " letras mayúsculas, números o guiones, por ejemplo GYM-.";
-    static final String LOGO_FORMAT = "Usa una imagen PNG, JPG, WEBP o SVG de hasta "
+    static final String LOGO_FORMAT = "Usa una imagen PNG o JPG de hasta "
             + GymSettings.MAX_LOGO_BYTES / 1024 + " KB.";
 
     private final SettingsRepository settings;

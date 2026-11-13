@@ -146,7 +146,7 @@ class UpdateSettingsTest {
         assertEquals("Usa 200 caracteres o menos.", errors.get("address"));
         assertEquals("Usa 30 caracteres o menos.", errors.get("phone"));
         assertEquals("Usa 160 caracteres o menos.", errors.get("receiptFooter"));
-        assertEquals("Usa una imagen PNG, JPG, WEBP o SVG de hasta 300 KB.", errors.get("logo"));
+        assertEquals("Usa una imagen PNG o JPG de hasta 300 KB.", errors.get("logo"));
         assertEquals("Elige una moneda.", errors.get("currency"));
         assertEquals("Escribe un número de días entre 1 y 60.", errors.get("warningDays"));
         assertEquals("Escribe un número de días entre 1 y 365.", errors.get("autoDeactivationDays"));
@@ -209,26 +209,27 @@ class UpdateSettingsTest {
     }
 
     @Test
-    void aceptaPngJpgWebpYSvg() {
+    void aceptaPngYJpg() {
         byte[] jpg = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0};
-        byte[] webp = "RIFF\0\0\0\0WEBPVP8 ".getBytes(StandardCharsets.ISO_8859_1);
-        byte[] svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"/>".getBytes(StandardCharsets.UTF_8);
-        byte[] svgWithXmlHeader = "﻿  <?xml version=\"1.0\"?>\n<svg/>".getBytes(StandardCharsets.UTF_8);
 
-        for (byte[] image : List.of(PNG, jpg, webp, svg, svgWithXmlHeader)) {
+        for (byte[] image : List.of(PNG, jpg)) {
             update.execute(admin, logo(image));
             assertArrayEquals(image, settings.settings.logo());
         }
     }
 
+    /** WEBP y SVG se rechazan porque JavaFX no los dibuja: el logotipo se guardaría pero nunca se vería. */
     @Test
     void otrosFormatos_seRechazan() {
         byte[] gif = "GIF89a".getBytes(StandardCharsets.US_ASCII);
-        byte[] riffSinWebp = "RIFF\0\0\0\0WAVE".getBytes(StandardCharsets.ISO_8859_1);
-        byte[] xmlSinSvg = "<?xml version=\"1.0\"?><html/>".getBytes(StandardCharsets.UTF_8);
+        byte[] webp = "RIFF\0\0\0\0WEBPVP8 ".getBytes(StandardCharsets.ISO_8859_1);
+        byte[] svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"/>".getBytes(StandardCharsets.UTF_8);
+        byte[] svgWithXmlHeader = "﻿  <?xml version=\"1.0\"?>\n<svg/>".getBytes(StandardCharsets.UTF_8);
+        byte[] pngIncompleto = Arrays.copyOf(PNG, 4);
 
-        for (byte[] image : List.of(gif, riffSinWebp, xmlSinSvg, new byte[0])) {
-            assertEquals(List.of("logo"), List.copyOf(errors(logo(image)).keySet()));
+        for (byte[] image : List.of(gif, webp, svg, svgWithXmlHeader, pngIncompleto, new byte[0])) {
+            assertEquals(Map.of("logo", "Usa una imagen PNG o JPG de hasta 300 KB."), errors(logo(image)));
+            assertEquals(0, settings.saves);
         }
     }
 

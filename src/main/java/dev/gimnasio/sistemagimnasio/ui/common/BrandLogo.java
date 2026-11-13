@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-/** Logotipo del gimnasio o, si no tiene (o es SVG, que JavaFX no dibuja), sus iniciales sobre el acento. */
+/** Logotipo del gimnasio (PNG o JPG) o, si no tiene o no se puede leer, sus iniciales sobre el acento. */
 public final class BrandLogo {
     private BrandLogo() {
     }

@@ -6,8 +6,10 @@ import dev.gimnasio.sistemagimnasio.ui.common.BrandLogo;
 import dev.gimnasio.sistemagimnasio.ui.common.Dialogs;
 import dev.gimnasio.sistemagimnasio.ui.common.Formats;
 import dev.gimnasio.sistemagimnasio.ui.common.Icons;
+import dev.gimnasio.sistemagimnasio.ui.common.Notifier;
 import dev.gimnasio.sistemagimnasio.ui.common.ThemeSelector;
 import dev.gimnasio.sistemagimnasio.ui.common.Themes;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -21,21 +23,33 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 
-/** Menú lateral, cabecera y área de contenido una vez iniciada la sesión. */
-public final class ShellController {
+/**
+ * Menú lateral, cabecera y área de contenido una vez iniciada la sesión. Las secciones que ya funcionan las
+ * arma {@code screens}; las demás muestran qué les falta. Si la pantalla actual tiene cambios sin guardar,
+ * cambiar de sección o cerrar sesión pide confirmación.
+ */
+public final class ShellController implements Notifier {
     private static final PseudoClass CURRENT = PseudoClass.getPseudoClass("actual");
+    private Duration toastTime = Duration.seconds(5);
 
     private final GymInfo gymInfo;
     private final User user;
     private final Themes themes;
     private final Runnable onSignOut;
+    private final Function<Route, Screen> screens;
     private final Map<Route, Button> navButtons = new EnumMap<>(Route.class);
     private Route current;
+    private Screen currentScreen;
+    private BooleanSupplier leaveConfirmation = this::askToLeave;
 
     @FXML
     private VBox rail;
@@ -67,12 +81,24 @@ public final class ShellController {
     private ScrollPane scroll;
     @FXML
     private StackPane content;
+    @FXML
+    private VBox footerLayer;
+    @FXML
+    private VBox toastLayer;
 
+    /** Sin pantallas: todas las secciones muestran qué les falta. */
     public ShellController(GymInfo gymInfo, User user, Themes themes, Runnable onSignOut) {
+        this(gymInfo, user, themes, onSignOut, route -> null);
+    }
+
+    /** @param screens la pantalla de cada sección que ya funciona; {@code null} para las demás */
+    public ShellController(GymInfo gymInfo, User user, Themes themes, Runnable onSignOut,
+                           Function<Route, Screen> screens) {
         this.gymInfo = Objects.requireNonNull(gymInfo, "gymInfo");
         this.user = Objects.requireNonNull(user, "user");
         this.themes = Objects.requireNonNull(themes, "themes");
         this.onSignOut = Objects.requireNonNull(onSignOut, "onSignOut");
+        this.screens = Objects.requireNonNull(screens, "screens");
     }
 
     @FXML
@@ -140,20 +166,93 @@ public final class ShellController {
         }
     }
 
-    /** Muestra una sección del menú del rol; las demás no existen para él. */
+    /**
+     * Muestra una sección del menú del rol; las demás no existen para él. Volver a elegir la sección actual no
+     * hace nada (no se pierde lo escrito); salir de una con cambios sin guardar pide confirmación.
+     */
     public void navigate(Route route) {
         if (!navButtons.containsKey(route)) {
             throw new IllegalArgumentException("El rol " + user.role() + " no ve " + route);
         }
+        if (route == current || !canLeave()) {
+            return;
+        }
         if (current != null) {
             navButtons.get(current).pseudoClassStateChanged(CURRENT, false);
+            navButtons.get(current).setAccessibleHelp(null);
         }
         current = route;
         Button button = navButtons.get(route);
         button.pseudoClassStateChanged(CURRENT, true);
         button.setAccessibleHelp("Sección actual");
-        content.getChildren().setAll(PendingView.create(route));
+        currentScreen = screens.apply(route);
+        content.getChildren().setAll(currentScreen == null ? PendingView.create(route) : currentScreen.view());
+        footerLayer.getChildren().setAll(currentScreen == null || currentScreen.footer() == null
+                ? List.of() : List.of(currentScreen.footer()));
         scroll.setVvalue(0);
+    }
+
+    /**
+     * {@code true} si se puede dejar la pantalla actual: no tiene cambios sin guardar o se confirmó salir sin
+     * guardarlos. También lo usa la ventana al cerrarse.
+     */
+    public boolean canLeave() {
+        return currentScreen == null || !currentScreen.hasUnsavedChanges().getAsBoolean()
+                || leaveConfirmation.getAsBoolean();
+    }
+
+    private boolean askToLeave() {
+        return Dialogs.confirm(rail.getScene().getWindow(), "¿Salir sin guardar?",
+                "Tienes cambios sin guardar en " + current.title() + ". Si sales ahora, se pierden.",
+                "Salir sin guardar", "Seguir editando");
+    }
+
+    /** Cambia cómo se confirma salir con cambios sin guardar (en pruebas, sin abrir el diálogo). */
+    public void confirmLeaveWith(BooleanSupplier confirmation) {
+        this.leaveConfirmation = Objects.requireNonNull(confirmation, "confirmation");
+    }
+
+    /** Cuánto dura un aviso flotante (en pruebas, más, para capturarlo). */
+    public void setToastTime(Duration time) {
+        this.toastTime = Objects.requireNonNull(time, "time");
+    }
+
+    /** Nombre y logotipo del menú, por ejemplo después de guardar la configuración. */
+    public void updateBrand(GymInfo info) {
+        brand.getChildren().set(0, BrandLogo.create(info.gymName(), info.logo(), 36));
+        gymName.setText(info.gymName());
+    }
+
+    @Override
+    public void ok(String message) {
+        showToast(message);
+    }
+
+    @Override
+    public void error(String message) {
+        showToast(message, true);
+    }
+
+    /** Aviso flotante abajo a la derecha, como el del prototipo; se quita solo a los pocos segundos. */
+    public void showToast(String message) {
+        showToast(message, false);
+    }
+
+    private void showToast(String message, boolean failure) {
+        Label text = new Label(message);
+        text.setWrapText(true);
+        HBox toast = new HBox(Icons.icon(failure ? "alerta" : "check"), text);
+        toast.getStyleClass().add("aviso-flotante");
+        if (failure) {
+            toast.getStyleClass().add("es-error");
+        }
+        toast.setId(failure ? "aviso-error" : "aviso");
+        toast.setMaxWidth(420);
+        toast.setAccessibleText(message);
+        toastLayer.getChildren().add(toast);
+        PauseTransition later = new PauseTransition(toastTime);
+        later.setOnFinished(e -> toastLayer.getChildren().remove(toast));
+        later.play();
     }
 
     /**
@@ -204,7 +303,9 @@ public final class ShellController {
 
     @FXML
     private void signOut() {
-        onSignOut.run();
+        if (canLeave()) {
+            onSignOut.run();
+        }
     }
 
     /** Raíz de la vista, para pruebas. */

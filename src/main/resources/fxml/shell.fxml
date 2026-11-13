@@ -43,6 +43,8 @@
         </VBox>
     </left>
     <center>
+        <!-- Encima del contenido: la barra fija de la pantalla (si tiene) y los avisos flotantes. -->
+        <StackPane>
         <VBox styleClass="lienzo">
             <HBox styleClass="cabecera">
                 <HBox fx:id="search" styleClass="capsula,capsula-busqueda" HBox.hgrow="ALWAYS">
@@ -61,5 +63,8 @@
                 <StackPane fx:id="content" styleClass="contenido-caja"/>
             </ScrollPane>
         </VBox>
+        <VBox fx:id="footerLayer" styleClass="capa-pie" pickOnBounds="false"/>
+        <VBox fx:id="toastLayer" styleClass="avisos" pickOnBounds="false" mouseTransparent="false"/>
+        </StackPane>
     </center>
 </BorderPane>

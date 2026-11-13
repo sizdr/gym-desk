@@ -13,7 +13,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
         <flyway.version>11.1.0</flyway.version>
-        <testcontainers.version>1.20.4</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
+        <slf4j.version>2.0.20</slf4j.version>
     </properties>
 
     <dependencies>
@@ -57,6 +58,25 @@
             <groupId>de.mkammerer</groupId>
             <artifactId>argon2-jvm</artifactId>
             <version>2.11</version>
+        </dependency>
+
+        <!-- Registros. HikariCP, Flyway y JDBI escriben con SLF4J; System.Logger de la app llega a SLF4J por
+             slf4j-jdk-platform-logging; Logback los manda a consola y a archivo (logback.xml).
+             slf4j-api se declara para usar la 2.x que pide Logback y no la 1.7 que trae HikariCP. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk-platform-logging</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.38</version>
         </dependency>
 
         <dependency>
