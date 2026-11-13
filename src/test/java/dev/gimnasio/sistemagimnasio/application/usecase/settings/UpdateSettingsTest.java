@@ -60,6 +60,9 @@ class UpdateSettingsTest {
 
     @Test
     void todoOcurreEnUnaSolaTransaccion() {
+        for (var guard : List.of(settings.guard, folioSeries.guard, payments.guard, sales.guard, users.guard)) {
+            guard.watch(transactions);
+        }
         update.execute(admin, valid());
         assertEquals(1, transactions.started);
     }

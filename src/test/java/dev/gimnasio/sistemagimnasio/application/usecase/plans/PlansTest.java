@@ -274,7 +274,9 @@ class PlansTest {
     }
 
     @Test
-    void losCasosQueEscriben_abrenCadaUnoSuTransaccion() {
+    void losCasosQueEscriben_leenYEscribenSoloDentroDeSuTransaccion() {
+        plans.guard.watch(transactions);
+        users.guard.watch(transactions);
         PlanRow row = create.execute(admin, command("Trimestral", 90, "1200", mensual.id()));
         update.execute(admin, row.id(), command("Trimestral", 90, "1250", mensual.id()));
         setActive.execute(admin, row.id(), false);

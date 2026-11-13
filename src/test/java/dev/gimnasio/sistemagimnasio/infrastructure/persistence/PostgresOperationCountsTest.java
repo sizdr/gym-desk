@@ -39,8 +39,8 @@ class PostgresOperationCountsTest {
         long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
         long metodo = id("INSERT INTO metodo_pago (nombre) VALUES ('Tarjeta')");
         for (int i = 1; i <= 2; i++) {
-            execute("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto) VALUES ('GYM-" + i + "', "
-                    + socio + ", " + usuario + ", " + metodo + ", 450)");
+            execute("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-" + i + "', "
+                    + socio + ", " + usuario + ", " + metodo + ", 450, 'primera')");
         }
         execute("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-1', "
                 + metodo + ", 18.50, " + usuario + ")");

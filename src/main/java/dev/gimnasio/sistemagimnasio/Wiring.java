@@ -16,6 +16,7 @@ import dev.gimnasio.sistemagimnasio.application.usecase.plans.SetPlanActive;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.UpdatePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.settings.GetSettings;
 import dev.gimnasio.sistemagimnasio.application.usecase.settings.UpdateSettings;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.CreateInitialAdmin;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.JdbiTransactionRunner;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresFolioSeriesRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMembershipPaymentRepository;
@@ -36,6 +37,12 @@ import java.time.Clock;
  */
 final class Wiring {
     private Wiring() {
+    }
+
+    /** Crea el primer administrador si la base no tiene usuarios; lo usa el arranque antes de mostrar el acceso. */
+    static CreateInitialAdmin createInitialAdmin(Jdbi jdbi) {
+        return new CreateInitialAdmin(new PostgresUserRepository(jdbi), new Argon2PasswordHasher(),
+                new JdbiTransactionRunner(jdbi));
     }
 
     static UseCases useCases(Jdbi jdbi, Clock clock) {

@@ -201,6 +201,8 @@ Cobro de una membresía.
 | `monto` | `numeric(12,2)` | obligatorio, `>= 0`; precio del plan en ese momento |
 | `efectivo_recibido` | `numeric(12,2)` | solo en efectivo, `>= monto`; el cambio es `efectivo_recibido - monto` |
 | `fecha_hora` | `timestamptz` | `now()` por defecto |
+| `tipo_cobro` | `tipo_cobro` | obligatorio: `primera`, `renovacion_anticipada`, `renovacion_vencida` o `reactivacion`; lo que fue el cobro en su momento (V4) |
+| `operacion_id` | `varchar(64)` | único; lo genera la UI al abrir el formulario para que un doble envío no cobre dos veces (V4) |
 
 Índices: `UNIQUE (id, socio_id)` para la clave compuesta de `membresia`, `(socio_id, fecha_hora)` para el historial del socio y `fecha_hora` para el resumen del día.
 

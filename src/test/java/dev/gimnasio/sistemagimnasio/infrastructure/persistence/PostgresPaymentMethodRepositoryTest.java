@@ -95,8 +95,8 @@ class PostgresPaymentMethodRepositoryTest {
         PaymentMethod vales = insert("Vales", false, true);
         long usuario = id("INSERT INTO usuario (nombre, nombre_usuario, contrasena_hash, rol) VALUES ('Ana', 'ana', 'h', 'caja')");
         long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
-        id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto) VALUES ('GYM-0001', "
-                + socio + ", " + usuario + ", " + efectivo.id() + ", 450)");
+        id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-0001', "
+                + socio + ", " + usuario + ", " + efectivo.id() + ", 450, 'primera')");
         id("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-0001', "
                 + tarjeta.id() + ", 18.50, " + usuario + ")");
 

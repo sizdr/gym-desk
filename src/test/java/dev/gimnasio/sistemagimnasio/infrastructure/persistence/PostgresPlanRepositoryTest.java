@@ -83,8 +83,8 @@ class PostgresPlanRepositoryTest {
         long usuario = id("INSERT INTO usuario (nombre, nombre_usuario, contrasena_hash, rol) VALUES ('Ana', 'ana', 'h', 'caja')");
         long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
         long metodo = id("INSERT INTO metodo_pago (nombre) VALUES ('Tarjeta')");
-        long pago = id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto) VALUES ('GYM-0001', "
-                + socio + ", " + usuario + ", " + metodo + ", 450)");
+        long pago = id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-0001', "
+                + socio + ", " + usuario + ", " + metodo + ", 450, 'primera')");
         jdbi.useHandle(handle -> handle.execute("INSERT INTO membresia (socio_id, plan_id, pago_id, fecha_inicio, fecha_vencimiento) "
                 + "VALUES (" + socio + ", " + mensual.id() + ", " + pago + ", '2026-11-01', '2026-12-01')"));
 

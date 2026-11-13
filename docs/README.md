@@ -9,9 +9,9 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | Capa | Estado |
 |---|---|
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
-| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago y los planes (con su ahorro); `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
-| `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales y planes), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago y planes (más el conteo de cobros y ventas), y `Argon2PasswordHasher` |
-| `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, y piezas comunes en `ui/common/`. Las pantallas de negocio aún no existen: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
+| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro), los usuarios (con el primer administrador) y el cobro de membresías con su recibo; `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
+| `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales, planes y cobros), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago, planes, socios, membresías y cobros, `Argon2PasswordHasher`, recibo como archivo de texto, lectura del `.env` y creación del primer administrador al arrancar |
+| `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, Configuración y métodos de pago, y piezas comunes en `ui/common/`. El resto de las pantallas de negocio aún no existe: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
 
 ## Modelo de datos
 
@@ -78,7 +78,7 @@ gym-desk/
     │       └── (planeado)               una carpeta por pantalla de negocio: plans/, settings/, members/, billing/…
     │
     ├── main/resources/
-    │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual)
+    │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual), V4__cobros.sql (tipo de cobro y operación)
     │   ├── fxml/  css/  fonts/  icons/  vistas, tema, Instrument Sans e iconos Lucide de la UI
     │   └── logback.xml                  registros a consola y archivo
     │
@@ -106,7 +106,7 @@ La app corre en el classpath, sin `module-info.java`: Flyway y `argon2-jvm` no s
 
 ```bash
 ./mvnw compile
-DB_PASSWORD='<la de tu .env>' ./mvnw javafx:run
+./mvnw javafx:run    # lee DB_PASSWORD del .env
 ./mvnw test
 ```
 
@@ -118,25 +118,35 @@ Logback (`src/main/resources/logback.xml`) escribe en consola y en `~/.gym-desk/
 
 ## Base de datos (Docker)
 
+Primera vez:
+
 ```bash
-cp .env.example .env    # la primera vez: escribe tu contraseña en .env
+cp .env.example .env    # la primera vez: escribe tus contraseñas en .env
 docker compose up -d
+./mvnw javafx:run
 ```
 
-`docker-compose.yml` levanta solo PostgreSQL 16 (base y usuario `gimnasio`, volumen persistente `pgdata`). La contraseña sale de `POSTGRES_PASSWORD` en `.env`, que git ignora; sin ella, `docker compose` se niega a arrancar. El puerto 5432 solo escucha en `127.0.0.1`, así que otros equipos de la red no pueden conectarse. La app se ejecuta en el equipo con `./mvnw javafx:run`.
+`docker-compose.yml` levanta solo PostgreSQL 16 (base `gimnasio`, volumen persistente `pgdata`) con el usuario y la contraseña del `.env` (`DB_USER`, `DB_PASSWORD`); sin `DB_PASSWORD`, `docker compose` se niega a arrancar. El puerto 5432 solo escucha en `127.0.0.1`, así que otros equipos de la red no pueden conectarse. La app lee el mismo `.env`, así que la contraseña se escribe una sola vez.
 
-`POSTGRES_PASSWORD` solo se aplica cuando el volumen se crea por primera vez. Con una base que ya existe, la contraseña sigue siendo la de entonces; para cambiarla:
+La contraseña solo se aplica cuando el volumen se crea por primera vez. Con una base que ya existe, sigue siendo la de entonces; para cambiarla, cámbiala en la base y luego en `.env`:
 
 ```bash
 docker compose exec db psql -U gimnasio -d gimnasio -c '\password gimnasio'
 ```
 
-La app lee la conexión de variables de entorno:
+### Variables de entorno
 
 | Variable | Por defecto |
 |---|---|
 | `DB_URL` | `jdbc:postgresql://localhost:5432/gimnasio` |
 | `DB_USER` | `gimnasio` |
-| `DB_PASSWORD` | ninguno: es obligatoria y debe coincidir con la contraseña de la base (`POSTGRES_PASSWORD` de tu `.env`) |
+| `DB_PASSWORD` | ninguno: es obligatoria; la misma con la que docker compose creó la base |
+| `ADMIN_NAME` | `Administrador` |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | ninguno. Solo se usan si la base no tiene usuarios: al arrancar se crea con ellos el primer administrador. Después se pueden borrar del `.env`. |
+| `GYM_DESK_LOG_DIR` | `~/.gym-desk/logs` (ver *Registros*). La lee Logback, así que solo cuenta como variable del sistema, no desde el `.env`. |
+
+Cada variable se toma, en este orden, de las variables del sistema, del `.env` del directorio desde donde se ejecuta la app y, al final, del valor por defecto. Así puedes cambiar una sin editar el archivo (por ejemplo, en la configuración de ejecución de IntelliJ).
+
+El `.env` tiene secretos y nunca se sube a git (`.gitignore` lo excluye); en el repositorio solo está `.env.example`, sin valores reales.
 
 `Database.migrate` aplica con Flyway las migraciones de `db/migration`; `App` la llama al arrancar. Las pruebas de `infrastructure/persistence` levantan su propio PostgreSQL con Testcontainers y se omiten si Docker no está corriendo (ver [ui.md](ui.md#pruebas)).

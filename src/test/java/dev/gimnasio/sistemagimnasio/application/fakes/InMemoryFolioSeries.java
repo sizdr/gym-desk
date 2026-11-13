@@ -1,6 +1,7 @@
 package dev.gimnasio.sistemagimnasio.application.fakes;
 
 import dev.gimnasio.sistemagimnasio.application.port.out.FolioSeriesRepository;
+import dev.gimnasio.sistemagimnasio.domain.payment.Folio;
 import dev.gimnasio.sistemagimnasio.domain.payment.FolioSeries;
 
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 
 public final class InMemoryFolioSeries implements FolioSeriesRepository {
     private final Map<String, FolioSeries> bySeries = new HashMap<>();
+    private final Map<String, Long> last = new HashMap<>();
+    public final TransactionGuard guard = new TransactionGuard();
 
     public InMemoryFolioSeries() {
         put(new FolioSeries(FolioSeries.MEMBERSHIP_PAYMENTS, "GYM-", 4));
@@ -19,6 +22,7 @@ public final class InMemoryFolioSeries implements FolioSeriesRepository {
 
     @Override
     public FolioSeries get(String series) {
+        guard.check("get");
         FolioSeries found = bySeries.get(series);
         if (found == null) {
             throw new IllegalStateException("Falta la serie de folios " + series + ".");
@@ -28,6 +32,19 @@ public final class InMemoryFolioSeries implements FolioSeriesRepository {
 
     @Override
     public void save(FolioSeries series) {
+        guard.check("save");
         put(series);
+    }
+
+    @Override
+    public Folio next(String series) {
+        guard.check("next");
+        long number = last.merge(series, 1L, Long::sum);
+        return get(series).format(number);
+    }
+
+    /** Último número entregado de la serie (0 si ninguno). */
+    public long last(String series) {
+        return last.getOrDefault(series, 0L);
     }
 }

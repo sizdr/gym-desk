@@ -223,7 +223,9 @@ class PaymentMethodsTest {
     }
 
     @Test
-    void crearEditarActivarYBorrar_ocurrenCadaUnoEnSuTransaccion() {
+    void crearEditarActivarYBorrar_leenYEscribenSoloDentroDeSuTransaccion() {
+        methods.guard.watch(transactions);
+        users.guard.watch(transactions);
         create.execute(admin, new PaymentMethodCommand("Otro", false));
         update.execute(admin, tarjeta.id(), new PaymentMethodCommand("Tarjeta de crédito", false));
         setActive.execute(admin, tarjeta.id(), false);

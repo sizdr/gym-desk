@@ -7,7 +7,7 @@ ui ──(actor + command)──▶ caso de uso ──(puerto de salida)──�
    ◀──(resultado o excepción)──      ◀──────(datos)──────
 ```
 
-Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago y Planes. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
+Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago, Planes, Usuarios y Cobro de membresías. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
 
 ## Reglas generales
 
@@ -172,7 +172,7 @@ Cada catálogo tiene su propio record, con solo los campos que le aplican:
 
 ### `GymHeader`
 
-Encabezado de recibos y tickets: `gymName`, `logo` (`byte[]`, *opcional*), `address`, `phone`, `receiptFooter` (los tres *opcionales*).
+Encabezado de recibos y tickets: `gymName`, `logo` (`byte[]`, *opcional*), `address`, `phone`, `receiptFooter` (los tres *opcionales*) y `currency`, para dar formato a los importes.
 
 ## Acceso
 
@@ -334,7 +334,11 @@ No hay una pantalla propia: la especificación muestra las bajas en el filtro `B
 
 **Reactivar** no es un caso de uso: es llevar al socio a `ChargeMembership`.
 
-## Cobro de membresías
+## Cobro de membresías · *implementado*
+
+Los casos de uso están en `application/usecase/billing/`; `MemberRow` y `MemberRows` (que lo arma con `MembershipRules`) en `application/usecase/members/`, para reutilizarlos en Socios. Todavía no están en `UseCases` de la UI: los conecta quien hace la UI.
+
+El tipo de cobro (`ChargeKind`) se calcula con el estado del socio al cobrar y se guarda con el pago, como hecho histórico. El periodo y la duración del recibo salen de la membresía que generó el cobro, no del plan actual.
 
 ### `ListChargeOptions` · Opciones del formulario de cobro
 
@@ -409,7 +413,7 @@ No hay campo de monto: se cobra siempre el precio del plan. El folio se asigna a
 
 ### `GetMembershipReceipt` / `PrintMembershipReceipt` · Recibo
 
-Permiso: `CHARGE_MEMBERSHIP`. Se abre al terminar un cobro y desde cualquier folio del tablero o de la ficha.
+Permiso: `CHARGE_MEMBERSHIP`. Se abre al terminar un cobro y desde cualquier folio del tablero o de la ficha. Por ahora `ReceiptPrinter` se implementa con `TextFileReceiptPrinter`, que guarda el recibo como texto en `<carpeta>/<folio>.txt`; la impresora real se decide después.
 
 **Entrada:** `long paymentId`.
 
@@ -657,24 +661,25 @@ La existencia no se edita aquí: solo cambia con ventas y movimientos. Si `initi
 | `minStock` | Escribe el mínimo: un número entero, 0 o mayor. |
 | `initialStock` | Escribe la existencia inicial: un número entero, 0 o mayor. |
 
-## Usuarios
+## Usuarios · *implementado*
 
-Permiso: `MANAGE_USERS` en todos.
+Permiso: `MANAGE_USERS` en todos, salvo `CreateInitialAdmin`.
 
 | Caso de uso | Entrada | Salida |
 |---|---|---|
-| `ListUsers` | solo `actor` | `List<UserRow(id, name, username, role, active)>` |
+| `ListUsers` | solo `actor` | `List<UserRow(id, name, username, role, active)>`: activos primero, luego por nombre |
 | `CreateUser` | `CreateUserCommand(name, username, role, password, passwordConfirmation)` | `UserRow` |
 | `UpdateUser` | `long userId` + `UpdateUserCommand(name, username, role, newPassword, newPasswordConfirmation)` | `UserRow` |
 | `SetUserActive` | `long userId`, `boolean active` | `UserRow` |
+| `DeleteUser` | `long userId` | nada |
 
-`newPassword` es *opcional*: `null` o vacío conserva la actual. El nombre de usuario se guarda en minúsculas. Desactivar a un usuario conserva sus cobros, ventas y movimientos. La matriz de permisos de la pantalla sale de `Role.permissions()`, sin caso de uso.
+`newPassword` es *opcional*: `null` o vacío conserva la actual (y entonces no se revisa la confirmación). Las contraseñas no se recortan. El nombre de usuario se recorta y se guarda en minúsculas; «Admin» y «admin» son el mismo. Todos los errores del formulario se reportan juntos. Los que escriben corren en una transacción, que protege la regla del último administrador. `CreateUser` deja al usuario activo; `UpdateUser` no cambia si está activo; `SetUserActive` con el estado que ya tiene no hace nada. Un cambio de rol o una desactivación se aplica en la siguiente operación de ese usuario. Desactivar a un usuario conserva sus cobros, ventas y movimientos. La matriz de permisos de la pantalla sale de `Role.permissions()`, sin caso de uso.
 
 **Errores:**
 
 | Situación | Excepción | Mensaje |
 |---|---|---|
-| Nombre vacío | `ValidationException` (`name`) | Escribe el nombre de la persona. |
+| Nombre vacío o largo | `ValidationException` (`name`) | Escribe el nombre de la persona. · Usa 100 caracteres o menos. |
 | Usuario vacío, inválido o repetido | `ValidationException` (`username`) | Escribe el nombre de usuario. · Usa de 3 a 20 letras minúsculas, números, punto o guion, sin espacios. · Ese nombre de usuario ya está en uso. |
 | Sin rol | `ValidationException` (`role`) | Elige un rol. |
 | Contraseña vacía al crear o corta | `ValidationException` (`password` / `newPassword`) | Escribe una contraseña. · La contraseña debe tener al menos 8 caracteres. |
@@ -682,7 +687,21 @@ Permiso: `MANAGE_USERS` en todos.
 | Quitar el rol al último administrador activo | `ValidationException` (`role`) | Debe quedar al menos un administrador activo. |
 | Desactivar al último administrador activo | `DomainException` | Debe quedar al menos un administrador activo. |
 | Desactivarse a sí mismo | `DomainException` | No puedes desactivar tu propio usuario mientras lo usas. |
-| Usuario inexistente | `NotFoundException` | El usuario no existe. |
+| Eliminarse a sí mismo | `DomainException` | No puedes eliminar tu propio usuario mientras lo usas. |
+| Eliminar a quien ya registró cobros, ventas o movimientos | `DomainException` | No puedes eliminar a «Lucía Pérez»: ya tiene cobros, ventas o movimientos registrados. Desactívalo para que no pueda entrar. |
+| Eliminar al último administrador activo | `DomainException` | Debe quedar al menos un administrador activo. |
+| Usuario inexistente | `NotFoundException` | El usuario ya no existe. Recarga la pantalla. |
+
+### `CreateInitialAdmin` · Primer administrador
+
+Sin `actor` ni permiso: solo funciona mientras no exista **ningún** usuario. La UI lo ofrecerá en el primer arranque. Que el punto de entrada lo llame con `ADMIN_NAME`, `ADMIN_USERNAME` y `ADMIN_PASSWORD` del `.env` (nunca en git) lo hace `InitialAdminSetup` al arrancar (ver *Arranque*).
+
+**Entrada:** `CreateInitialAdminCommand(name, username, password, passwordConfirmation)`. **Salida:** `UserRow` del administrador creado, con rol `ADMINISTRADOR` y activo.
+
+- Las reglas de nombre, usuario y contraseña, y sus mensajes, son las de `CreateUser`.
+- Revisar que no hay usuarios y crear el administrador van en la misma transacción: si dos estaciones arrancan a la vez, solo una lo crea.
+- Si ya hay usuarios: `DomainException` con «El sistema ya tiene usuarios; un administrador debe crear las cuentas nuevas.».
+- `boolean needsInitialAdmin()` (consulta sin actor) dice si la UI debe mostrar la pantalla de primer arranque.
 
 ## Configuración
 
@@ -757,7 +776,6 @@ Motivos y categorías siguen la misma forma con `MovementReasonCommand(name)` / 
 |---|---|---|
 | Folios de ventas | Una serie para cobros y ventas, o dos (`GYM-` y `GYM-V-`). Hoy solo existe la serie `COBRO`. | `folioExample` y la numeración; los contratos no cambian. |
 | Deshacer un cobro | Si se podrá, quién y durante cuánto tiempo. | Un caso de uso `VoidMembershipPayment`. |
-| Primer arranque | Cómo se crea el primer Administrador cuando no hay usuarios. | Un caso de uso de instalación o una migración con usuario inicial. |
 
 ## Cambios que estos contratos piden al código
 
@@ -766,6 +784,14 @@ Lo que hoy no coincide con los contratos y hay que ajustar al implementar cada c
 | Dónde | Cambio |
 |---|---|
 | Precios de productos | Mayores que cero (hoy `Product` y la base admiten 0). |
+
+## Arranque
+
+Al conectarse, `App` aplica las migraciones y llama a `InitialAdminSetup.ensure(Environment.load(), …)`:
+
+- Si ya hay usuarios, no hace nada y las variables `ADMIN_*` se ignoran.
+- Si no hay, crea el administrador con `ADMIN_NAME` («Administrador» si falta), `ADMIN_USERNAME` y `ADMIN_PASSWORD`, con las reglas de `CreateUser`.
+- Si no hay y faltan las variables, o no son válidas, el arranque falla con «La base no tiene usuarios. Define ADMIN_USERNAME y ADMIN_PASSWORD en .env para crear el primer administrador.» (o el motivo), sin mostrar la contraseña. La pantalla de arranque lo muestra y permite reintentar.
 
 ## Puertos de salida implementados
 
@@ -777,6 +803,15 @@ Lo que los casos de uso piden a `infrastructure`. Los puertos de los casos plane
 |---|---|
 | `Optional<UserCredentials> findCredentialsByUsername(String username)` | Busca sin distinguir mayúsculas. Devuelve vacío si no existe; incluye usuarios desactivados (decidir qué hacer con ellos es del caso de uso). |
 | `Optional<User> findById(long id)` | Sin hash. Vacío si no existe; incluye usuarios desactivados. |
+| `List<User> findAll()` | Activos e inactivos, sin orden garantizado (el caso de uso ordena). |
+| `int count()` | Todos los usuarios. |
+| `boolean existsByUsername(String username, Long excludeId)` | Sin distinguir mayúsculas; `excludeId` (opcional) no cuenta. |
+| `int countActiveAdmins()` | Administradores activos. |
+| `User insert(User user, String passwordHash)` | Lo devuelve con su id. |
+| `void update(User user)` | Nombre, usuario, rol y activo; no toca el hash. Lanza `IllegalStateException` si el id no existe. |
+| `void updatePasswordHash(long id, String passwordHash)` | Solo el hash. Lanza `IllegalStateException` si el id no existe. |
+| `boolean hasOperations(long id)` | `true` si tiene cobros, ventas o movimientos de inventario. |
+| `void delete(long id)` | Borra el usuario. |
 
 `UserCredentials(User user, String passwordHash)` va separado de `User` para que el hash solo viaje entre el repositorio y el caso de uso. Implementación: `PostgresUserRepository`.
 
@@ -805,7 +840,9 @@ Implementación: `PostgresSettingsRepository`.
 | `FolioSeries get(String series)` | Prefijo y ancho de la serie (`FolioSeries.MEMBERSHIP_PAYMENTS` = `COBRO`). Lanza `IllegalStateException` si no existe. |
 | `void save(FolioSeries series)` | Guarda prefijo y ancho; el contador no cambia. |
 
-Implementación: `PostgresFolioSeriesRepository`. Tomar el siguiente folio se agrega con el cobro.
+| `Folio next(String series)` | Avanza el contador y devuelve el folio que toca. Va dentro de la transacción del cobro: si se deshace, el número no se gasta; dos estaciones nunca reciben el mismo. |
+
+Implementación: `PostgresFolioSeriesRepository`.
 
 ### `MembershipPaymentRepository` y `SaleRepository`
 
@@ -813,7 +850,36 @@ Implementación: `PostgresFolioSeriesRepository`. Tomar el siguiente folio se ag
 |---|---|
 | `int count()` | Cobros (o ventas) registrados. Con alguno, la moneda queda bloqueada. |
 
-Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepository`. Crecen con el cobro y la venta.
+Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepository`. La venta crece con su paso.
+
+`MembershipPaymentRepository` además:
+
+| Método | Contrato |
+|---|---|
+| `MembershipPayment insert(MembershipPayment payment, ChargeKind kind, String operationId)` | Lo devuelve con su id. La base rechaza un `operationId` repetido. |
+| `Optional<RecordedPayment> findById(long id)` | El cobro con su tipo; necesita que exista su membresía. |
+| `Optional<Long> findIdByOperationId(String operationId)` | El cobro ya registrado con esa operación. |
+
+`fecha_hora` es `timestamptz`: se guarda y se lee en la zona del equipo.
+
+### `MemberRepository` y `MembershipRepository`
+
+| Método | Contrato |
+|---|---|
+| `Optional<Member> findById(long id)` | Solo lo que necesita el cobro; la búsqueda y el alta llegan con Socios. |
+| `List<Membership> findByMember(long memberId)` | Del inicio más antiguo al más reciente. |
+| `Optional<Membership> findByPayment(long paymentId)` | La membresía que generó ese cobro. |
+| `Membership insert(Membership membership)` | La devuelve con su id. |
+
+Implementaciones: `PostgresMemberRepository` y `PostgresMembershipRepository`.
+
+### `ReceiptPrinter`
+
+| Método | Contrato |
+|---|---|
+| `void print(MembershipReceipt receipt)` | Entrega el recibo. Se llama fuera de transacciones; un fallo llega como error técnico. |
+
+Implementación: `TextFileReceiptPrinter`.
 
 ### `TransactionRunner`
 
@@ -824,7 +890,7 @@ Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepositor
 
 Implementación: `JdbiTransactionRunner`, con aislamiento `SERIALIZABLE`. Si PostgreSQL aborta el trabajo por chocar con otra estación (SQLState `40001` o `40P01`), lo repite hasta 3 veces. Por eso el trabajo no debe tener efectos fuera de la base, como imprimir.
 
-Todo caso de uso que lea para decidir y luego escriba usa una transacción: `UpdateSettings` (moneda bloqueada, configuración y prefijo) y crear, editar o activar métodos de pago (nombre repetido, último activo). El cobro hará en una sola: tomar el folio, insertar el pago y la membresía.
+Todo caso de uso que lea para decidir y luego escriba usa una transacción: `UpdateSettings` (moneda bloqueada, configuración y prefijo) y crear, editar o activar métodos de pago (nombre repetido, último activo). `ChargeMembership` hace en una sola: revisar el `operationId`, tomar el folio, insertar el pago y la membresía. Si dos estaciones envían la misma operación a la vez, PostgreSQL aborta una, se repite y devuelve el cobro original con `repeated = true`; si cobran al mismo socio a la vez, la segunda renueva desde el fin de la primera.
 
 ### `PaymentMethodRepository`
 

@@ -22,8 +22,8 @@ public final class Authorizer {
         if (actor == null || actor.id() == null) {
             throw new DomainException(INVALID_SESSION);
         }
-        User current = users.findById(actor.id()).orElseThrow(() -> new DomainException(INVALID_SESSION));
-        current.requirePermission(permission);
-        return current;
+        User refreshed = users.findById(actor.id()).orElseThrow(() -> new DomainException(INVALID_SESSION));
+        refreshed.requirePermission(permission);
+        return refreshed;
     }
 }

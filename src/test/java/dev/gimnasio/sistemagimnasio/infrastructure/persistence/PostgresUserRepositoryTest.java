@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
 import java.util.Optional;
 
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.INVALID_ENUM_VALUE;
@@ -87,7 +88,7 @@ class PostgresUserRepositoryTest {
     @Test
     void laBusqueda_noDistingueMayusculas() {
         insert("Lucía Pérez", "Lucia", "caja", true, "hash-de-lucia");
-        assertEquals("Lucia", repository.findCredentialsByUsername("LUCIA").orElseThrow().user().username());
+        assertEquals("lucia", repository.findCredentialsByUsername("LUCIA").orElseThrow().user().username());
     }
 
     @Test
@@ -117,5 +118,91 @@ class PostgresUserRepositoryTest {
         assertEquals(id, authenticate.execute(new AuthenticateCommand("lucia", "Mostrador#2026")).id());
         assertThrows(AuthenticationException.class,
                 () -> authenticate.execute(new AuthenticateCommand("lucia", "otra")));
+    }
+
+    private long id(String insert) {
+        return jdbi.withHandle(handle -> handle.createQuery(insert + " RETURNING id").mapTo(Long.class).one());
+    }
+
+    @Test
+    void listaCuentaYCuentaAdministradoresActivos() {
+        long ana = insert("Ana", "ana", "administrador", true, "h1");
+        insert("Beto", "beto", "administrador", false, "h2");
+        insert("Lucía", "lucia", "caja", true, "h3");
+
+        assertEquals(3, repository.count());
+        assertEquals(1, repository.countActiveAdmins());
+        assertEquals(List.of(ana), repository.findAll().stream().filter(u -> u.role() == Role.ADMINISTRADOR && u.active())
+                .map(User::id).toList());
+    }
+
+    @Test
+    void existePorUsuario_sinDistinguirMayusculas_yExcluyendoAlPropio() {
+        long id = insert("Lucía", "lucia", "caja", true, "h");
+
+        assertTrue(repository.existsByUsername("LUCIA", null));
+        assertFalse(repository.existsByUsername("lucia", id));
+        assertTrue(repository.existsByUsername("lucia", id + 1));
+        assertFalse(repository.existsByUsername("pedro", null));
+    }
+
+    @Test
+    void insertar_guardaElUsuarioYSuHash() {
+        User created = repository.insert(new User(null, "Pedro Ruiz", "pedro", Role.RECEPCION, true), "hash-de-pedro");
+
+        assertEquals(Optional.of(new UserCredentials(new User(created.id(), "Pedro Ruiz", "pedro", Role.RECEPCION, true),
+                "hash-de-pedro")), repository.findCredentialsByUsername("pedro"));
+    }
+
+    @Test
+    void actualizar_cambiaDatosYRol_yAparteElHash() {
+        long id = insert("Pedro", "pedro", "recepcion", true, "viejo");
+
+        repository.update(new User(id, "Pedro Ruiz", "pruiz", Role.CAJA, false));
+        repository.updatePasswordHash(id, "nuevo");
+
+        assertEquals(Optional.of(new UserCredentials(new User(id, "Pedro Ruiz", "pruiz", Role.CAJA, false), "nuevo")),
+                repository.findCredentialsByUsername("pruiz"));
+    }
+
+    @Test
+    void actualizarUnoQueNoExiste_falla() {
+        assertThrows(IllegalStateException.class, () -> repository.update(new User(99L, "X", "xyz", Role.CAJA, true)));
+        assertThrows(IllegalStateException.class, () -> repository.updatePasswordHash(99L, "h"));
+    }
+
+    @Test
+    void sabeSiUnUsuarioTieneCobrosVentasOMovimientos() {
+        long cobra = insert("Ana", "ana", "caja", true, "h");
+        long vende = insert("Beto", "beto", "caja", true, "h");
+        long mueve = insert("Caro", "caro", "recepcion", true, "h");
+        long nuevo = insert("Dani", "dani", "caja", true, "h");
+        long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
+        long metodo = id("INSERT INTO metodo_pago (nombre) VALUES ('Tarjeta')");
+        long categoria = id("INSERT INTO categoria_producto (nombre) VALUES ('Bebidas')");
+        long producto = id("INSERT INTO producto (clave, nombre, categoria_id, precio, minimo, existencia) "
+                + "VALUES ('AGUA', 'Agua', " + categoria + ", 18, 1, 10)");
+        long motivo = id("INSERT INTO motivo_movimiento (nombre) VALUES ('Compra')");
+        id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-0001', "
+                + socio + ", " + cobra + ", " + metodo + ", 450, 'primera')");
+        id("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-0001', " + metodo + ", 18, " + vende + ")");
+        id("INSERT INTO movimiento_inventario (producto_id, tipo, cantidad, existencia_resultante, motivo_movimiento_id, usuario_id) "
+                + "VALUES (" + producto + ", 'entrada', 5, 15, " + motivo + ", " + mueve + ")");
+
+        assertTrue(repository.hasOperations(cobra));
+        assertTrue(repository.hasOperations(vende));
+        assertTrue(repository.hasOperations(mueve));
+        assertFalse(repository.hasOperations(nuevo));
+    }
+
+    @Test
+    void borrar_quitaSoloEseUsuario() {
+        long ana = insert("Ana", "ana", "caja", true, "h");
+        long beto = insert("Beto", "beto", "caja", true, "h");
+
+        repository.delete(ana);
+
+        assertEquals(Optional.empty(), repository.findById(ana));
+        assertEquals(List.of(beto), repository.findAll().stream().map(User::id).toList());
     }
 }
