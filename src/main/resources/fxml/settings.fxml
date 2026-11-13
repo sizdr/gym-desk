@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!--
+  Configuración: datos del gimnasio, plazos de membresía, moneda y prefijo de folio, como en el prototipo.
+  Los cambios se guardan juntos con la barra «Tienes cambios sin guardar», que SettingsController entrega
+  al menú para que quede fija abajo mientras se desplaza el formulario.
+  Sin «Herramientas de la demostración» ni «Decisiones pendientes del cliente»: no forman parte del producto.
+-->
+<!-- Los campos llevan id «cf-…», como en el prototipo: «gymName» ya es la etiqueta del menú en la misma escena. -->
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="root" styleClass="contenido">
+    <VBox styleClass="encabezado" spacing="6">
+        <Label fx:id="title" id="titulo-pagina" text="Configuración" styleClass="titulo-30"/>
+        <Label text="Parámetros del gimnasio. Los cambios se aplican en todas las pantallas al guardar."
+               styleClass="sub,texto-2" wrapText="true"/>
+    </VBox>
+
+    <!-- Mientras carga -->
+    <HBox fx:id="loading" styleClass="panel,cargando">
+        <ProgressIndicator styleClass="progreso-chico"/>
+        <Label text="Cargando la configuración…" styleClass="texto-2"/>
+    </HBox>
+
+    <!-- Si no se pudo cargar -->
+    <HBox fx:id="loadErrorNote" styleClass="nota,nota-error">
+        <Label fx:id="loadErrorText" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+        <Button fx:id="retry" text="Reintentar" onAction="#retry" styleClass="chico"/>
+    </HBox>
+
+    <!-- Un error al guardar que no es de un campo -->
+    <HBox fx:id="generalErrorNote" styleClass="nota,nota-error">
+        <Label fx:id="generalErrorText" wrapText="true"/>
+    </HBox>
+
+    <VBox fx:id="form" styleClass="panel" accessibleText="Parámetros del sistema">
+        <!-- Datos del gimnasio -->
+        <GridPane styleClass="config-seccion">
+            <columnConstraints>
+                <ColumnConstraints minWidth="230" prefWidth="230" maxWidth="230"/>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="640"/>
+            </columnConstraints>
+            <VBox styleClass="config-cab" GridPane.columnIndex="0">
+                <Label text="Datos del gimnasio" styleClass="titulo-16" wrapText="true"/>
+                <Label text="Aparecen en el acceso y en el menú; también se usarán en recibos y tickets. Hay una sola configuración: no hay sucursales."
+                       styleClass="t-13,texto-3" wrapText="true"/>
+            </VBox>
+            <VBox styleClass="config-campos" GridPane.columnIndex="1">
+                <VBox styleClass="campo">
+                    <Label text="Nombre del gimnasio" labelFor="$gymName"/>
+                    <TextField fx:id="gymName" id="cf-nombre" accessibleText="Nombre del gimnasio"/>
+                    <Label fx:id="gymNameError"/>
+                </VBox>
+                <GridPane styleClass="fila-campos">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50"/>
+                        <ColumnConstraints percentWidth="50"/>
+                    </columnConstraints>
+                    <VBox styleClass="campo" GridPane.columnIndex="0">
+                        <HBox styleClass="etiqueta-fila">
+                            <Label text="Dirección" labelFor="$address" styleClass="etiqueta"/>
+                            <Label text="(opcional)" styleClass="opcional"/>
+                        </HBox>
+                        <TextField fx:id="address" id="cf-direccion" accessibleText="Dirección, opcional"/>
+                        <Label fx:id="addressError"/>
+                    </VBox>
+                    <VBox styleClass="campo" GridPane.columnIndex="1">
+                        <HBox styleClass="etiqueta-fila">
+                            <Label text="Teléfono" labelFor="$phone" styleClass="etiqueta"/>
+                            <Label text="(opcional)" styleClass="opcional"/>
+                        </HBox>
+                        <TextField fx:id="phone" id="cf-telefono" accessibleText="Teléfono, opcional"/>
+                        <Label fx:id="phoneError"/>
+                    </VBox>
+                </GridPane>
+                <VBox styleClass="campo">
+                    <HBox styleClass="etiqueta-fila">
+                        <Label text="Logotipo" styleClass="etiqueta"/>
+                        <Label text="(opcional)" styleClass="opcional"/>
+                    </HBox>
+                    <!-- Si no caben juntos, los botones bajan a la línea siguiente en lugar de recortarse. -->
+                    <FlowPane fx:id="logoRow" styleClass="logo-vista" hgap="14" vgap="10">
+                        <HBox fx:id="logoPreview" styleClass="marca-previa" minWidth="-Infinity">
+                            <VBox>
+                                <Label fx:id="previewName" styleClass="peso-600" wrapText="true" maxWidth="280"/>
+                                <Label fx:id="logoStatus" styleClass="chico,texto-3"/>
+                            </VBox>
+                        </HBox>
+                        <Button fx:id="uploadLogo" id="cf-logo" text="Subir imagen" onAction="#chooseLogo" minWidth="-Infinity"/>
+                        <Button fx:id="removeLogo" text="Quitar logotipo" onAction="#removeLogo" styleClass="texto-peligro"
+                                minWidth="-Infinity"/>
+                    </FlowPane>
+                    <Label text="PNG o JPG de hasta 300 KB." styleClass="ayuda" wrapText="true"/>
+                    <Label fx:id="logoError"/>
+                </VBox>
+                <VBox styleClass="campo">
+                    <HBox styleClass="etiqueta-fila">
+                        <Label text="Leyenda al pie de recibos y tickets" labelFor="$receiptFooter" styleClass="etiqueta"/>
+                        <Label text="(opcional)" styleClass="opcional"/>
+                    </HBox>
+                    <TextField fx:id="receiptFooter" id="cf-leyenda" accessibleText="Leyenda al pie de recibos y tickets, opcional"/>
+                    <Label fx:id="receiptFooterCount" styleClass="ayuda"/>
+                    <Label fx:id="receiptFooterError"/>
+                </VBox>
+            </VBox>
+        </GridPane>
+
+        <!-- Membresías -->
+        <GridPane styleClass="config-seccion,config-seccion-siguiente">
+            <columnConstraints>
+                <ColumnConstraints minWidth="230" prefWidth="230" maxWidth="230"/>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="640"/>
+            </columnConstraints>
+            <VBox styleClass="config-cab" GridPane.columnIndex="0">
+                <Label text="Membresías" styleClass="titulo-16"/>
+                <Label text="Definen los estados que se calculan para cada socio. Los planes y precios se administran en Planes."
+                       styleClass="t-13,texto-3" wrapText="true"/>
+            </VBox>
+            <GridPane styleClass="fila-campos" GridPane.columnIndex="1">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                <VBox styleClass="campo" GridPane.columnIndex="0">
+                    <Label text="Aviso de «por vencer» (días)" labelFor="$warningDays" wrapText="true"/>
+                    <TextField fx:id="warningDays" id="cf-aviso" accessibleText="Aviso de por vencer, en días"/>
+                    <Label text="Un socio aparece como «Por vencer» cuando faltan estos días o menos. No es lo mismo que «Vencen esta semana» del tablero."
+                           styleClass="ayuda" wrapText="true"/>
+                    <Label fx:id="warningDaysError"/>
+                </VBox>
+                <VBox styleClass="campo" GridPane.columnIndex="1">
+                    <Label text="Plazo de baja automática (días)" labelFor="$autoDeactivationDays" wrapText="true"/>
+                    <TextField fx:id="autoDeactivationDays" id="cf-plazo" accessibleText="Plazo de baja automática, en días"/>
+                    <Label text="Un socio pasa a «Baja» al cumplirse este plazo desde su último vencimiento sin renovar. Cambiarlo recalcula también las bajas anteriores."
+                           styleClass="ayuda" wrapText="true"/>
+                    <Label fx:id="autoDeactivationDaysError"/>
+                </VBox>
+            </GridPane>
+        </GridPane>
+
+        <!-- Cobros y folios -->
+        <GridPane styleClass="config-seccion,config-seccion-siguiente">
+            <columnConstraints>
+                <ColumnConstraints minWidth="230" prefWidth="230" maxWidth="230"/>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="640"/>
+            </columnConstraints>
+            <VBox styleClass="config-cab" GridPane.columnIndex="0">
+                <Label text="Cobros y folios" styleClass="titulo-16"/>
+            </VBox>
+            <!-- La moneda lleva un poco más de ancho para que «MXN · Peso mexicano» quepa a 1024 × 680. -->
+            <GridPane styleClass="fila-campos" GridPane.columnIndex="1">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="56"/>
+                    <ColumnConstraints percentWidth="44"/>
+                </columnConstraints>
+                <VBox styleClass="campo" GridPane.columnIndex="0">
+                    <Label text="Moneda" labelFor="$currency"/>
+                    <ComboBox fx:id="currency" id="cf-moneda" maxWidth="Infinity" accessibleText="Moneda"/>
+                    <Label fx:id="currencyHelp" styleClass="ayuda" wrapText="true"/>
+                    <Label fx:id="currencyError"/>
+                </VBox>
+                <VBox styleClass="campo" GridPane.columnIndex="1">
+                    <Label text="Prefijo de folio" labelFor="$folioPrefix"/>
+                    <TextField fx:id="folioPrefix" id="cf-prefijo" accessibleText="Prefijo de folio"/>
+                    <Label fx:id="folioHelp" styleClass="ayuda" wrapText="true"/>
+                    <Label fx:id="folioPrefixError"/>
+                </VBox>
+            </GridPane>
+        </GridPane>
+    </VBox>
+
+    <!-- Espacio para que la barra de guardar no tape el final del formulario -->
+    <Region fx:id="barSpace" styleClass="espacio-barra"/>
+</VBox>

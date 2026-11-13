@@ -656,3 +656,163 @@
     -fx-text-fill: -gd-texto-2;
 }
 .atajos-lista .label.kbd { -fx-font-size: 11.5px; }
+
+/* ------------------------------------------------------------------ */
+/* Formularios de pantalla (ui.settings y las que siguen)              */
+/* ------------------------------------------------------------------ */
+.etiqueta-fila { -fx-spacing: 8; -fx-alignment: baseline-left; }
+.opcional { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-3; }
+
+.button.texto-peligro {
+    -fx-text-fill: -gd-peligro;
+    -fx-background-color: transparent;
+    -fx-padding: 0 8;
+}
+.button.texto-peligro:hover { -fx-background-color: -gd-peligro-fondo; }
+.button.texto-peligro:focus-visible {
+    -fx-background-color: -gd-foco, -gd-superficie;
+    -fx-background-insets: -3, -1;
+    -fx-background-radius: 13, 11;
+}
+/* Un botón que hace de campo (por ejemplo «Subir imagen») con error */
+.button.invalid {
+    -fx-background-color: -gd-error-anillo, -gd-peligro, -gd-superficie;
+    -fx-background-insets: -3, 0, 1;
+    -fx-background-radius: 13, 10, 9;
+}
+
+.combo-box-base.invalid {
+    -fx-background-color: -gd-error-anillo, -gd-peligro, -gd-entrada-fondo;
+    -fx-background-insets: -3, 0, 1;
+    -fx-background-radius: 13, 10, 9;
+}
+.combo-box-base:disabled { -fx-opacity: 1; -fx-background-color: -gd-linea, -gd-superficie-2; }
+.combo-box-base:disabled .list-cell { -fx-text-fill: -gd-texto-2; }
+.combo-box-base:disabled .arrow { -fx-background-color: -gd-texto-3; }
+
+.cargando { -fx-padding: 22 24; -fx-spacing: 12; -fx-alignment: center-left; }
+.progreso-chico { -fx-pref-width: 20; -fx-pref-height: 20; -fx-max-width: 20; -fx-max-height: 20; }
+
+/* Configuración: título y explicación a la izquierda, campos a la derecha */
+.config-seccion { -fx-padding: 22 24; -fx-hgap: 24; }
+.config-seccion-siguiente {
+    -fx-border-color: -gd-linea transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+.config-cab { -fx-spacing: 4; }
+.config-campos { -fx-spacing: 16; }
+.fila-campos { -fx-hgap: 16; -fx-vgap: 14; }
+.logo-vista { -fx-alignment: center-left; }
+.marca-previa {
+    -fx-background-color: -gd-superficie-2;
+    -fx-background-radius: 12;
+    -fx-border-color: -gd-linea-fuerte;
+    -fx-border-style: segments(4, 3);
+    -fx-border-radius: 12;
+    -fx-padding: 12 14;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+}
+
+/* Barra «Tienes cambios sin guardar»: fija abajo, sobre el contenido */
+.capa-pie { -fx-padding: 0 28 16 28; -fx-alignment: bottom-center; }
+.barra-guardar {
+    -fx-background-color: -gd-riel-filo, -gd-capsula;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 16, 15;
+    -fx-padding: 10 10 10 18;
+    -fx-spacing: 8;
+    -fx-max-width: 1424;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 34, 0, 0, 14);
+}
+.espacio-barra { -fx-min-height: 64; -fx-pref-height: 64; }
+
+/* Avisos flotantes (abajo a la derecha) */
+.avisos { -fx-padding: 20; -fx-spacing: 10; -fx-alignment: bottom-right; }
+.aviso-flotante {
+    -fx-background-color: -gd-riel-filo, -gd-capsula;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 16, 15;
+    -fx-padding: 12 16;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+    -fx-max-width: 420;
+    -fx-effect: dropshadow(gaussian, -gd-sombra-flotante, 34, 0, 0, 14);
+}
+.aviso-flotante .label { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 13.5px; }
+.aviso-flotante .icono { -fx-stroke: -gd-ok; }
+.aviso-flotante.es-error .icono { -fx-stroke: -gd-peligro; }
+
+/* Paneles de catálogo: encabezado con acción y tabla a todo el ancho */
+.panel-cab { -fx-padding: 18 20 14 20; }
+.panel-catalogo > .cargando { -fx-padding: 6 20 20 20; }
+
+/* Tabla (ui.common.DataTable) */
+.tabla-cab {
+    -fx-background-color: -gd-linea, -gd-superficie-2;
+    -fx-background-insets: 0, 1 0 1 0;
+    -fx-padding: 9 12;
+}
+.tabla-cab > .label { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-2; }
+.tabla-celda {
+    -fx-background-color: -gd-superficie-3, -gd-superficie;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 10 12;
+}
+.tabla-celda.ultima-fila { -fx-background-color: -gd-superficie; -fx-background-insets: 0; -fx-background-radius: 0; }
+.tabla-celda.ultima-fila.primera-columna { -fx-background-radius: 0 0 0 13; }
+.tabla-celda.ultima-fila.ultima-columna { -fx-background-radius: 0 0 13 0; }
+.primera-columna { -fx-padding: 10 12 10 20; }
+.tabla-cab.primera-columna { -fx-padding: 9 12 9 20; }
+.ultima-columna { -fx-padding: 10 20 10 12; }
+.tabla-cab.ultima-columna { -fx-padding: 9 20 9 12; }
+.tabla-celda .label { -fx-font-size: 13.5px; }
+.celda-principal { -fx-font-family: "Instrument Sans SemiBold"; }
+.tabla-celda .label.celda-detalle { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-3; }
+.fila-inactiva .label.celda-principal { -fx-text-fill: -gd-texto-3; }
+.tabla-vacia { -fx-padding: 24 20; }
+
+/* Etiquetas de estado (ui.common.StatusTag): texto, color y punto */
+.label.estado {
+    -fx-font-family: "Instrument Sans SemiBold";
+    -fx-font-size: 12.5px;
+    -fx-background-radius: 999;
+    -fx-padding: 3 9 3 8;
+    -fx-graphic-text-gap: 6;
+}
+.estado-activo, .estado-ok { -fx-background-color: -gd-ok-fondo; -fx-text-fill: -gd-ok; }
+.estado-activo .estado-punto, .estado-ok .estado-punto { -fx-fill: -gd-ok; }
+.estado-inactivo { -fx-background-color: -gd-neutro-fondo; -fx-text-fill: -gd-neutro; }
+.estado-inactivo .estado-punto { -fx-fill: -gd-neutro; }
+.estado-bajo { -fx-background-color: -gd-aviso-fondo; -fx-text-fill: -gd-aviso; }
+.estado-bajo .estado-punto { -fx-fill: -gd-aviso; }
+.estado-agotado { -fx-background-color: -gd-peligro-fondo; -fx-text-fill: -gd-peligro; }
+.estado-agotado .estado-punto { -fx-fill: -gd-peligro; }
+
+/* Casillas */
+.check-box { -fx-text-fill: -gd-texto; -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 13.5px; -fx-label-padding: 0 0 0 8; }
+.check-box > .box {
+    -fx-background-color: -gd-linea-fuerte, -gd-entrada-fondo;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 5, 4;
+    -fx-padding: 4;
+}
+.check-box:hover > .box { -fx-background-color: -gd-entrada-hover, -gd-entrada-fondo; }
+.check-box:selected > .box { -fx-background-color: -gd-acento; -fx-background-insets: 0; -fx-background-radius: 5; }
+.check-box > .box > .mark { -fx-background-color: transparent; }
+.check-box:selected > .box > .mark { -fx-background-color: -gd-sobre-acento; }
+.check-box:focus-visible > .box {
+    -fx-background-color: -gd-foco, -gd-superficie, -gd-linea-fuerte, -gd-entrada-fondo;
+    -fx-background-insets: -3, -1, 0, 1;
+    -fx-background-radius: 8, 6, 5, 4;
+}
+.check-box:selected:focus-visible > .box {
+    -fx-background-color: -gd-foco, -gd-superficie, -gd-acento;
+    -fx-background-insets: -3, -1, 0;
+    -fx-background-radius: 8, 6, 5;
+}
+.check-box.invalid > .box { -fx-background-color: -gd-peligro, -gd-entrada-fondo; }
+
+/* Diálogo con formulario (ui.common.FormDialog) */
+.dialogo-formulario > .content { -fx-padding: 18 22 18 22; }
+.formulario { -fx-spacing: 16; }

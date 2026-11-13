@@ -18,7 +18,7 @@ public final class Dialogs {
     static final List<List<String>> SHORTCUTS = List.of(
             List.of("Tab", "Pasar al siguiente control"),
             List.of("Mayús+Tab", "Volver al control anterior"),
-            List.of("Enter", "Confirmar el formulario, por ejemplo Entrar"),
+            List.of("Enter", "Confirmar el formulario, por ejemplo Entrar o Guardar cambios"),
             List.of("Espacio", "Pulsar el botón que tiene el foco"),
             List.of("←", "→", "Cambiar de tema en el selector de tema"),
             List.of("Esc", "Cerrar un diálogo"),
@@ -35,11 +35,38 @@ public final class Dialogs {
 
     /** @return {@code true} si se eligió {@code confirmText} */
     public static boolean confirm(Window owner, String title, String message, String confirmText) {
+        return confirm(owner, title, message, confirmText, "Cancelar");
+    }
+
+    /** @return {@code true} si se eligió {@code confirmText}; Esc y {@code cancelText} cuentan como no */
+    public static boolean confirm(Window owner, String title, String message, String confirmText, String cancelText) {
+        Alert alert = confirmation(owner, title, message, confirmText, cancelText);
+        return alert.showAndWait().filter(button -> button.getButtonData() == ButtonBar.ButtonData.OK_DONE).isPresent();
+    }
+
+    /** Como {@link #confirm(Window, String, String, String, String)}, con el botón de confirmar en rojo. */
+    public static boolean confirmDanger(Window owner, String title, String message, String confirmText) {
+        Alert alert = confirmation(owner, title, message, confirmText, "Cancelar");
+        alert.getDialogPane().getButtonTypes().stream()
+                .filter(type -> type.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+                .forEach(type -> alert.getDialogPane().lookupButton(type).getStyleClass().add("peligro"));
+        return alert.showAndWait().filter(button -> button.getButtonData() == ButtonBar.ButtonData.OK_DONE).isPresent();
+    }
+
+    /**
+     * La confirmación sin mostrar, para poder abrirla sin bloquear (pruebas y capturas). Cancelar es el botón
+     * predeterminado: Enter no confirma por accidente algo que se pierde.
+     */
+    public static Alert confirmation(Window owner, String title, String message, String confirmText, String cancelText) {
         ButtonType confirm = new ButtonType(confirmText, ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancel = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType cancel = new ButtonType(cancelText, ButtonBar.ButtonData.CANCEL_CLOSE);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, cancel, confirm);
         prepare(alert, owner, title);
-        return alert.showAndWait().filter(confirm::equals).isPresent();
+        alert.setHeaderText(title);
+        alert.setGraphic(null);
+        ((javafx.scene.control.Button) alert.getDialogPane().lookupButton(confirm)).setDefaultButton(false);
+        ((javafx.scene.control.Button) alert.getDialogPane().lookupButton(cancel)).setDefaultButton(true);
+        return alert;
     }
 
     /** Lista de atajos de teclado, como el diálogo «Atajos de teclado» del prototipo. */
@@ -79,7 +106,9 @@ public final class Dialogs {
     }
 
     private static void prepare(Alert alert, Window owner, String title) {
-        alert.initOwner(owner);
+        if (owner != null) {
+            alert.initOwner(owner);
+        }
         alert.setTitle(title);
         alert.setHeaderText(null);
         // El tema lo pone Themes al abrirse la ventana del diálogo.

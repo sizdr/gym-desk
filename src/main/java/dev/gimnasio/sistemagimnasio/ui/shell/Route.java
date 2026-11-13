@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Secciones del menú, con el permiso que las muestra, en el orden y los grupos del prototipo.
- * Ninguna pantalla de negocio está implementada todavía: cada sección dice qué le falta.
+ * Las que todavía no funcionan dicen qué les falta.
  */
 public enum Route {
     TABLERO(null, "Tablero", "Tablero", "tablero", Permission.VIEW_DAILY_SUMMARY,
@@ -37,14 +37,16 @@ public enum Route {
             Status.MISSING_USE_CASES, List.of("ListUsers", "CreateUser", "UpdateUser", "SetUserActive")),
     CONFIGURACION("Administración", "Configuración", "Configuración", "ajustes", Permission.MANAGE_SETTINGS,
             "Datos del gimnasio, plazos de membresía, moneda, folios y catálogos.",
-            Status.SCREEN_PENDING, List.of("GetSettings", "UpdateSettings", "métodos de pago"));
+            Status.READY, List.of("GetSettings", "UpdateSettings", "métodos de pago"));
 
     /** Qué le falta a la sección para funcionar. */
     public enum Status {
         /** Faltan los casos de uso: la UI no puede mostrar nada real todavía. */
         MISSING_USE_CASES,
         /** Los casos de uso existen; falta construir la pantalla. */
-        SCREEN_PENDING
+        SCREEN_PENDING,
+        /** La pantalla funciona con sus casos de uso. */
+        READY
     }
 
     private final String group;
