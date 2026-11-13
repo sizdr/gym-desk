@@ -36,6 +36,6 @@ final class PaymentMethodRules {
     }
 
     static PaymentMethodItem toItem(PaymentMethod method) {
-        return new PaymentMethodItem(method.id(), method.name(), method.cash(), method.active());
+        return PaymentMethodItem.of(method);
     }
 }
