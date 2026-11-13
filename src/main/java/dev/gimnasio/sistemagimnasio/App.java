@@ -1,6 +1,8 @@
 package dev.gimnasio.sistemagimnasio;
 
 import com.zaxxer.hikari.HikariDataSource;
+import dev.gimnasio.sistemagimnasio.infrastructure.bootstrap.InitialAdminSetup;
+import dev.gimnasio.sistemagimnasio.infrastructure.config.Environment;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.Database;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.DatabaseConfig;
 import dev.gimnasio.sistemagimnasio.ui.GymDeskUi;
@@ -46,6 +48,7 @@ public final class App extends Application {
         HikariDataSource connected = Database.connect(DatabaseConfig.fromEnvironment());
         try {
             Database.migrate(connected);
+            InitialAdminSetup.ensure(Environment.load(), Wiring.createInitialAdmin(Jdbi.create(connected)));
         } catch (RuntimeException e) {
             connected.close();
             throw e;
