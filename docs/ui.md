@@ -66,10 +66,10 @@ Diferencias deliberadas con el prototipo:
 
 ```bash
 docker compose up -d
-DB_PASSWORD=12345 ./mvnw javafx:run
+DB_PASSWORD='<la de tu .env>' ./mvnw javafx:run
 ```
 
-El proyecto compila para Java 25; con un JDK predeterminado más antiguo, define `JAVA_HOME` con un JDK 25 o posterior.
+`DB_PASSWORD` es la contraseña de PostgreSQL de tu `.env` (ver [Base de datos](README.md#base-de-datos-docker)). El proyecto compila para Java 25; con un JDK predeterminado más antiguo, define `JAVA_HOME` con un JDK 25 o posterior.
 
 ### Administrador de desarrollo
 
@@ -88,13 +88,7 @@ El script pide nombre, usuario y contraseña (dos veces, sin mostrarla), compila
 ./mvnw test
 ```
 
-Las pruebas de `infrastructure/persistence` levantan PostgreSQL con Testcontainers. Con Docker 29 o posterior se omiten en silencio: Testcontainers 1.20.4 pide la API de Docker 1.32 y esas versiones aceptan como mínimo la 1.40. **Ajuste temporal**, sin tocar la configuración del proyecto:
-
-```bash
-./mvnw test -Dapi.version=1.40
-```
-
-La solución permanente es actualizar Testcontainers en `pom.xml`, fuera del alcance de la rama de UI.
+Las pruebas de `infrastructure/persistence` levantan PostgreSQL con Testcontainers y necesitan Docker; sin Docker se omiten. Testcontainers 1.21.4 funciona con Docker 29, así que ya no hace falta `-Dapi.version=1.40`. En GitHub Actions (`.github/workflows/pruebas.yml`) que se omitan cuenta como fallo.
 
 ### Capturas
 

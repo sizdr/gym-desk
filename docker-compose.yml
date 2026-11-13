@@ -1,12 +1,14 @@
+# PostgreSQL de DESARROLLO. La contraseña sale de .env (copia .env.example y cámbiala); no se guarda aquí.
+# El puerto solo escucha en este equipo (127.0.0.1): otros equipos de la red no pueden conectarse.
 services:
   db:
     image: postgres:16
     environment:
       POSTGRES_DB: gimnasio
       POSTGRES_USER: gimnasio
-      POSTGRES_PASSWORD: 12345
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD. Copia .env.example a .env y escribe una contraseña.}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

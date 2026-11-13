@@ -48,6 +48,7 @@ logs/
 *.sqlite3
 .env
 .env.*
+!.env.example
 application-local.properties
 
 ### jlink / javafx:run output ###

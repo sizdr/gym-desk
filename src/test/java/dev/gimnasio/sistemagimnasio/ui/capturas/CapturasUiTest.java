@@ -185,14 +185,8 @@ class CapturasUiTest {
         FxHarness.press(scene, KeyCode.ENTER, false);
         FxHarness.waitUntil("menú", () -> FxHarness.onFxUnchecked(stage::getScene).lookup("#nav-cobro") != null);
         Scene shell = FxHarness.onFx(stage::getScene);
-        try {
-            FxHarness.waitUntil("foco en el menú", () -> shell.getFocusOwner() != null
-                    && shell.getFocusOwner().getId() != null && shell.getFocusOwner().getId().startsWith("nav-"));
-        } catch (AssertionError e) {
-            System.out.println("[diag] foco=" + FxHarness.focusOwner(shell) + " stageFocused=" + FxHarness.onFx(stage::isFocused)
-                    + " owner=" + FxHarness.onFx(() -> String.valueOf(shell.getFocusOwner())));
-            throw e;
-        }
+        FxHarness.waitUntil("foco en el menú", () -> shell.getFocusOwner() != null
+                && shell.getFocusOwner().getId() != null && shell.getFocusOwner().getId().startsWith("nav-"));
         return shell;
     }
 
