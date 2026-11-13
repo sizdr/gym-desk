@@ -9,7 +9,7 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | Capa | Estado |
 |---|---|
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
-| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro) y los usuarios (con el primer administrador); `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
+| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro), los usuarios (con el primer administrador) y el cobro de membresías con su recibo; `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
 | `infrastructure` | Conexión a PostgreSQL, migraciones (esquema y datos iniciales), repositorios de usuarios, configuración y métodos de pago, y `Argon2PasswordHasher` |
 | `ui` | Arranque (conexión, migraciones y reintento) y piezas comunes en `ui/common/`; detalle y validación en [ui.md](ui.md) |
 
@@ -75,7 +75,7 @@ sistema-gimnasio/
     │       └── plans/  products/  inventory/  users/  settings/                   (planeado)
     │
     ├── main/resources/
-    │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual)
+    │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual), V4__cobros.sql (tipo de cobro y operación)
     │   ├── i18n/messages_es.properties  (planeado)
     │   ├── fxml/   css/app.css           vistas y tema de la UI
     │   └── logback.xml                   (planeado)
@@ -129,6 +129,8 @@ docker compose up -d
 | `DB_URL` | `jdbc:postgresql://localhost:5432/gimnasio` |
 | `DB_USER` | `gimnasio` |
 | `DB_PASSWORD` | ninguno: es obligatoria |
+| `ADMIN_NAME` | `Administrador` |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | ninguno. Solo se usan si la base no tiene usuarios: al arrancar se crea con ellos el primer administrador. Después se pueden borrar del `.env`. |
 
 Cada variable se toma, en este orden, de las variables del sistema, del `.env` del directorio desde donde se ejecuta la app y, al final, del valor por defecto. Así puedes cambiar una sin editar el archivo (por ejemplo, en la configuración de ejecución de IntelliJ).
 

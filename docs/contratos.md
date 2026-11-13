@@ -7,7 +7,7 @@ ui ──(actor + command)──▶ caso de uso ──(puerto de salida)──�
    ◀──(resultado o excepción)──      ◀──────(datos)──────
 ```
 
-Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago, Planes y Usuarios. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
+Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago, Planes, Usuarios y Cobro de membresías. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
 
 ## Reglas generales
 
@@ -172,7 +172,7 @@ Cada catálogo tiene su propio record, con solo los campos que le aplican:
 
 ### `GymHeader`
 
-Encabezado de recibos y tickets: `gymName`, `logo` (`byte[]`, *opcional*), `address`, `phone`, `receiptFooter` (los tres *opcionales*).
+Encabezado de recibos y tickets: `gymName`, `logo` (`byte[]`, *opcional*), `address`, `phone`, `receiptFooter` (los tres *opcionales*) y `currency`, para dar formato a los importes.
 
 ## Acceso
 
@@ -334,7 +334,11 @@ No hay una pantalla propia: la especificación muestra las bajas en el filtro `B
 
 **Reactivar** no es un caso de uso: es llevar al socio a `ChargeMembership`.
 
-## Cobro de membresías
+## Cobro de membresías · *implementado*
+
+Los casos de uso están en `application/usecase/billing/`; `MemberRow` y `MemberRows` (que lo arma con `MembershipRules`) en `application/usecase/members/`, para reutilizarlos en Socios. Todavía no están en `UseCases` de la UI: los conecta quien hace la UI.
+
+El tipo de cobro (`ChargeKind`) se calcula con el estado del socio al cobrar y se guarda con el pago, como hecho histórico. El periodo y la duración del recibo salen de la membresía que generó el cobro, no del plan actual.
 
 ### `ListChargeOptions` · Opciones del formulario de cobro
 
@@ -409,7 +413,7 @@ No hay campo de monto: se cobra siempre el precio del plan. El folio se asigna a
 
 ### `GetMembershipReceipt` / `PrintMembershipReceipt` · Recibo
 
-Permiso: `CHARGE_MEMBERSHIP`. Se abre al terminar un cobro y desde cualquier folio del tablero o de la ficha.
+Permiso: `CHARGE_MEMBERSHIP`. Se abre al terminar un cobro y desde cualquier folio del tablero o de la ficha. Por ahora `ReceiptPrinter` se implementa con `TextFileReceiptPrinter`, que guarda el recibo como texto en `<carpeta>/<folio>.txt`; la impresora real se decide después.
 
 **Entrada:** `long paymentId`.
 
@@ -690,7 +694,7 @@ Permiso: `MANAGE_USERS` en todos, salvo `CreateInitialAdmin`.
 
 ### `CreateInitialAdmin` · Primer administrador
 
-Sin `actor` ni permiso: solo funciona mientras no exista **ningún** usuario. La UI lo ofrecerá en el primer arranque. Que el punto de entrada lo llame con `ADMIN_NAME`, `ADMIN_USERNAME` y `ADMIN_PASSWORD` del `.env` (nunca en git) queda para el paso del arranque.
+Sin `actor` ni permiso: solo funciona mientras no exista **ningún** usuario. La UI lo ofrecerá en el primer arranque. Que el punto de entrada lo llame con `ADMIN_NAME`, `ADMIN_USERNAME` y `ADMIN_PASSWORD` del `.env` (nunca en git) lo hace `InitialAdminSetup` al arrancar (ver *Arranque*).
 
 **Entrada:** `CreateInitialAdminCommand(name, username, password, passwordConfirmation)`. **Salida:** `UserRow` del administrador creado, con rol `ADMINISTRADOR` y activo.
 
@@ -781,6 +785,14 @@ Lo que hoy no coincide con los contratos y hay que ajustar al implementar cada c
 |---|---|
 | Precios de productos | Mayores que cero (hoy `Product` y la base admiten 0). |
 
+## Arranque
+
+Al conectarse, `App` aplica las migraciones y llama a `InitialAdminSetup.ensure(Environment.load(), …)`:
+
+- Si ya hay usuarios, no hace nada y las variables `ADMIN_*` se ignoran.
+- Si no hay, crea el administrador con `ADMIN_NAME` («Administrador» si falta), `ADMIN_USERNAME` y `ADMIN_PASSWORD`, con las reglas de `CreateUser`.
+- Si no hay y faltan las variables, o no son válidas, el arranque falla con «La base no tiene usuarios. Define ADMIN_USERNAME y ADMIN_PASSWORD en .env para crear el primer administrador.» (o el motivo), sin mostrar la contraseña. La pantalla de arranque lo muestra y permite reintentar.
+
 ## Puertos de salida implementados
 
 Lo que los casos de uso piden a `infrastructure`. Los puertos de los casos planeados se documentan al implementarlos.
@@ -828,7 +840,9 @@ Implementación: `PostgresSettingsRepository`.
 | `FolioSeries get(String series)` | Prefijo y ancho de la serie (`FolioSeries.MEMBERSHIP_PAYMENTS` = `COBRO`). Lanza `IllegalStateException` si no existe. |
 | `void save(FolioSeries series)` | Guarda prefijo y ancho; el contador no cambia. |
 
-Implementación: `PostgresFolioSeriesRepository`. Tomar el siguiente folio se agrega con el cobro.
+| `Folio next(String series)` | Avanza el contador y devuelve el folio que toca. Va dentro de la transacción del cobro: si se deshace, el número no se gasta; dos estaciones nunca reciben el mismo. |
+
+Implementación: `PostgresFolioSeriesRepository`.
 
 ### `MembershipPaymentRepository` y `SaleRepository`
 
@@ -836,7 +850,36 @@ Implementación: `PostgresFolioSeriesRepository`. Tomar el siguiente folio se ag
 |---|---|
 | `int count()` | Cobros (o ventas) registrados. Con alguno, la moneda queda bloqueada. |
 
-Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepository`. Crecen con el cobro y la venta.
+Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepository`. La venta crece con su paso.
+
+`MembershipPaymentRepository` además:
+
+| Método | Contrato |
+|---|---|
+| `MembershipPayment insert(MembershipPayment payment, ChargeKind kind, String operationId)` | Lo devuelve con su id. La base rechaza un `operationId` repetido. |
+| `Optional<RecordedPayment> findById(long id)` | El cobro con su tipo; necesita que exista su membresía. |
+| `Optional<Long> findIdByOperationId(String operationId)` | El cobro ya registrado con esa operación. |
+
+`fecha_hora` es `timestamptz`: se guarda y se lee en la zona del equipo.
+
+### `MemberRepository` y `MembershipRepository`
+
+| Método | Contrato |
+|---|---|
+| `Optional<Member> findById(long id)` | Solo lo que necesita el cobro; la búsqueda y el alta llegan con Socios. |
+| `List<Membership> findByMember(long memberId)` | Del inicio más antiguo al más reciente. |
+| `Optional<Membership> findByPayment(long paymentId)` | La membresía que generó ese cobro. |
+| `Membership insert(Membership membership)` | La devuelve con su id. |
+
+Implementaciones: `PostgresMemberRepository` y `PostgresMembershipRepository`.
+
+### `ReceiptPrinter`
+
+| Método | Contrato |
+|---|---|
+| `void print(MembershipReceipt receipt)` | Entrega el recibo. Se llama fuera de transacciones; un fallo llega como error técnico. |
+
+Implementación: `TextFileReceiptPrinter`.
 
 ### `TransactionRunner`
 
@@ -847,7 +890,7 @@ Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepositor
 
 Implementación: `JdbiTransactionRunner`, con aislamiento `SERIALIZABLE`. Si PostgreSQL aborta el trabajo por chocar con otra estación (SQLState `40001` o `40P01`), lo repite hasta 3 veces. Por eso el trabajo no debe tener efectos fuera de la base, como imprimir.
 
-Todo caso de uso que lea para decidir y luego escriba usa una transacción: `UpdateSettings` (moneda bloqueada, configuración y prefijo) y crear, editar o activar métodos de pago (nombre repetido, último activo). El cobro hará en una sola: tomar el folio, insertar el pago y la membresía.
+Todo caso de uso que lea para decidir y luego escriba usa una transacción: `UpdateSettings` (moneda bloqueada, configuración y prefijo) y crear, editar o activar métodos de pago (nombre repetido, último activo). `ChargeMembership` hace en una sola: revisar el `operationId`, tomar el folio, insertar el pago y la membresía. Si dos estaciones envían la misma operación a la vez, PostgreSQL aborta una, se repite y devuelve el cobro original con `repeated = true`; si cobran al mismo socio a la vez, la segunda renueva desde el fin de la primera.
 
 ### `PaymentMethodRepository`
 
