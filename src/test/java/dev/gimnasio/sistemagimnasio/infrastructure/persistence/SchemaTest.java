@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.CHECK_VIOLATION;
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.FOREIGN_KEY_VIOLATION;
+import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.INVALID_ENUM_VALUE;
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.STRING_TOO_LONG;
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.UNIQUE_VIOLATION;
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.assertRejected;
@@ -52,8 +53,8 @@ class SchemaTest {
     }
 
     private long pago(long socioId, String folio) {
-        return id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto) VALUES ('" + folio + "', "
-                + socioId + ", " + usuario + ", " + efectivo + ", 450)");
+        return id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('" + folio + "', "
+                + socioId + ", " + usuario + ", " + efectivo + ", 450, 'primera')");
     }
 
     // ---------- Configuración ----------
@@ -160,9 +161,23 @@ class SchemaTest {
     // ---------- Pagos y membresías ----------
 
     @Test
+    void elMismoOperationId_noRegistraDosCobros_peroVariosSinIdSi() {
+        execute("UPDATE pago SET operacion_id = 'op-1' WHERE id = " + pago(socio, "GYM-1"));
+        long otro = pago(socio, "GYM-2");
+        assertRejected(UNIQUE_VIOLATION, () -> execute("UPDATE pago SET operacion_id = 'op-1' WHERE id = " + otro));
+        assertDoesNotThrow(() -> pago(socio, "GYM-3"));
+    }
+
+    @Test
+    void unTipoDeCobroDesconocido_seRechaza() {
+        assertRejected(INVALID_ENUM_VALUE, () -> execute("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) "
+                + "VALUES ('GYM-9', " + socio + ", " + usuario + ", " + efectivo + ", 450, 'regalo')"));
+    }
+
+    @Test
     void efectivoRecibido_menorAlMonto_seRechaza_yNuloSePermite() {
-        assertRejected(CHECK_VIOLATION, () -> execute("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, efectivo_recibido) "
-                + "VALUES ('GYM-1', " + socio + ", " + usuario + ", " + efectivo + ", 450, 449.99)"));
+        assertRejected(CHECK_VIOLATION, () -> execute("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, efectivo_recibido, tipo_cobro) "
+                + "VALUES ('GYM-1', " + socio + ", " + usuario + ", " + efectivo + ", 450, 449.99, 'primera')"));
         assertDoesNotThrow(() -> pago(socio, "GYM-2"));
     }
 

@@ -183,8 +183,8 @@ class PostgresUserRepositoryTest {
         long producto = id("INSERT INTO producto (clave, nombre, categoria_id, precio, minimo, existencia) "
                 + "VALUES ('AGUA', 'Agua', " + categoria + ", 18, 1, 10)");
         long motivo = id("INSERT INTO motivo_movimiento (nombre) VALUES ('Compra')");
-        id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto) VALUES ('GYM-0001', "
-                + socio + ", " + cobra + ", " + metodo + ", 450)");
+        id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-0001', "
+                + socio + ", " + cobra + ", " + metodo + ", 450, 'primera')");
         id("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-0001', " + metodo + ", 18, " + vende + ")");
         id("INSERT INTO movimiento_inventario (producto_id, tipo, cantidad, existencia_resultante, motivo_movimiento_id, usuario_id) "
                 + "VALUES (" + producto + ", 'entrada', 5, 15, " + motivo + ", " + mueve + ")");
