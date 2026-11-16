@@ -19,6 +19,11 @@ import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.DeletePay
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.ListPaymentMethods;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.SetPaymentMethodActive;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.UpdatePaymentMethod;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.ChargeMembership;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.GetMembershipReceipt;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.ListChargeOptions;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.PreviewMembershipCharge;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.PrintMembershipReceipt;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.DeleteMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
@@ -180,9 +185,16 @@ public final class UiFakes {
         public final InMemoryPlans plans = new InMemoryPlans();
         public final InMemoryMembers members = new InMemoryMembers();
         public final InMemoryMemberships memberships = new InMemoryMemberships();
+        public final dev.gimnasio.sistemagimnasio.application.fakes.RecordingReceiptPrinter printer =
+                new dev.gimnasio.sistemagimnasio.application.fakes.RecordingReceiptPrinter();
 
         public Backend(Users users) {
             this.users = users;
+        }
+
+        private GetMembershipReceipt receipt() {
+            return new GetMembershipReceipt(payments, memberships, members, plans, methods, users, settings,
+                    new Authorizer(users));
         }
 
         public UseCases useCases() {
@@ -208,7 +220,13 @@ public final class UiFakes {
                     new SearchMembers(members, memberships, plans, settings, authorizer, clock),
                     new RegisterMember(members, memberships, plans, settings, transactions, authorizer, clock),
                     new UpdateMember(members, memberships, plans, settings, transactions, authorizer, clock),
-                    new DeleteMember(members, transactions, authorizer));
+                    new DeleteMember(members, transactions, authorizer),
+                    new ListChargeOptions(plans, methods, authorizer),
+                    new PreviewMembershipCharge(members, memberships, plans, methods, settings, authorizer, clock),
+                    new ChargeMembership(members, memberships, plans, methods, settings, payments, folios, users,
+                            transactions, authorizer, clock),
+                    receipt(),
+                    new PrintMembershipReceipt(receipt(), printer));
         }
     }
 

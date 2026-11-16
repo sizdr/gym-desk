@@ -880,3 +880,60 @@
     -fx-background-insets: -3, 0, 1;
 }
 .date-picker-popup { -fx-font-family: "Instrument Sans"; }
+
+/* Cobrar membresía */
+.formulario-cobro { -fx-padding: 6 24 20 24; }
+.seccion-cobro { -fx-padding: 16 0 0 0; }
+.resumen-cobro { -fx-padding: 20 22; }
+.resumen-filas { -fx-hgap: 16; -fx-vgap: 7; }
+.resumen-filas .label { -fx-font-size: 13.5px; }
+.total-cobro { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 28px; -fx-text-fill: -gd-texto; }
+.cambio { -fx-font-family: "Instrument Sans SemiBold"; -fx-text-fill: -gd-ok; }
+.falta { -fx-font-family: "Instrument Sans SemiBold"; -fx-text-fill: -gd-peligro; }
+.nota-ok { -fx-background-color: -gd-ok-fondo; }
+.nota-ok .label { -fx-text-fill: -gd-nota-ok; -fx-font-family: "Instrument Sans SemiBold"; }
+.nota-ok .icono { -fx-stroke: -gd-nota-ok; }
+
+.ficha-mini {
+    -fx-background-color: -gd-superficie-2;
+    -fx-background-radius: 10;
+    -fx-padding: 12 14;
+}
+.lista-elegible {
+    -fx-background-color: -gd-linea, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-padding: 4;
+    -fx-spacing: 2;
+}
+.button.elegible {
+    -fx-background-color: transparent;
+    -fx-background-radius: 7;
+    -fx-padding: 8 10;
+    -fx-alignment: center-left;
+}
+.button.elegible:hover { -fx-background-color: -gd-hover-suave; }
+.button.elegible:focus-visible {
+    -fx-background-color: -gd-foco, -gd-superficie;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 7, 5;
+}
+
+.toggle-button.plan-opcion {
+    -fx-padding: 10 14;
+    -fx-alignment: top-left;
+}
+.toggle-button.plan-opcion:hover { -fx-background-color: -gd-linea-fuerte, -gd-superficie-2; }
+.toggle-button.plan-opcion:selected {
+    -fx-background-color: -gd-acento, -gd-acento-suave;
+    -fx-background-insets: 0, 2;
+}
+.toggle-button.plan-opcion:selected:focus-visible {
+    -fx-background-color: -gd-foco-anillo, -gd-acento, -gd-acento-suave;
+    -fx-background-insets: -4, 0, 2;
+    -fx-background-radius: 13, 10, 8;
+}
+.plan-nombre { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 14.5px; -fx-text-fill: -gd-texto; }
+.plan-precio { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 14.5px; -fx-text-fill: -gd-texto; }
+.plan-meta { -fx-font-family: "Instrument Sans"; -fx-font-size: 13px; -fx-text-fill: -gd-texto-2; }
+.plan-ahorro { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 13px; -fx-text-fill: -gd-ok; }

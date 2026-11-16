@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -832,6 +833,114 @@ class CapturasUiTest {
         assertEquals(false, FxHarness.onFx(() -> caja.getRoot().lookupAll(".button").stream()
                 .anyMatch(n -> n.getId() != null && n.getId().startsWith("so-eliminar-"))));
         captureAll("proyecto-socios", "socios-caja");
+    }
+
+    private long memberId(UiFakes.Backend backend, String name) {
+        return backend.members.findAll().stream().filter(m -> m.fullName().equals(name)).findFirst().orElseThrow().id();
+    }
+
+    /** Visible de verdad: el nodo y todos sus contenedores. */
+    private static boolean onScreen(Scene scene, String id) {
+        for (var node = scene.lookup("#" + id); ; node = node.getParent()) {
+            if (node == null) {
+                return scene.lookup("#" + id) != null;
+            }
+            if (!node.isVisible()) {
+                return false;
+            }
+        }
+    }
+
+    private static boolean enabled(Scene scene, String id) {
+        return onScreen(scene, id) && !scene.lookup("#" + id).isDisabled();
+    }
+
+    @Test
+    void proyectoCobro() throws Exception {
+        UiFakes.Backend backend = gymWithMembers();
+        backend.methods.add("Efectivo", true, true);
+        backend.methods.add("Tarjeta", false, true);
+        backend.methods.add("Transferencia", false, true);
+        long mensual = backend.plans.findAll().stream().filter(p -> p.name().equals("Mensual")).findFirst()
+                .orElseThrow().id();
+        backend.plans.add("Trimestral", 90, "1200", mensual, true);
+        long daniel = memberId(backend, "Daniel Soto");
+        long fernando = memberId(backend, "Fernando Gil");
+
+        // Caja entra directo a Cobrar membresía.
+        Scene scene = signIn(backend, "carlos");
+        FxHarness.runFx(() -> ui.shell().setToastTime(javafx.util.Duration.minutes(1)));
+        FxHarness.waitUntil("pantalla de cobro", () -> onScreen(scene, "co-buscar") && onScreen(scene, "co-planes"));
+        assertEquals("Cobrar membresía", title(scene));
+        assertFalse(FxHarness.onFx(() -> enabled(scene, "co-cobrar")), "sin socio no se cobra");
+        assertEquals("Elige al socio que va a pagar.", text(scene, "co-falta-dato"));
+        captureAll("proyecto-cobro", "inicio");
+
+        // Teclado: buscador → cada plan (aún no hay uno elegido) → método (grupo con Efectivo elegido) → efectivo.
+        FxHarness.runFx(() -> scene.lookup("#co-buscar").requestFocus());
+        List<String> order = tabOrder(scene, 5);
+        System.out.println("[teclado] cobro, Tab: " + order);
+        assertEquals("co-buscar", order.get(0));
+        assertTrue(order.subList(1, 4).stream().allMatch(id -> id.startsWith("co-plan-")), order.toString());
+        assertTrue(order.get(4).startsWith("co-metodo-"), order.toString());
+        assertEquals("co-efectivo", order.get(5));
+
+        // Buscar y elegir a un socio con la membresía vencida.
+        typeInto(scene, "co-buscar", "soto");
+        FxHarness.waitUntil("resultados", () -> onScreen(scene, "co-socio-" + daniel));
+        captureAll("proyecto-cobro", "busqueda");
+        FxHarness.runFx(() -> scene.lookup("#co-socio-" + daniel).requestFocus());
+        FxHarness.press(scene, KeyCode.SPACE, false);
+        FxHarness.waitUntil("socio elegido", () -> onScreen(scene, "co-socio") && onScreen(scene, "co-cambiar"));
+
+        // Plan con el teclado, efectivo insuficiente: dice cuánto falta y no deja cobrar.
+        FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.lookup("#co-plan-" + mensual)).fire());
+        typeInto(scene, "co-efectivo", "300");
+        FxHarness.waitUntil("faltante", () -> onScreen(scene, "co-falta"));
+        assertFalse(FxHarness.onFx(() -> enabled(scene, "co-cobrar")));
+        assertEquals("El efectivo recibido no cubre el total.", text(scene, "co-falta-dato"));
+        captureAll("proyecto-cobro", "falta-efectivo");
+
+        typeInto(scene, "co-efectivo", "500");
+        FxHarness.waitUntil("listo para cobrar", () -> enabled(scene, "co-cobrar") && onScreen(scene, "co-cambio"));
+        assertTrue(text(scene, "co-regla").equals("Renovación de una membresía vencida: empieza hoy."), text(scene, "co-regla"));
+        assertTrue(text(scene, "co-cobrar").startsWith("Cobrar "), text(scene, "co-cobrar"));
+        captureAll("proyecto-cobro", "listo");
+
+        // Enter cobra (botón predeterminado); el recibo reemplaza al resumen y el foco va a «Nuevo cobro».
+        FxHarness.runFx(() -> scene.lookup("#co-efectivo").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("recibo", () -> onScreen(scene, "co-folio"));
+        assertEquals("GYM-0001", text(scene, "co-folio"));
+        assertEquals(1, backend.payments.stored());
+        FxHarness.waitUntil("foco en nuevo cobro", () -> scene.getFocusOwner() != null && "co-nuevo".equals(scene.getFocusOwner().getId()));
+        assertEquals("Cobro registrado con el folio GYM-0001.", FxHarness.onFx(() -> toastText(scene, "aviso")));
+        captureAll("proyecto-cobro", "recibo");
+        clearToasts(scene);
+
+        fire(scene, "co-imprimir");
+        FxHarness.waitUntil("impreso", () -> !backend.printer.printed.isEmpty() && toastText(scene, "aviso") != null);
+        assertEquals("Recibo GYM-0001 enviado a imprimir.", FxHarness.onFx(() -> toastText(scene, "aviso")));
+        clearToasts(scene);
+
+        // Nuevo cobro: formulario limpio. Primera membresía: aparece la fecha de inicio.
+        FxHarness.press(scene, KeyCode.SPACE, false);
+        FxHarness.waitUntil("formulario limpio", () -> onScreen(scene, "co-buscar") && !onScreen(scene, "co-folio"));
+        assertEquals("", text(scene, "co-buscar"));
+        typeInto(scene, "co-buscar", "fernando");
+        FxHarness.waitUntil("resultados", () -> onScreen(scene, "co-socio-" + fernando));
+        fire(scene, "co-socio-" + fernando);
+        FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.getRoot().lookupAll(".plan-opcion").stream()
+                .filter(n -> n.getId().startsWith("co-plan-") && !n.getId().equals("co-plan-" + mensual))
+                .reduce((a, b) -> b).orElseThrow()).fire());
+        FxHarness.runFx(() -> scene.getRoot().lookupAll(".toggle-button").stream()
+                .filter(n -> n.getId() != null && n.getId().startsWith("co-metodo-"))
+                .map(javafx.scene.control.ToggleButton.class::cast)
+                .filter(b -> b.getText().equals("Tarjeta")).findFirst().orElseThrow().fire());
+        FxHarness.waitUntil("primera membresía", () -> onScreen(scene, "co-inicio") && enabled(scene, "co-cobrar")
+                && !onScreen(scene, "co-efectivo"));
+        assertTrue(text(scene, "co-regla").startsWith("Primera membresía"), text(scene, "co-regla"));
+        captureAll("proyecto-cobro", "primera-membresia");
     }
 
     private void captureDialogIn(String folder, String name) throws Exception {

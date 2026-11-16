@@ -148,6 +148,7 @@ public final class GymDeskUi implements AutoCloseable {
     private Screen screenFor(Route route) {
         return switch (route) {
             case CONFIGURACION -> settingsScreen();
+            case COBRO -> chargeScreen();
             case SOCIOS -> membersScreen();
             default -> null;
         };
@@ -172,6 +173,14 @@ public final class GymDeskUi implements AutoCloseable {
                 notifier, session.can(dev.gimnasio.sistemagimnasio.domain.user.Permission.EDIT_MEMBERS),
                 () -> gymInfo.today());
         var controller = new dev.gimnasio.sistemagimnasio.ui.members.MembersController(model);
+        model.load();
+        return Screen.of(controller.view());
+    }
+
+    private Screen chargeScreen() {
+        var model = new dev.gimnasio.sistemagimnasio.ui.billing.ChargeViewModel(useCases, background, session::actor,
+                notifier);
+        var controller = new dev.gimnasio.sistemagimnasio.ui.billing.ChargeController(model, gymInfo.currency());
         model.load();
         return Screen.of(controller.view());
     }

@@ -14,7 +14,7 @@ public enum Route {
             Status.MISSING_USE_CASES, List.of("GetDaySummary")),
     COBRO("Mostrador", "Cobrar membresía", "Cobrar membresía", "tarjeta", Permission.CHARGE_MEMBERSHIP,
             "Cobra un plan a un socio y entrega su recibo.",
-            Status.SCREEN_PENDING, List.of("ListChargeOptions", "PreviewMembershipCharge", "ChargeMembership",
+            Status.READY, List.of("ListChargeOptions", "PreviewMembershipCharge", "ChargeMembership",
             "GetMembershipReceipt", "PrintMembershipReceipt")),
     SOCIOS("Socios", "Socios", "Socios", "usuarios", Permission.VIEW_MEMBERS,
             "Busca socios, revisa su vigencia y registra altas.",

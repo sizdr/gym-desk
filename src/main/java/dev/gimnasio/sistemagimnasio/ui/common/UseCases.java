@@ -7,6 +7,11 @@ import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.DeletePay
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.ListPaymentMethods;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.SetPaymentMethodActive;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.UpdatePaymentMethod;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.ChargeMembership;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.GetMembershipReceipt;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.ListChargeOptions;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.PreviewMembershipCharge;
+import dev.gimnasio.sistemagimnasio.application.usecase.billing.PrintMembershipReceipt;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.DeleteMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
@@ -45,7 +50,12 @@ public record UseCases(
         SearchMembers searchMembers,
         RegisterMember registerMember,
         UpdateMember updateMember,
-        DeleteMember deleteMember) {
+        DeleteMember deleteMember,
+        ListChargeOptions listChargeOptions,
+        PreviewMembershipCharge previewMembershipCharge,
+        ChargeMembership chargeMembership,
+        GetMembershipReceipt getMembershipReceipt,
+        PrintMembershipReceipt printMembershipReceipt) {
 
     public UseCases {
         Objects.requireNonNull(authenticate, "authenticate");
@@ -67,5 +77,10 @@ public record UseCases(
         Objects.requireNonNull(registerMember, "registerMember");
         Objects.requireNonNull(updateMember, "updateMember");
         Objects.requireNonNull(deleteMember, "deleteMember");
+        Objects.requireNonNull(listChargeOptions, "listChargeOptions");
+        Objects.requireNonNull(previewMembershipCharge, "previewMembershipCharge");
+        Objects.requireNonNull(chargeMembership, "chargeMembership");
+        Objects.requireNonNull(getMembershipReceipt, "getMembershipReceipt");
+        Objects.requireNonNull(printMembershipReceipt, "printMembershipReceipt");
     }
 }

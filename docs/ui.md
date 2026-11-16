@@ -217,7 +217,7 @@ Al revisar las capturas y las pruebas se corrigieron:
 El proyecto final se limita a socios, planes, métodos de pago, usuarios y cobro de membresías (ver [modelo-de-datos.md](modelo-de-datos.md#alcance)). En la UI:
 
 - El menú pierde **Punto de venta**, **Productos** e **Inventario**, y los permisos `SELL`, `MANAGE_PRODUCTS`, `VIEW_INVENTORY` y `REGISTER_STOCK_MOVEMENT`. Recepción ve Tablero, Cobrar membresía y Socios; Caja, Cobrar membresía y Socios.
-- **Cobrar membresía** y **Usuarios** pasan a «Pantalla en preparación»: sus casos de uso ya existen. Tablero y Socios siguen esperando los suyos.
+- **Cobrar membresía** y **Usuarios** pasan a «Pantalla en preparación» (Cobrar membresía ya funciona; ver más abajo): sus casos de uso ya existen. Tablero y Socios siguen esperando los suyos.
 - En Configuración, la moneda se bloquea solo por cobros y los textos de métodos de pago ya no hablan de ventas.
 - Las validaciones por entrega anteriores conservan el menú de entonces; las capturas se regeneran con el menú nuevo.
 
@@ -244,4 +244,22 @@ Socios es el tercer catálogo del proyecto, con CRUD completo desde la app (`Sea
 | `./mvnw clean test` | 650 pruebas: 0 fallos, 0 errores; 10 omitidas (`CapturasUiTest`, que corre aparte: 10 de 10) |
 
 Corregido al revisar las capturas: el diálogo de formulario no crecía al aparecer los errores (los botones quedaban fuera) y cortaba los mensajes largos. `FormDialog.refit()` lo arregla también en métodos de pago.
+
+### Proyecto final · Módulo de Cobro (15/11/2026)
+
+**Cobrar membresía** es el primer módulo integrador: une socios, planes, métodos de pago, usuarios, folios y membresías en una sola operación (`ListChargeOptions`, `PreviewMembershipCharge`, `ChargeMembership`, `GetMembershipReceipt`, `PrintMembershipReceipt`). Es la sección inicial de Caja.
+
+- **Formulario a la izquierda:** 1. Socio (buscador con hasta 7 resultados, cada uno con su estado y vigencia; al elegir queda una ficha con «Cambiar»). 2. Plan (tarjetas con duración, precio y ahorro; solo los activos). 3. Pago (métodos activos, Efectivo elegido de inicio; con efectivo aparece «Efectivo recibido»). **Inicio** solo en la primera membresía.
+- **Resumen en vivo a la derecha:** socio, plan, periodo y forma de pago que calcula el caso de uso, la regla que se aplicó («Renovación anticipada: empieza el…, al terminar su vigencia actual; no pierde días»), el total, y el cambio o lo que falta. «Cobrar $X» se habilita solo cuando la vista previa dice que se puede, y debajo se lee qué falta. Las respuestas viejas de la vista previa se descartan.
+- **Cobrar:** una operación con identificador propio; un segundo clic o Enter mientras cobra no cobra dos veces. Los errores del caso de uso van a su campo.
+- **Recibo:** reemplaza al resumen con el folio, fecha, socio, plan, periodo, forma de pago, monto, recibido, cambio y quién atendió. «Imprimir recibo» lo guarda como archivo de texto en `GYM_DESK_RECEIPTS_DIR` (o `~/.gym-desk/recibos`). «Nuevo cobro» limpia el formulario con otra operación.
+
+| Comprobación | Resultado |
+|---|---|
+| `ChargeViewModelTest` (6) | Solo planes y métodos activos; primera membresía en efectivo con cambio, recibo e impresión; un segundo clic no cobra; renovación anticipada empieza al terminar la vigencia; con efectivo insuficiente no cobra y dice por qué; nuevo cobro limpia con otra operación; elegir socio limpia la búsqueda |
+| Capturas en ambos temas y tamaños | `inicio`, `busqueda`, `falta-efectivo`, `listo`, `recibo`, `primera-membresia` |
+| Teclado | Buscador → cada plan (mientras no hay uno elegido) → método (grupo, flechas) → efectivo. Espacio elige al socio; Enter cobra (botón predeterminado); el foco pasa a «Nuevo cobro» |
+| `./mvnw clean test` | 657 pruebas: 0 fallos, 0 errores; con `-Dui.capturas=true`, `CapturasUiTest` 11 de 11 |
+
+Corregido al revisar las capturas: los paneles sin margen interior, el plan elegido que no se distinguía, «Cambiar» y «Forma de pago» recortados a 1024 y «Sin membresía» repetido en la ficha del socio.
 

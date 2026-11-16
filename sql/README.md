@@ -79,5 +79,5 @@ Los resultados esperados corresponden a `02_datos.sql`; las fechas de los datos 
 | C01 | Catálogo de socios: registrar, consultar, modificar y eliminar | `application/usecase/members/` | Socios (`ui/members/`) | `MembersTest`, `PostgresMemberRepositoryTest`, `MembersViewModelTest`, capturas `proyecto-socios` | ✅ |
 | C02 | Catálogo de métodos de pago: registrar, consultar, modificar, activar y eliminar | `application/usecase/paymentmethods/` | Configuración › Métodos de pago (`ui/settings/`) | `PaymentMethodsTest`, `PaymentMethodsViewModelTest`, capturas `fase-2-entrega-2` | ✅ |
 | C03 | Catálogo de planes: registrar, consultar, modificar, activar y eliminar | `application/usecase/plans/` | Planes | `PlansTest`, `PostgresPlanRepositoryTest` | Falta la pantalla |
-| M01 | Módulo de cobro de membresías | `application/usecase/billing/`; P01 en la base | Cobrar membresía | `BillingTest`, `SqlScriptsTest` | Falta la pantalla |
+| M01 | Módulo de cobro de membresías: socio, plan, pago, periodo calculado, folio y recibo | `application/usecase/billing/`; P01 en la base | Cobrar membresía (`ui/billing/`) | `BillingTest`, `SqlScriptsTest`, `ChargeViewModelTest`, capturas `proyecto-cobro` | ✅ |
 | M02 | Módulo de control de vigencias | F02 en la base | Tablero | `SqlScriptsTest` | Faltan el caso de uso y la pantalla |
