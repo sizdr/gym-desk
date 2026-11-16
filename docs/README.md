@@ -11,11 +11,15 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
 | `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro), los usuarios (con el primer administrador) y el cobro de membresías con su recibo; `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
 | `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales, planes, cobros y el recorte del alcance), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago, planes, socios, membresías y cobros, `Argon2PasswordHasher`, recibo como archivo de texto, lectura del `.env` y creación del primer administrador al arrancar |
-| `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, Configuración y métodos de pago, y piezas comunes en `ui/common/`. El resto de las pantallas de negocio aún no existe: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
+| `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, Configuración y métodos de pago, el catálogo de Socios, y piezas comunes en `ui/common/`. El resto de las pantallas de negocio aún no existe: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
 
 ## Modelo de datos
 
-Tablas, relaciones y reglas de la base: [modelo-de-datos.md](modelo-de-datos.md). El DBML de origen está en [modelo-de-datos.dbml](modelo-de-datos.dbml).
+Tablas, relaciones y reglas de la base: [modelo-de-datos.md](modelo-de-datos.md). El DBML de origen está en [modelo-de-datos.dbml](modelo-de-datos.dbml) y el diccionario de datos, en [diccionario-de-datos.md](diccionario-de-datos.md).
+
+## Scripts SQL del proyecto final
+
+La carpeta [`sql/`](../sql/README.md) reconstruye la base sin la aplicación: esquema, datos de prueba, consultas, funciones, procedimiento y pruebas, con su orden de ejecución y la matriz de evidencias. `sql/crear-base.sh` los corre en el PostgreSQL de `docker-compose.yml`.
 
 ## UI
 

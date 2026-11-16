@@ -148,6 +148,7 @@ public final class GymDeskUi implements AutoCloseable {
     private Screen screenFor(Route route) {
         return switch (route) {
             case CONFIGURACION -> settingsScreen();
+            case SOCIOS -> membersScreen();
             default -> null;
         };
     }
@@ -164,6 +165,15 @@ public final class GymDeskUi implements AutoCloseable {
         model.load();
         methods.load();
         return new Screen(controller.view(), controller.saveBar(), model::hasUnsavedChanges);
+    }
+
+    private Screen membersScreen() {
+        var model = new dev.gimnasio.sistemagimnasio.ui.members.MembersViewModel(useCases, background, session::actor,
+                notifier, session.can(dev.gimnasio.sistemagimnasio.domain.user.Permission.EDIT_MEMBERS),
+                () -> gymInfo.today());
+        var controller = new dev.gimnasio.sistemagimnasio.ui.members.MembersController(model);
+        model.load();
+        return Screen.of(controller.view());
     }
 
     /** El nombre y el logotipo nuevos se ven enseguida en el menú, el título de la ventana y el acceso. */

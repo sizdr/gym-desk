@@ -14,6 +14,7 @@ import java.time.LocalDate;
  * @param daysOverdue      solo vencidos y en baja: días desde el vencimiento
  * @param deactivatesOn    solo vencidos: día en que pasará a baja si no renueva
  * @param deactivationDate solo en baja: igual al vencimiento
+ * @param joinDate         día en que se inscribió
  */
 public record MemberRow(
         long id,
@@ -26,5 +27,6 @@ public record MemberRow(
         Integer daysLeft,
         Integer daysOverdue,
         LocalDate deactivatesOn,
-        LocalDate deactivationDate) {
+        LocalDate deactivationDate,
+        LocalDate joinDate) {
 }

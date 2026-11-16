@@ -9,6 +9,9 @@ public interface MembershipRepository {
     /** Del inicio más antiguo al más reciente. */
     List<Membership> findByMember(long memberId);
 
+    /** La de vencimiento más lejano de cada socio que ha pagado alguna vez. */
+    List<Membership> findLatestPerMember();
+
     /** La membresía que generó ese cobro; cada cobro genera una sola. */
     Optional<Membership> findByPayment(long paymentId);
 

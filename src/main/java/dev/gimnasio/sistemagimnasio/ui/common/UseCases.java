@@ -7,6 +7,10 @@ import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.DeletePay
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.ListPaymentMethods;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.SetPaymentMethodActive;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.UpdatePaymentMethod;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.DeleteMember;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.UpdateMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.CreatePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.DeletePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.ListPlans;
@@ -37,7 +41,11 @@ public record UseCases(
         CreatePlan createPlan,
         UpdatePlan updatePlan,
         SetPlanActive setPlanActive,
-        DeletePlan deletePlan) {
+        DeletePlan deletePlan,
+        SearchMembers searchMembers,
+        RegisterMember registerMember,
+        UpdateMember updateMember,
+        DeleteMember deleteMember) {
 
     public UseCases {
         Objects.requireNonNull(authenticate, "authenticate");
@@ -55,5 +63,9 @@ public record UseCases(
         Objects.requireNonNull(updatePlan, "updatePlan");
         Objects.requireNonNull(setPlanActive, "setPlanActive");
         Objects.requireNonNull(deletePlan, "deletePlan");
+        Objects.requireNonNull(searchMembers, "searchMembers");
+        Objects.requireNonNull(registerMember, "registerMember");
+        Objects.requireNonNull(updateMember, "updateMember");
+        Objects.requireNonNull(deleteMember, "deleteMember");
     }
 }

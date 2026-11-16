@@ -7,7 +7,7 @@ ui ──(actor + command)──▶ caso de uso ──(puerto de salida)──�
    ◀──(resultado o excepción)──      ◀──────(datos)──────
 ```
 
-Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago, Planes, Usuarios y Cobro de membresías. El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
+Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo de métodos de pago, Planes, Usuarios, Cobro de membresías y el catálogo de Socios (`SearchMembers`, `RegisterMember`, `UpdateMember`, `DeleteMember`). El resto es el contrato acordado para construir la UI y los casos de uso en paralelo. Al final están los cambios que estos contratos piden al código actual.
 
 ## Reglas generales
 
@@ -225,6 +225,8 @@ Permiso: `VIEW_DAILY_SUMMARY`.
 
 ## Socios
 
+Catálogo con CRUD completo: `SearchMembers`, `RegisterMember`, `UpdateMember` y `DeleteMember` están *implementados*; `GetMemberDetail` (ficha) es parte del módulo de control de vigencias. `MemberRow` trae además `joinDate`.
+
 ### `SearchMembers` · Buscar, filtrar y ordenar
 
 Permiso: `VIEW_MEMBERS`. Lo usan la pantalla Socios, la búsqueda rápida del encabezado y el buscador del cobro.
@@ -278,12 +280,12 @@ Permiso: `VIEW_MEMBERS`.
 
 Permiso: `EDIT_MEMBERS`.
 
-**Entrada:** `RegisterMemberCommand`
+**Entrada:** `MemberCommand(fullName, phone, email, joinDate)` (el mismo de `UpdateMember`).
 
 | Campo | Tipo | Reglas |
 |---|---|---|
-| `fullName` | `String` | Obligatorio, al menos 3 letras. Se compactan los espacios. |
-| `phone` | `String` | Obligatorio. Se quitan espacios y guiones; deben quedar 10 dígitos. |
+| `fullName` | `String` | Obligatorio, al menos 3 letras y 100 caracteres o menos. Se compactan los espacios. |
+| `phone` | `String` | Obligatorio. Se quitan espacios y guiones; deben quedar 10 dígitos, solo números. |
 | `email` | `String` | *opcional*. Formato válido y que no tenga otro socio (sin distinguir mayúsculas). Se guarda en minúsculas. |
 | `joinDate` | `LocalDate` | Obligatoria, no posterior a hoy. |
 
@@ -293,8 +295,8 @@ Permiso: `EDIT_MEMBERS`.
 
 | Campo | Mensaje |
 |---|---|
-| `fullName` | Escribe el nombre completo. · Escribe el nombre completo, con al menos 3 letras. |
-| `phone` | Escribe el teléfono a 10 dígitos. · El teléfono debe tener 10 dígitos; tiene 9. Ejemplo: 555 010 2233. |
+| `fullName` | Escribe el nombre completo. · Escribe el nombre completo, con al menos 3 letras. · Usa 100 caracteres o menos. |
+| `phone` | Escribe el teléfono a 10 dígitos. · El teléfono debe tener 10 dígitos; tiene 9. Ejemplo: 555 010 2233. · Escribe solo números: el teléfono debe tener 10 dígitos. Ejemplo: 555 010 2233. |
 | `email` | Escribe un correo válido, por ejemplo nombre@ejemplo.com, o déjalo vacío. · Ya hay un socio con este correo: Ana López. Usa otro o déjalo vacío. |
 | `joinDate` | Escribe la fecha de alta. · La fecha de alta no puede ser posterior a hoy (09/11/2026). |
 
@@ -302,11 +304,17 @@ Permiso: `EDIT_MEMBERS`.
 
 Permiso: `EDIT_MEMBERS`. Solo datos personales: la membresía cambia únicamente con un cobro.
 
-**Entrada:** `UpdateMemberCommand(memberId, fullName, phone, email, joinDate)` con las mismas reglas que el alta.
+**Entrada:** `long memberId` + `MemberCommand`, con las mismas reglas que el alta. Además, la fecha de alta no puede quedar después del inicio de su primera membresía.
 
-**Salida:** `MemberDetail` actualizado.
+**Salida:** `MemberRow` actualizado, con su estado de hoy.
 
-**Errores:** los de `RegisterMember` y `NotFoundException` «El socio no existe.».
+**Errores:** los de `RegisterMember`, «La fecha de alta no puede ser posterior a su primera membresía (05/11/2026).» en `joinDate` y `NotFoundException` «El socio no existe.».
+
+### `DeleteMember` · Eliminar socio · *implementado*
+
+Permiso: `EDIT_MEMBERS`. **Entrada:** `long memberId`. Solo se borra un socio sin cobros (por ejemplo, un alta duplicada); uno con cobros conserva su historial.
+
+**Errores:** `DomainException` «No puedes eliminar a «Ana López»: ya tiene cobros registrados y su historial se conserva.»; `NotFoundException` «El socio no existe.».
 
 ### Bajas
 

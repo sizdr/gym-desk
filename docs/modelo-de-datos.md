@@ -51,12 +51,25 @@ PAGO también declara `(id, socio_id)` como único, aunque `id` ya lo es, solo p
 | Dominio | `telefono` de SOCIO: 10 dígitos; `duracion_dias` de 1 a 730; `precio` de PLAN_MEMBRESIA `> 0`; `monto >= 0`; `dias_aviso` de 1 a 60; `dias_baja_automatica` de 1 a 365; `prefijo` de FOLIO_SECUENCIA de 1 a 8 mayúsculas, números o guiones; `rol` y `tipo_cobro` son tipos enumerados |
 | Tupla | `fecha_vencimiento > fecha_inicio`; `efectivo_recibido >= monto`; un plan no puede ser su propia referencia mensual |
 | Relación | CONFIGURACION tiene una sola tupla (`id = 1`) |
-
-Que `pago` y `membresia` no se borren lo garantiza hoy la aplicación: ningún caso de uso los borra. Un *trigger* que lo impida también en la base forma parte de la programación en PostgreSQL pendiente.
+| Operación | `pago` y `membresia` no admiten `DELETE`: los triggers `trg_pago_sin_borrado` y `trg_membresia_sin_borrado` lo rechazan (V6) |
 
 ### Normalización
 
 Las relaciones están en tercera forma normal: cada atributo no clave depende solo de la clave completa. `PAGO.monto` no es redundancia: guarda el precio del plan en el momento del cobro, que puede cambiar después en el catálogo. `PAGO.tipo_cobro` tampoco: es lo que fue el cobro en su momento, aunque después cambie el plazo de baja.
+
+## Programación en PostgreSQL
+
+La migración `V6__funciones_y_procedimientos.sql` (copia de `sql/04_funciones.sql` y `sql/05_procedimientos.sql`) agrega:
+
+| Objeto | Tipo | Qué hace |
+|---|---|---|
+| `fn_fecha_vencimiento(inicio, plan)` | función | inicio + duración del plan |
+| `fn_estado_socio(socio, fecha)` | función | SIN_MEMBRESIA, VIGENTE, POR_VENCER, VENCIDA o BAJA según el último vencimiento y la configuración |
+| `fn_formatear_folio(prefijo, número, ancho)` | función | `GYM-0007`; un número más largo no se corta |
+| `fn_impedir_borrado()` | función de trigger | rechaza el `DELETE` en `pago` y `membresia` |
+| `sp_registrar_cobro(...)` | procedimiento | registra un cobro completo: valida, decide el tipo y el inicio, toma el folio e inserta el pago y su membresía |
+
+Los scripts del proyecto, su orden y la matriz de evidencias están en [`sql/README.md`](../sql/README.md); el diccionario de datos, en [diccionario-de-datos.md](diccionario-de-datos.md).
 
 ## Diagrama
 

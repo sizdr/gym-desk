@@ -34,6 +34,7 @@ public final class MemberRows {
                 covered ? (int) ChronoUnit.DAYS.between(today, end) : null,
                 overdue ? (int) ChronoUnit.DAYS.between(end, today) : null,
                 status == MemberStatus.VENCIDA ? end.plusDays(autoDeactivationDays) : null,
-                status == MemberStatus.BAJA ? end : null);
+                status == MemberStatus.BAJA ? end : null,
+                member.joinDate());
     }
 }

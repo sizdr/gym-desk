@@ -24,13 +24,13 @@ class MemberRowsTest {
     @Test
     void sinMembresia_soloDatosDelSocio() {
         assertEquals(new MemberRow(7, "Ana López", "5512345678", "ana@gym.mx", MemberStatus.SIN_MEMBRESIA,
-                null, null, null, null, null, null), row(null));
+                null, null, null, null, null, null, LocalDate.of(2026, 1, 10)), row(null));
     }
 
     @Test
     void cubierto_traeLosDiasQueLeQuedan() {
         assertEquals(new MemberRow(7, "Ana López", "5512345678", "ana@gym.mx", MemberStatus.VIGENTE, "Mensual",
-                TODAY.plusDays(12), 12, null, null, null), row(TODAY.plusDays(12)));
+                TODAY.plusDays(12), 12, null, null, null, LocalDate.of(2026, 1, 10)), row(TODAY.plusDays(12)));
         assertEquals(0, row(TODAY).daysLeft());
         assertEquals(MemberStatus.POR_VENCER, row(TODAY).status());
     }

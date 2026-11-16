@@ -33,6 +33,17 @@ public final class PostgresMembershipRepository implements MembershipRepository 
     }
 
     @Override
+    public List<Membership> findLatestPerMember() {
+        return jdbi.withHandle(handle -> handle.createQuery("""
+                        SELECT DISTINCT ON (socio_id) id, socio_id, plan_id, pago_id, fecha_inicio, fecha_vencimiento
+                        FROM membresia
+                        ORDER BY socio_id, fecha_vencimiento DESC, id DESC
+                        """)
+                .map(PostgresMembershipRepository::map)
+                .list());
+    }
+
+    @Override
     public Optional<Membership> findByPayment(long paymentId) {
         return jdbi.withHandle(handle -> handle.createQuery("""
                         SELECT id, socio_id, plan_id, pago_id, fecha_inicio, fecha_vencimiento

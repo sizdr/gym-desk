@@ -189,6 +189,8 @@ public final class PaymentMethodsController {
         Label nameLabel = new Label("Nombre");
         nameLabel.setLabelFor(name);
         Label nameError = new Label();
+        nameError.setMinHeight(Region.USE_PREF_SIZE);
+        nameError.setPrefWidth(FORM_WIDTH);
         VBox nameField = new VBox(nameLabel, name, nameError);
         nameField.getStyleClass().add("campo");
 
@@ -202,6 +204,8 @@ public final class PaymentMethodsController {
         cashHelp.setMinHeight(Region.USE_PREF_SIZE);
         cashHelp.setPrefWidth(FORM_WIDTH);
         Label cashError = new Label();
+        cashError.setMinHeight(Region.USE_PREF_SIZE);
+        cashError.setPrefWidth(FORM_WIDTH);
         VBox cashField = new VBox(cash, cashHelp, cashError);
         cashField.getStyleClass().add("campo");
 
@@ -214,7 +218,12 @@ public final class PaymentMethodsController {
         general.managedProperty().bind(general.visibleProperty());
 
         FieldErrors errors = new FieldErrors().bind("name", name, nameError).bind("cash", cash, cashError);
-        javafx.beans.value.ChangeListener<java.util.Map<String, String>> showErrors = (obs, old, map) -> errors.show(map);
+        javafx.beans.value.ChangeListener<java.util.Map<String, String>> showErrors = (obs, old, map) -> {
+            errors.show(map);
+            if (dialog != null) {
+                dialog.refit();
+            }
+        };
         model.editorFieldErrorsProperty().addListener(showErrors);
 
         VBox form = new VBox(16, general, nameField, cashField);

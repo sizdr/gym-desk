@@ -226,3 +226,22 @@ El proyecto final se limita a socios, planes, métodos de pago, usuarios y cobro
 | `./mvnw clean test` | 609 pruebas: 0 fallos, 0 errores; 9 omitidas (`CapturasUiTest`, que corre aparte: 9 de 9) |
 | Teclado | Tab en el menú del administrador: Tablero → Cobrar membresía → Socios → Planes → Usuarios → Configuración → Cerrar sesión → tema → atajos |
 
+### Proyecto final · Catálogo de Socios (15/11/2026)
+
+Socios es el tercer catálogo del proyecto, con CRUD completo desde la app (`SearchMembers`, `RegisterMember`, `UpdateMember`, `DeleteMember`):
+
+- **Consultar:** buscador por nombre (sin mayúsculas ni acentos), correo o teléfono; filtro por estado con la cuenta de cada uno (Todos, Vigente, Por vencer, Vencida, Baja, Sin membresía); «Mostrando N de M socios». Cada fila: nombre y contacto, etiqueta de estado y vigencia («Quedan 12 días», «Venció hace 10 días; pasa a baja el…», «Baja desde el…») con el plan y su vencimiento. La búsqueda descarta respuestas viejas.
+- **Registrar y editar** en un diálogo: nombre, teléfono, correo opcional y fecha de alta (propone hoy). Los errores del caso de uso van a su campo; el diálogo crece para mostrarlos sin tapar los botones.
+- **Eliminar** con confirmación (abre en «Cancelar»); un socio con cobros se rechaza con el mensaje del caso de uso.
+- **Permisos:** Caja consulta pero no ve Registrar, Editar ni Eliminar (los casos de uso lo vuelven a revisar).
+- **Filtro de estado** como grupo de opciones: Tab entra una vez y las flechas cambian el filtro.
+
+| Comprobación | Resultado |
+|---|---|
+| `MembersTest` (18), `PostgresMemberRepositoryTest` (4), `MembersViewModelTest` (9) | Búsqueda, filtros, orden y conteos; alta, corrección y borrado con sus reglas y mensajes; permisos; persistencia en PostgreSQL |
+| Capturas en ambos temas y tamaños | `socios`, `busqueda`, `registrado`, `eliminar-rechazado`, `socios-caja`; diálogos `registrar-errores` y `confirmar-eliminar` |
+| Teclado | Registrar socio → buscador → filtro (flechas) → Editar y Eliminar de cada fila. En el diálogo, Enter envía y el foco va al primer campo con error |
+| `./mvnw clean test` | 650 pruebas: 0 fallos, 0 errores; 10 omitidas (`CapturasUiTest`, que corre aparte: 10 de 10) |
+
+Corregido al revisar las capturas: el diálogo de formulario no crecía al aparecer los errores (los botones quedaban fuera) y cortaba los mensajes largos. `FormDialog.refit()` lo arregla también en métodos de pago.
+

@@ -19,6 +19,12 @@ import dev.gimnasio.sistemagimnasio.application.usecase.settings.UpdateSettings;
 import dev.gimnasio.sistemagimnasio.application.usecase.users.CreateInitialAdmin;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.JdbiTransactionRunner;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresFolioSeriesRepository;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.DeleteMember;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.UpdateMember;
+import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMemberRepository;
+import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMembershipRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMembershipPaymentRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresPaymentMethodRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresPlanRepository;
@@ -51,6 +57,8 @@ final class Wiring {
         var payments = new PostgresMembershipPaymentRepository(jdbi);
         var paymentMethods = new PostgresPaymentMethodRepository(jdbi);
         var plans = new PostgresPlanRepository(jdbi);
+        var members = new PostgresMemberRepository(jdbi);
+        var memberships = new PostgresMembershipRepository(jdbi);
         var transactions = new JdbiTransactionRunner(jdbi);
         var authorizer = new Authorizer(users);
 
@@ -69,6 +77,10 @@ final class Wiring {
                 new CreatePlan(plans, transactions, authorizer),
                 new UpdatePlan(plans, transactions, authorizer),
                 new SetPlanActive(plans, transactions, authorizer),
-                new DeletePlan(plans, transactions, authorizer));
+                new DeletePlan(plans, transactions, authorizer),
+                new SearchMembers(members, memberships, plans, settings, authorizer, clock),
+                new RegisterMember(members, memberships, plans, settings, transactions, authorizer, clock),
+                new UpdateMember(members, memberships, plans, settings, transactions, authorizer, clock),
+                new DeleteMember(members, transactions, authorizer));
     }
 }

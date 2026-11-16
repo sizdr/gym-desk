@@ -816,3 +816,67 @@
 /* Diálogo con formulario (ui.common.FormDialog) */
 .dialogo-formulario > .content { -fx-padding: 18 22 18 22; }
 .formulario { -fx-spacing: 16; }
+
+/* Estados del socio (ui.common.StatusTag), con forma distinta además del color */
+.estado-vigente { -fx-background-color: -gd-ok-fondo; -fx-text-fill: -gd-ok; }
+.estado-vigente .estado-punto { -fx-fill: -gd-ok; }
+.estado-por-vencer { -fx-background-color: -gd-aviso-fondo; -fx-text-fill: -gd-aviso; }
+.estado-por-vencer .estado-punto { -fx-fill: -gd-aviso; }
+.estado-vencida { -fx-background-color: -gd-peligro-fondo; -fx-text-fill: -gd-peligro; }
+.estado-vencida .estado-punto { -fx-fill: -gd-peligro; }
+.estado-baja { -fx-background-color: -gd-neutro-fondo; -fx-text-fill: -gd-neutro; }
+.estado-baja .estado-punto { -fx-fill: -gd-neutro; }
+.estado-sin-membresia {
+    -fx-background-color: -gd-linea-fuerte, -gd-superficie;
+    -fx-background-insets: 0, 1;
+    -fx-text-fill: -gd-texto-2;
+}
+.estado-sin-membresia .estado-punto { -fx-fill: transparent; -fx-stroke: -gd-texto-2; -fx-stroke-width: 1.5; }
+
+/* Barra de herramientas de una lista (buscador y filtros) */
+.herramientas {
+    -fx-padding: 16 20;
+    -fx-border-color: transparent transparent -gd-linea transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Filtro segmentado */
+.segmentado {
+    -fx-background-color: -gd-superficie-3;
+    -fx-background-radius: 12;
+    -fx-padding: 4;
+}
+.segmentado .toggle-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 9;
+    -fx-min-height: 34;
+    -fx-padding: 0 14;
+    -fx-font-size: 13.5px;
+    -fx-text-fill: -gd-texto-2;
+}
+.segmentado .toggle-button:hover { -fx-text-fill: -gd-texto; }
+.segmentado .toggle-button:selected {
+    -fx-background-color: -gd-contenido-filo, -gd-segmento-activo;
+    -fx-background-insets: 0, 1;
+    -fx-text-fill: -gd-texto;
+    -fx-effect: dropshadow(gaussian, rgba(18, 24, 33, 0.12), 2, 0, 0, 1);
+}
+.segmentado .toggle-button:focus-visible {
+    -fx-background-color: -gd-foco, -gd-segmento-activo;
+    -fx-background-insets: -2, 0;
+}
+
+/* Selector de fecha */
+.date-picker { -fx-min-height: 40; }
+.date-picker > .text-field { -fx-background-radius: 10 0 0 10, 9 0 0 9; }
+.date-picker > .arrow-button {
+    -fx-background-color: -gd-linea-fuerte, -gd-superficie-2;
+    -fx-background-insets: 0, 1 1 1 0;
+    -fx-background-radius: 0 10 10 0, 0 9 9 0;
+}
+.date-picker > .arrow-button > .arrow { -fx-background-color: -gd-texto-2; }
+.date-picker.invalid > .text-field {
+    -fx-background-color: -gd-error-anillo, -gd-peligro, -gd-entrada-fondo;
+    -fx-background-insets: -3, 0, 1;
+}
+.date-picker-popup { -fx-font-family: "Instrument Sans"; }

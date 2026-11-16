@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Abre la UI real (con casos de uso sobre repositorios en memoria), guarda capturas en ambos temas a
@@ -721,5 +722,126 @@ class CapturasUiTest {
         assertEquals(null, backend.methods.get(transferencia));
         System.out.println("[teclado] métodos de pago: Enter envía el diálogo; foco al campo con error; Esc cancela; "
                 + "Espacio desactiva y el foco sigue en la fila; la confirmación de borrado abre en Cancelar");
+    }
+
+    // ---------- Proyecto final: catálogo de Socios ----------
+
+    private UiFakes.Backend gymWithMembers() {
+        UiFakes.Backend backend = new UiFakes.Backend(staff());
+        long mensual = backend.plans.add("Mensual", 30, "450", null, true).id();
+        long anual = backend.plans.add("Anual", 365, "4200", null, true).id();
+        Object[][] socios = {
+                {"Ana López", 20, mensual}, {"Bruno Díaz", 3, mensual}, {"Carla Ruiz", 200, anual},
+                {"Daniel Soto", -10, mensual}, {"Elena Mora", -50, mensual}, {"Fernando Gil", null, null},
+                {"Gabriela Paz", 12, mensual}, {"Héctor Ríos", 25, mensual}};
+        for (Object[] socio : socios) {
+            var member = backend.members.add((String) socio[0], UiFakes.TODAY.minusDays(300));
+            if (socio[1] != null) {
+                java.time.LocalDate end = UiFakes.TODAY.plusDays((Integer) socio[1]);
+                long plan = (Long) socio[2];
+                int days = plan == anual ? 365 : 30;
+                backend.memberships.add(member.id(), plan, end.minusDays(days), end);
+                backend.members.markPaid(member.id());
+            }
+        }
+        return backend;
+    }
+
+    @Test
+    void proyectoSocios() throws Exception {
+        UiFakes.Backend backend = gymWithMembers();
+        Scene scene = signIn(backend, "admin");
+        FxHarness.runFx(() -> ui.shell().setToastTime(javafx.util.Duration.minutes(1)));
+        FxHarness.runFx(() -> scene.lookup("#nav-socios").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("lista de socios", () -> shown(scene, "so-tabla"));
+        assertEquals("Socios", title(scene));
+        assertEquals("Todos 8", text(scene, "so-filtro-todos"));
+        assertEquals("Vencida 1", text(scene, "so-filtro-vencida"));
+        captureAll("proyecto-socios", "socios");
+
+        // Teclado: Registrar socio → buscador → filtro (un grupo de opciones: Tab entra una vez) → acciones por fila.
+        FxHarness.runFx(() -> scene.lookup("#so-agregar").requestFocus());
+        List<String> order = tabOrder(scene, 4);
+        System.out.println("[teclado] socios, Tab: " + order);
+        assertEquals(List.of("so-agregar", "so-buscar", "so-filtro-todos"), order.subList(0, 3));
+        assertTrue(order.get(3).startsWith("so-editar-"), order.get(3));
+        // En el filtro, la flecha derecha pasa a «Vigente» y filtra la lista.
+        FxHarness.runFx(() -> scene.lookup("#so-filtro-todos").requestFocus());
+        FxHarness.press(scene, KeyCode.RIGHT, false);
+        FxHarness.waitUntil("filtro con flecha", () -> "Mostrando 4 de 8 socios.".equals(
+                ((javafx.scene.control.Label) scene.lookup("#so-resumen")).getText()));
+        assertEquals("so-filtro-vigente", FxHarness.focusOwner(scene));
+        FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.lookup("#so-filtro-todos")).fire());
+
+        // Buscar y filtrar.
+        typeInto(scene, "so-buscar", "LOPEZ");
+        FxHarness.waitUntil("búsqueda", () -> "Mostrando 1 de 8 socios.".equals(
+                ((javafx.scene.control.Label) scene.lookup("#so-resumen")).getText()));
+        captureAll("proyecto-socios", "busqueda");
+        typeInto(scene, "so-buscar", "");
+        FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.lookup("#so-filtro-por-vencer")).fire());
+        FxHarness.waitUntil("filtro", () -> "Mostrando 1 de 8 socios.".equals(
+                ((javafx.scene.control.Label) scene.lookup("#so-resumen")).getText()));
+        FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.lookup("#so-filtro-todos")).fire());
+
+        // Registrar: errores en sus campos, luego el alta.
+        fire(scene, "so-agregar");
+        FxHarness.waitUntil("diálogo de alta", () -> dialogScene() != null && dialogScene().getFocusOwner() != null
+                && "so-nombre".equals(dialogScene().getFocusOwner().getId()));
+        Scene dialog = FxHarness.onFx(this::dialogScene);
+        typeInto(dialog, "so-telefono", "555 010");
+        typeInto(dialog, "so-correo", "no-es-correo");
+        FxHarness.press(dialog, KeyCode.ENTER, false);
+        FxHarness.waitUntil("errores", () -> dialog.getRoot().lookupAll(".field-error").stream()
+                .filter(javafx.scene.Node::isVisible).count() == 3);
+        assertEquals("so-nombre", FxHarness.focusOwner(dialog));
+        captureDialogIn("proyecto-socios", "registrar-errores");
+        typeInto(dialog, "so-nombre", "Irene Vega");
+        typeInto(dialog, "so-telefono", "555 010 2233");
+        typeInto(dialog, "so-correo", "irene@correo.mx");
+        FxHarness.runFx(() -> dialog.lookup("#so-nombre").requestFocus());
+        FxHarness.press(dialog, KeyCode.ENTER, false);
+        FxHarness.waitUntil("diálogo cerrado", () -> dialogScene() == null);
+        FxHarness.waitUntil("alta en la lista", () -> "Todos 9".equals(
+                ((javafx.scene.control.ToggleButton) scene.lookup("#so-filtro-todos")).getText()));
+        assertEquals("Se registró a «Irene Vega». Queda sin membresía hasta su primer cobro.",
+                FxHarness.onFx(() -> toastText(scene, "aviso")));
+        captureAll("proyecto-socios", "registrado");
+        clearToasts(scene);
+
+        // Eliminar a un socio con cobros se rechaza con el mensaje del caso de uso.
+        long ana = backend.members.findAll().stream().filter(m -> m.fullName().equals("Ana López")).findFirst().orElseThrow().id();
+        FxHarness.runFx(() -> scene.lookup("#so-eliminar-" + ana).requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación", () -> dialogWithButton("Eliminar") != null);
+        captureDialogIn("proyecto-socios", "confirmar-eliminar");
+        clickInDialog(FxHarness.onFx(() -> dialogWithButton("Eliminar")), "Eliminar");
+        FxHarness.waitUntil("aviso de error", () -> toastText(scene, "aviso-error") != null);
+        assertEquals("No puedes eliminar a «Ana López»: ya tiene cobros registrados y su historial se conserva.",
+                FxHarness.onFx(() -> toastText(scene, "aviso-error")));
+        captureAll("proyecto-socios", "eliminar-rechazado");
+        closeWindow();
+
+        // Caja consulta, pero no registra, edita ni elimina.
+        Scene caja = signIn(gymWithMembers(), "carlos");
+        FxHarness.runFx(() -> caja.lookup("#nav-socios").requestFocus());
+        FxHarness.press(caja, KeyCode.ENTER, false);
+        FxHarness.waitUntil("lista de socios", () -> shown(caja, "so-tabla"));
+        assertEquals(false, FxHarness.onFx(() -> caja.lookup("#so-agregar") != null));
+        assertEquals(false, FxHarness.onFx(() -> caja.getRoot().lookupAll(".button").stream()
+                .anyMatch(n -> n.getId() != null && n.getId().startsWith("so-eliminar-"))));
+        captureAll("proyecto-socios", "socios-caja");
+    }
+
+    private void captureDialogIn(String folder, String name) throws Exception {
+        for (Themes.Theme theme : Themes.Theme.values()) {
+            FxHarness.runFx(() -> themes.set(theme));
+            FxHarness.settle();
+            Scene dialog = FxHarness.onFx(this::dialogScene);
+            FxHarness.capture(dialog, OUT.resolve(folder).resolve(name + "-" + theme.name().toLowerCase() + ".png"));
+        }
+        FxHarness.runFx(() -> themes.set(Themes.Theme.CLARO));
+        FxHarness.settle();
     }
 }

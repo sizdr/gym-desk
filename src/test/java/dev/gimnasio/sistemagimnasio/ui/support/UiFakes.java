@@ -2,7 +2,9 @@ package dev.gimnasio.sistemagimnasio.ui.support;
 
 import dev.gimnasio.sistemagimnasio.application.fakes.ImmediateTransactions;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryFolioSeries;
+import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryMembers;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryMembershipPayments;
+import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryMemberships;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryPaymentMethods;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryPlans;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySettings;
@@ -17,6 +19,10 @@ import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.DeletePay
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.ListPaymentMethods;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.SetPaymentMethodActive;
 import dev.gimnasio.sistemagimnasio.application.usecase.paymentmethods.UpdatePaymentMethod;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.DeleteMember;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
+import dev.gimnasio.sistemagimnasio.application.usecase.members.UpdateMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.CreatePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.DeletePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.ListPlans;
@@ -172,6 +178,8 @@ public final class UiFakes {
         public final InMemoryMembershipPayments payments = new InMemoryMembershipPayments();
         public final InMemoryPaymentMethods methods = new InMemoryPaymentMethods();
         public final InMemoryPlans plans = new InMemoryPlans();
+        public final InMemoryMembers members = new InMemoryMembers();
+        public final InMemoryMemberships memberships = new InMemoryMemberships();
 
         public Backend(Users users) {
             this.users = users;
@@ -196,7 +204,11 @@ public final class UiFakes {
                     new CreatePlan(plans, transactions, authorizer),
                     new UpdatePlan(plans, transactions, authorizer),
                     new SetPlanActive(plans, transactions, authorizer),
-                    new DeletePlan(plans, transactions, authorizer));
+                    new DeletePlan(plans, transactions, authorizer),
+                    new SearchMembers(members, memberships, plans, settings, authorizer, clock),
+                    new RegisterMember(members, memberships, plans, settings, transactions, authorizer, clock),
+                    new UpdateMember(members, memberships, plans, settings, transactions, authorizer, clock),
+                    new DeleteMember(members, transactions, authorizer));
         }
     }
 

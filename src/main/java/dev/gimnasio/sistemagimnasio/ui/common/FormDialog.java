@@ -68,6 +68,19 @@ public final class FormDialog {
         cancel.disableProperty().bind(busy);
     }
 
+    /**
+     * Ajusta la ventana a su contenido, por ejemplo cuando aparecen mensajes de error: si no, el contenido
+     * crecido empuja los botones fuera de la vista.
+     */
+    public void refit() {
+        javafx.application.Platform.runLater(() -> {
+            var scene = dialog.getDialogPane().getScene();
+            if (scene != null && scene.getWindow() != null) {
+                scene.getWindow().sizeToScene();
+            }
+        });
+    }
+
     /** Sin bloquear: el resultado llega por {@code onSubmit} y {@link #close()}. */
     public void show() {
         dialog.show();

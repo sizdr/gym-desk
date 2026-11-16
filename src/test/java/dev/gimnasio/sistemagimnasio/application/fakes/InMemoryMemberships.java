@@ -32,6 +32,15 @@ public final class InMemoryMemberships implements MembershipRepository {
     }
 
     @Override
+    public List<Membership> findLatestPerMember() {
+        guard.check("findLatestPerMember");
+        return all.stream()
+                .collect(java.util.stream.Collectors.toMap(Membership::memberId, m -> m,
+                        (a, b) -> a.end().isAfter(b.end()) ? a : b))
+                .values().stream().toList();
+    }
+
+    @Override
     public Optional<Membership> findByPayment(long paymentId) {
         guard.check("findByPayment");
         return all.stream().filter(m -> m.paymentId() == paymentId).findFirst();
