@@ -10,7 +10,7 @@ import dev.gimnasio.sistemagimnasio.domain.user.User;
 
 import java.util.Objects;
 
-/** Solo se borra un método que nunca se usó; uno con cobros o ventas se desactiva para conservar el historial. */
+/** Solo se borra un método que nunca se usó; uno con cobros se desactiva para conservar el historial. */
 public final class DeletePaymentMethod {
     private final PaymentMethodRepository methods;
     private final TransactionRunner transactions;
@@ -28,7 +28,7 @@ public final class DeletePaymentMethod {
             PaymentMethod method = PaymentMethodRules.find(methods, id);
             if (methods.isUsed(id)) {
                 throw new DomainException("No puedes eliminar «" + method.name()
-                        + "»: ya se usó en cobros o ventas. Desactívalo para dejar de ofrecerlo.");
+                        + "»: ya se usó en cobros. Desactívalo para dejar de ofrecerlo.");
             }
             if (method.active() && methods.countActive() <= 1) {
                 throw new DomainException(PaymentMethodRules.LAST_ACTIVE);

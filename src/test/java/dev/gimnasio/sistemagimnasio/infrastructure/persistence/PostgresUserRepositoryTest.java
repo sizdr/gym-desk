@@ -172,26 +172,15 @@ class PostgresUserRepositoryTest {
     }
 
     @Test
-    void sabeSiUnUsuarioTieneCobrosVentasOMovimientos() {
+    void sabeSiUnUsuarioTieneCobros() {
         long cobra = insert("Ana", "ana", "caja", true, "h");
-        long vende = insert("Beto", "beto", "caja", true, "h");
-        long mueve = insert("Caro", "caro", "recepcion", true, "h");
         long nuevo = insert("Dani", "dani", "caja", true, "h");
         long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
         long metodo = id("INSERT INTO metodo_pago (nombre) VALUES ('Tarjeta')");
-        long categoria = id("INSERT INTO categoria_producto (nombre) VALUES ('Bebidas')");
-        long producto = id("INSERT INTO producto (clave, nombre, categoria_id, precio, minimo, existencia) "
-                + "VALUES ('AGUA', 'Agua', " + categoria + ", 18, 1, 10)");
-        long motivo = id("INSERT INTO motivo_movimiento (nombre) VALUES ('Compra')");
         id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-0001', "
                 + socio + ", " + cobra + ", " + metodo + ", 450, 'primera')");
-        id("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-0001', " + metodo + ", 18, " + vende + ")");
-        id("INSERT INTO movimiento_inventario (producto_id, tipo, cantidad, existencia_resultante, motivo_movimiento_id, usuario_id) "
-                + "VALUES (" + producto + ", 'entrada', 5, 15, " + motivo + ", " + mueve + ")");
 
         assertTrue(repository.hasOperations(cobra));
-        assertTrue(repository.hasOperations(vende));
-        assertTrue(repository.hasOperations(mueve));
         assertFalse(repository.hasOperations(nuevo));
     }
 

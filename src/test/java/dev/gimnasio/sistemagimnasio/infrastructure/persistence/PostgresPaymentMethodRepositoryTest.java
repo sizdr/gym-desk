@@ -89,7 +89,7 @@ class PostgresPaymentMethodRepositoryTest {
     }
 
     @Test
-    void sabeSiUnMetodoSeUsoEnCobrosOVentas() {
+    void sabeSiUnMetodoSeUsoEnCobros() {
         PaymentMethod efectivo = insert("Efectivo", true, true);
         PaymentMethod tarjeta = insert("Tarjeta", false, true);
         PaymentMethod vales = insert("Vales", false, true);
@@ -97,11 +97,9 @@ class PostgresPaymentMethodRepositoryTest {
         long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
         id("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-0001', "
                 + socio + ", " + usuario + ", " + efectivo.id() + ", 450, 'primera')");
-        id("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-0001', "
-                + tarjeta.id() + ", 18.50, " + usuario + ")");
 
         assertTrue(repository.isUsed(efectivo.id()));
-        assertTrue(repository.isUsed(tarjeta.id()));
+        assertFalse(repository.isUsed(tarjeta.id()));
         assertFalse(repository.isUsed(vales.id()));
     }
 

@@ -11,7 +11,7 @@ import dev.gimnasio.sistemagimnasio.domain.user.User;
 import java.util.Objects;
 
 /**
- * Desactivar no cambia los cobros ni las ventas anteriores. Contar los activos y desactivar van en la misma
+ * Desactivar no cambia los cobros anteriores. Contar los activos y desactivar van en la misma
  * transacción, para que dos estaciones no dejen el catálogo sin ninguno.
  */
 public final class SetPaymentMethodActive {

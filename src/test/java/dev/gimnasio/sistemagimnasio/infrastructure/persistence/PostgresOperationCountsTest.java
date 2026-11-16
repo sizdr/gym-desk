@@ -7,19 +7,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** Los conteos de {@code PostgresMembershipPaymentRepository} y {@code PostgresSaleRepository}. */
+/** El conteo de cobros de {@code PostgresMembershipPaymentRepository}. */
 @Testcontainers(disabledWithoutDocker = true)
 class PostgresOperationCountsTest {
     private Jdbi jdbi;
     private PostgresMembershipPaymentRepository payments;
-    private PostgresSaleRepository sales;
 
     @BeforeEach
     void setUp() {
         jdbi = TestDatabase.jdbi();
         TestDatabase.clean();
         payments = new PostgresMembershipPaymentRepository(jdbi);
-        sales = new PostgresSaleRepository(jdbi);
     }
 
     private long id(String insert) {
@@ -31,9 +29,8 @@ class PostgresOperationCountsTest {
     }
 
     @Test
-    void cuentaCobrosYVentasPorSeparado() {
+    void cuentaLosCobros() {
         assertEquals(0, payments.count());
-        assertEquals(0, sales.count());
 
         long usuario = id("INSERT INTO usuario (nombre, nombre_usuario, contrasena_hash, rol) VALUES ('Ana', 'ana', 'h', 'caja')");
         long socio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Luis', '5512345678', '2026-11-01')");
@@ -42,10 +39,7 @@ class PostgresOperationCountsTest {
             execute("INSERT INTO pago (folio, socio_id, usuario_id, metodo_pago_id, monto, tipo_cobro) VALUES ('GYM-" + i + "', "
                     + socio + ", " + usuario + ", " + metodo + ", 450, 'primera')");
         }
-        execute("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('GYM-V-1', "
-                + metodo + ", 18.50, " + usuario + ")");
 
         assertEquals(2, payments.count());
-        assertEquals(1, sales.count());
     }
 }

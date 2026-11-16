@@ -10,14 +10,12 @@ import java.util.List;
  */
 public enum Route {
     TABLERO(null, "Tablero", "Tablero", "tablero", Permission.VIEW_DAILY_SUMMARY,
-            "Resumen del día: socios activos, vencimientos, cobros y ventas.",
+            "Resumen del día: socios activos, vencimientos y cobros.",
             Status.MISSING_USE_CASES, List.of("GetDaySummary")),
     COBRO("Mostrador", "Cobrar membresía", "Cobrar membresía", "tarjeta", Permission.CHARGE_MEMBERSHIP,
             "Cobra un plan a un socio y entrega su recibo.",
-            Status.MISSING_USE_CASES, List.of("ListChargeOptions", "PreviewMembershipCharge", "ChargeMembership")),
-    VENTA("Mostrador", "Punto de venta", "Punto de venta", "carrito", Permission.SELL,
-            "Vende productos de mostrador y entrega su ticket.",
-            Status.MISSING_USE_CASES, List.of("GetSaleOptions", "SearchProductsForSale", "PreviewSale", "Sell")),
+            Status.SCREEN_PENDING, List.of("ListChargeOptions", "PreviewMembershipCharge", "ChargeMembership",
+            "GetMembershipReceipt", "PrintMembershipReceipt")),
     SOCIOS("Socios", "Socios", "Socios", "usuarios", Permission.VIEW_MEMBERS,
             "Busca socios, revisa su ficha y registra altas.",
             Status.MISSING_USE_CASES, List.of("SearchMembers", "GetMemberDetail", "RegisterMember", "UpdateMember")),
@@ -25,18 +23,11 @@ public enum Route {
             "Duración, precio y ahorro de cada plan.",
             Status.SCREEN_PENDING, List.of("ListPlans", "CreatePlan", "UpdatePlan", "SetPlanActive", "DeletePlan",
             "PreviewPlanSavings")),
-    PRODUCTOS("Catálogo", "Productos", "Productos", "paquete", Permission.MANAGE_PRODUCTS,
-            "Catálogo de productos de mostrador.",
-            Status.MISSING_USE_CASES, List.of("ListProducts", "CreateProduct", "UpdateProduct", "SetProductActive")),
-    INVENTARIO("Catálogo", "Inventario", "Inventario", "portapapeles", Permission.VIEW_INVENTORY,
-            "Existencias frente al mínimo y movimientos de entrada, salida y ajuste.",
-            Status.MISSING_USE_CASES, List.of("GetInventory", "ListStockMovements", "GetMovementOptions",
-            "PreviewStockMovement", "RegisterStockMovement")),
     USUARIOS("Administración", "Usuarios", "Usuarios", "escudo", Permission.MANAGE_USERS,
             "Personas que usan el sistema, su rol y si están activas.",
-            Status.MISSING_USE_CASES, List.of("ListUsers", "CreateUser", "UpdateUser", "SetUserActive")),
+            Status.SCREEN_PENDING, List.of("ListUsers", "CreateUser", "UpdateUser", "SetUserActive", "DeleteUser")),
     CONFIGURACION("Administración", "Configuración", "Configuración", "ajustes", Permission.MANAGE_SETTINGS,
-            "Datos del gimnasio, plazos de membresía, moneda, folios y catálogos.",
+            "Datos del gimnasio, plazos de membresía, moneda, folios y métodos de pago.",
             Status.READY, List.of("GetSettings", "UpdateSettings", "métodos de pago"));
 
     /** Qué le falta a la sección para funcionar. */

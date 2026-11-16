@@ -29,7 +29,7 @@ public interface UserRepository {
 
     void updatePasswordHash(long id, String passwordHash);
 
-    /** {@code true} si tiene cobros, ventas o movimientos de inventario registrados. */
+    /** {@code true} si tiene cobros registrados. */
     boolean hasOperations(long id);
 
     void delete(long id);

@@ -27,14 +27,14 @@ class NavigationTest {
     }
 
     @Test
-    void receptionSeesInventoryButNotTheRestOfTheCatalogOrAdministration() {
-        assertEquals(List.of(Route.TABLERO, Route.COBRO, Route.VENTA, Route.SOCIOS, Route.INVENTARIO), routes(Role.RECEPCION));
-        assertEquals(List.of("null", "Mostrador", "Socios", "Catálogo"), titles(Role.RECEPCION));
+    void receptionSeesTheCounterAndMembers_butNotTheCatalogOrAdministration() {
+        assertEquals(List.of(Route.TABLERO, Route.COBRO, Route.SOCIOS), routes(Role.RECEPCION));
+        assertEquals(List.of("null", "Mostrador", "Socios"), titles(Role.RECEPCION));
     }
 
     @Test
     void cashierOnlySeesTheCounterAndMembers() {
-        assertEquals(List.of(Route.COBRO, Route.VENTA, Route.SOCIOS), routes(Role.CAJA));
+        assertEquals(List.of(Route.COBRO, Route.SOCIOS), routes(Role.CAJA));
         assertEquals(List.of("Mostrador", "Socios"), titles(Role.CAJA), "un grupo sin secciones visibles no aparece");
     }
 
@@ -53,9 +53,10 @@ class NavigationTest {
     }
 
     @Test
-    void settingsWorks_plansHasItsUseCases_andTheRestAreMissingThem() {
+    void settingsWorks_chargePlansAndUsersHaveTheirUseCases_andTheRestAreMissingThem() {
         assertEquals(List.of(Route.CONFIGURACION), withStatus(Route.Status.READY));
-        assertEquals(List.of(Route.PLANES), withStatus(Route.Status.SCREEN_PENDING));
+        assertEquals(List.of(Route.COBRO, Route.PLANES, Route.USUARIOS), withStatus(Route.Status.SCREEN_PENDING));
+        assertEquals(List.of(Route.TABLERO, Route.SOCIOS), withStatus(Route.Status.MISSING_USE_CASES));
         for (Route route : Route.values()) {
             assertFalse(route.useCases().isEmpty(), route.name());
         }

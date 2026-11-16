@@ -32,7 +32,7 @@ public final class DeleteUser {
             }
             if (users.hasOperations(id)) {
                 throw new DomainException("No puedes eliminar a «" + target.name()
-                        + "»: ya tiene cobros, ventas o movimientos registrados. Desactívalo para que no pueda entrar.");
+                        + "»: ya tiene cobros registrados. Desactívalo para que no pueda entrar.");
             }
             if (UserRules.isLastActiveAdmin(target, users)) {
                 throw new DomainException(UserRules.LAST_ADMIN);

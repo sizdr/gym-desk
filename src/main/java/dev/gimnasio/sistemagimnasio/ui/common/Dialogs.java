@@ -14,7 +14,7 @@ import java.util.List;
 
 /** Diálogos modales con los textos, botones y tema de la app. */
 public final class Dialogs {
-    /** Atajos que ya funcionan. Los del prototipo para buscar, cobrar y vender llegan con sus pantallas. */
+    /** Atajos que ya funcionan. Los del prototipo para buscar y cobrar llegan con sus pantallas. */
     static final List<List<String>> SHORTCUTS = List.of(
             List.of("Tab", "Pasar al siguiente control"),
             List.of("Mayús+Tab", "Volver al control anterior"),
@@ -88,7 +88,7 @@ public final class Dialogs {
             }
             grid.addRow(row++, keys, new Label(shortcut.getLast()));
         }
-        Label note = new Label("Los atajos para buscar socios, cobrar y vender llegan con sus pantallas.");
+        Label note = new Label("Los atajos para buscar socios y cobrar llegan con sus pantallas.");
         note.getStyleClass().addAll("chico", "texto-3");
         note.setWrapText(true);
 

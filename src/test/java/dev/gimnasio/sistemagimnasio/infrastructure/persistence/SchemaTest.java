@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.CHECK_VIOLATION;
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.FOREIGN_KEY_VIOLATION;
@@ -17,6 +17,7 @@ import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDataba
 import static dev.gimnasio.sistemagimnasio.infrastructure.persistence.TestDatabase.assertRejected;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Testcontainers(disabledWithoutDocker = true)
 class SchemaTest {
@@ -26,8 +27,6 @@ class SchemaTest {
     private long otroSocio;
     private long plan;
     private long efectivo;
-    private long producto;
-    private long motivo;
 
     @BeforeEach
     void setUp() {
@@ -38,10 +37,6 @@ class SchemaTest {
         otroSocio = id("INSERT INTO socio (nombre, telefono, fecha_alta) VALUES ('Eva', '5587654321', '2026-11-01')");
         plan = id("INSERT INTO plan_membresia (nombre, duracion_dias, precio) VALUES ('Mensual', 30, 450)");
         efectivo = id("INSERT INTO metodo_pago (nombre, es_efectivo) VALUES ('Efectivo', true)");
-        long categoria = id("INSERT INTO categoria_producto (nombre) VALUES ('Bebidas')");
-        producto = id("INSERT INTO producto (clave, nombre, categoria_id, precio, minimo, existencia) "
-                + "VALUES ('AGUA-1L', 'Agua 1 L', " + categoria + ", 18.50, 5, 40)");
-        motivo = id("INSERT INTO motivo_movimiento (nombre) VALUES ('Compra')");
     }
 
     private long id(String insert) {
@@ -198,51 +193,17 @@ class SchemaTest {
         assertRejected(UNIQUE_VIOLATION, () -> execute(insert + "'2026-12-01', '2026-12-31')"));
     }
 
-    // ---------- Ventas e inventario ----------
+    // ---------- Alcance ----------
 
-    private long venta(String folio) {
-        return id("INSERT INTO venta (folio, metodo_pago_id, total, usuario_id) VALUES ('" + folio + "', "
-                + efectivo + ", 37, " + usuario + ")");
-    }
-
+    /** V5 quita productos, ventas e inventario: el proyecto solo administra socios, membresías y cobros. */
     @Test
-    void elImporteDelDetalle_loCalculaLaBase() {
-        long venta = venta("GYM-V-1");
-        long detalle = id("INSERT INTO detalle_venta (venta_id, producto_id, cantidad, precio_unitario) VALUES ("
-                + venta + ", " + producto + ", 3, 18.50)");
-        assertEquals(new BigDecimal("55.50"), jdbi.withHandle(h -> h.createQuery(
-                "SELECT importe FROM detalle_venta WHERE id = " + detalle).mapTo(BigDecimal.class).one()));
-    }
-
-    @Test
-    void elMismoProductoDosVecesEnUnaVenta_seRechaza() {
-        long venta = venta("GYM-V-1");
-        String insert = "INSERT INTO detalle_venta (venta_id, producto_id, cantidad, precio_unitario) VALUES ("
-                + venta + ", " + producto + ", 1, 18.50)";
-        execute(insert);
-        assertRejected(UNIQUE_VIOLATION, () -> execute(insert));
-    }
-
-    private String movimiento(String tipo, int cantidad, String motivoId, String detalleId) {
-        return "INSERT INTO movimiento_inventario (producto_id, tipo, cantidad, existencia_resultante, "
-                + "motivo_movimiento_id, detalle_venta_id, usuario_id) VALUES (" + producto + ", '" + tipo + "', "
-                + cantidad + ", 40, " + motivoId + ", " + detalleId + ", " + usuario + ")";
-    }
-
-    @Test
-    void elSignoDeLaCantidad_debeCoincidirConElTipoDeMovimiento() {
-        String m = String.valueOf(motivo);
-        assertRejected(CHECK_VIOLATION, () -> execute(movimiento("entrada", -5, m, "NULL")));
-        assertRejected(CHECK_VIOLATION, () -> execute(movimiento("salida", 5, m, "NULL")));
-        assertRejected(CHECK_VIOLATION, () -> execute(movimiento("ajuste", 0, m, "NULL")));
-        assertDoesNotThrow(() -> execute(movimiento("entrada", 5, m, "NULL")));
-        assertDoesNotThrow(() -> execute(movimiento("salida", -5, m, "NULL")));
-        assertDoesNotThrow(() -> execute(movimiento("ajuste", -2, m, "NULL")));
-        assertDoesNotThrow(() -> execute(movimiento("ajuste", 2, m, "NULL")));
-    }
-
-    @Test
-    void unMovimientoSinMotivoNiVenta_seRechaza() {
-        assertRejected(CHECK_VIOLATION, () -> execute(movimiento("entrada", 5, "NULL", "NULL")));
+    void lasTablasDeProductosVentasEInventario_yaNoExisten() {
+        for (String name : List.of("producto", "categoria_producto", "venta", "detalle_venta",
+                "movimiento_inventario", "motivo_movimiento", "tipo_movimiento")) {
+            assertNull(jdbi.withHandle(h -> h.createQuery("SELECT to_regtype(:n)::text").bind("n", name)
+                    .mapTo(String.class).one()), name + " como tipo");
+            assertNull(jdbi.withHandle(h -> h.createQuery("SELECT to_regclass(:n)::text").bind("n", name)
+                    .mapTo(String.class).one()), name + " como tabla");
+        }
     }
 }

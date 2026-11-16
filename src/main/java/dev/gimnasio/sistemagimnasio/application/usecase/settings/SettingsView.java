@@ -6,7 +6,7 @@ import dev.gimnasio.sistemagimnasio.domain.settings.GymSettings;
 import java.util.Currency;
 
 /**
- * {@code currencyLocked}, los conteos y {@code folioExample} son de solo lectura.
+ * {@code currencyLocked}, {@code paymentsCount} y {@code folioExample} son de solo lectura.
  * {@code folioExample} es un folio de cobro con el prefijo y el ancho actuales, por ejemplo GYM-0001.
  */
 public record SettingsView(
@@ -21,7 +21,6 @@ public record SettingsView(
         String folioPrefix,
         boolean currencyLocked,
         int paymentsCount,
-        int salesCount,
         String folioExample) {
 
     static SettingsView of(GymSettings settings, FolioSeries series, RecordedOperations operations) {
@@ -37,7 +36,6 @@ public record SettingsView(
                 series.prefix(),
                 operations.locksCurrency(),
                 operations.payments(),
-                operations.sales(),
                 series.format(1).value());
     }
 }

@@ -9,7 +9,7 @@ import dev.gimnasio.sistemagimnasio.domain.user.User;
 
 import java.util.Objects;
 
-/** Un usuario desactivado no entra, pero sus cobros, ventas y movimientos se conservan. */
+/** Un usuario desactivado no entra, pero sus cobros se conservan. */
 public final class SetUserActive {
     static final String SELF = "No puedes desactivar tu propio usuario mientras lo usas.";
 

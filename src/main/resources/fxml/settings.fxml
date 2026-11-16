@@ -52,7 +52,7 @@
             </columnConstraints>
             <VBox styleClass="config-cab" GridPane.columnIndex="0">
                 <Label text="Datos del gimnasio" styleClass="titulo-16" wrapText="true"/>
-                <Label text="Aparecen en el acceso y en el menú; también se usarán en recibos y tickets. Hay una sola configuración: no hay sucursales."
+                <Label text="Aparecen en el acceso, en el menú y en los recibos. Hay una sola configuración: no hay sucursales."
                        styleClass="t-13,texto-3" wrapText="true"/>
             </VBox>
             <VBox styleClass="config-campos" GridPane.columnIndex="1">

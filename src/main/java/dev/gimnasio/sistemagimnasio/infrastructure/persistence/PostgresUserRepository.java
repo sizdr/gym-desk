@@ -152,8 +152,6 @@ public final class PostgresUserRepository implements UserRepository {
     public boolean hasOperations(long id) {
         return jdbi.withHandle(handle -> handle.createQuery("""
                         SELECT EXISTS (SELECT 1 FROM pago WHERE usuario_id = :id)
-                            OR EXISTS (SELECT 1 FROM venta WHERE usuario_id = :id)
-                            OR EXISTS (SELECT 1 FROM movimiento_inventario WHERE usuario_id = :id)
                         """)
                 .bind("id", id)
                 .mapTo(Boolean.class)

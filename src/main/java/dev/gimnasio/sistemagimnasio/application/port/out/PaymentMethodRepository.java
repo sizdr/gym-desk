@@ -21,7 +21,7 @@ public interface PaymentMethodRepository {
 
     void update(PaymentMethod method);
 
-    /** {@code true} si ya hay cobros o ventas con este método. */
+    /** {@code true} si ya hay cobros con este método. */
     boolean isUsed(long id);
 
     void delete(long id);

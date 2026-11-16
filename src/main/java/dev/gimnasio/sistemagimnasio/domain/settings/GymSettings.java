@@ -5,7 +5,7 @@ import dev.gimnasio.sistemagimnasio.domain.shared.DomainException;
 import java.util.Currency;
 
 /**
- * Que la moneda no cambie si ya hay cobros o ventas lo valida la capa de aplicación.
+ * Que la moneda no cambie si ya hay cobros lo valida la capa de aplicación.
  * {@code logo} es la imagen guardada, o null; se copia para que nadie la altere desde fuera.
  * El prefijo de folios vive en su serie ({@code FolioSeries}).
  */

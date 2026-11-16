@@ -212,22 +212,21 @@ class SettingsViewModelTest {
     }
 
     @Test
-    void conCobrosOVentas_laMonedaQuedaBloqueada_yLaAyudaDiceCuantos() throws Exception {
+    void conCobros_laMonedaQuedaBloqueada_yLaAyudaDiceCuantos() throws Exception {
         backend.payments.count = 41;
-        backend.sales.count = 18;
 
         loadAndWait();
 
         assertTrue(model.currencyLockedProperty().get());
-        assertEquals("Bloqueada: ya hay 41 cobros y 18 ventas registrados en MXN. Cambiarla alteraría el "
+        assertEquals("Bloqueada: ya hay 41 cobros registrados en MXN. Cambiarla alteraría el "
                 + "significado de esos importes.", model.currencyHelpProperty().get());
     }
 
     @Test
-    void sinCobrosNiVentas_laMonedaSePuedeElegir() throws Exception {
+    void sinCobros_laMonedaSePuedeElegir() throws Exception {
         loadAndWait();
         assertFalse(model.currencyLockedProperty().get());
-        assertEquals("Solo se puede elegir mientras no haya cobros ni ventas.", model.currencyHelpProperty().get());
+        assertEquals("Solo se puede elegir mientras no haya cobros.", model.currencyHelpProperty().get());
         assertEquals(List.of(MXN, USD), model.currenciesProperty().get());
     }
 
@@ -243,9 +242,8 @@ class SettingsViewModelTest {
 
     @Test
     void conteosEnSingularYPlural() {
-        assertEquals("1 cobro", SettingsViewModel.recorded(1, 0));
-        assertEquals("3 ventas", SettingsViewModel.recorded(0, 3));
-        assertEquals("2 cobros y 1 venta", SettingsViewModel.recorded(2, 1));
+        assertEquals("1 cobro", SettingsViewModel.recorded(1));
+        assertEquals("41 cobros", SettingsViewModel.recorded(41));
     }
 
     @Test

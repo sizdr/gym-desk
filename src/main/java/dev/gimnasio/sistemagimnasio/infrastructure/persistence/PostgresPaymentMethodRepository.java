@@ -108,7 +108,6 @@ public final class PostgresPaymentMethodRepository implements PaymentMethodRepos
     public boolean isUsed(long id) {
         return jdbi.withHandle(handle -> handle.createQuery("""
                         SELECT EXISTS (SELECT 1 FROM pago WHERE metodo_pago_id = :id)
-                            OR EXISTS (SELECT 1 FROM venta WHERE metodo_pago_id = :id)
                         """)
                 .bind("id", id)
                 .mapTo(Boolean.class)

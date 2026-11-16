@@ -1,13 +1,18 @@
+// Modelo de datos del sistema de gestión de gimnasio (PostgreSQL 16).
+// Corresponde con las migraciones V1 a V5 de src/main/resources/db/migration.
+// Alcance: socios, planes, métodos de pago, usuarios y cobro de membresías.
+
 Enum rol_usuario {
   administrador
   recepcion
   caja
 }
 
-Enum tipo_movimiento {
-  entrada
-  salida
-  ajuste
+Enum tipo_cobro {
+  primera [note: 'Primera membresía del socio']
+  renovacion_anticipada [note: 'Renueva antes de vencer: empieza al terminar la vigente']
+  renovacion_vencida [note: 'Renueva ya vencida, antes de la baja: empieza el día del cobro']
+  reactivacion [note: 'Vuelve después de la baja: empieza el día del cobro']
 }
 
 Table configuracion {
@@ -15,29 +20,29 @@ Table configuracion {
   nombre_gimnasio varchar(100) [not null]
   direccion varchar(200)
   telefono varchar(30)
-  logotipo bytea
-  leyenda_recibo varchar(200)
-  moneda char(3) [not null, default: 'MXN']
+  logotipo bytea [note: 'PNG o JPG']
+  leyenda_recibo varchar(160)
+  moneda char(3) [not null, default: 'MXN', note: 'No se cambia si ya hay cobros']
   dias_aviso integer [not null, default: 7]
-  dias_baja_automatica integer [not null, default: 30, note: 'Obligatorio. Cambiarlo recalcula las bajas anteriores']
+  dias_baja_automatica integer [not null, default: 30, note: 'Cambiarlo recalcula las bajas anteriores']
 
-  Note: 'Una sola fila. CHECK (id = 1), dias_aviso >= 0, dias_baja_automatica > 0.'
+  Note: 'Una sola fila. CHECK (id = 1), dias_aviso BETWEEN 1 AND 60, dias_baja_automatica BETWEEN 1 AND 365.'
 }
 
 Table folio_secuencia {
-  serie varchar(10) [pk, note: "'COBRO' o 'VENTA'. Para una sola numeración, ambos usan la misma serie."]
-  prefijo varchar(20) [not null]
+  serie varchar(10) [pk, note: "Solo 'COBRO'"]
+  prefijo varchar(20) [not null, note: 'CHECK prefijo ~ ^[A-Z0-9-]{1,8}$']
   ultimo bigint [not null, default: 0]
   ancho smallint [not null, default: 4]
 
-  Note: 'El folio se toma con UPDATE ... RETURNING (función siguiente_folio). Nunca MAX()+1.'
+  Note: 'El folio se toma con UPDATE ... SET ultimo = ultimo + 1 RETURNING, en la transacción del cobro. Nunca MAX()+1.'
 }
 
 Table usuario {
   id bigint [pk, increment]
   nombre varchar(100) [not null]
-  nombre_usuario varchar(50) [not null, note: 'Con este se entra, no con correo']
-  contrasena_hash varchar(255) [not null]
+  nombre_usuario varchar(50) [not null, note: 'Con este se entra']
+  contrasena_hash varchar(255) [not null, note: 'Argon2id']
   rol rol_usuario [not null]
   activo boolean [not null, default: true]
 
@@ -46,35 +51,30 @@ Table usuario {
   }
 }
 
-
 Table plan_membresia {
   id bigint [pk, increment]
-  nombre varchar(60) [not null, unique]
+  nombre varchar(60) [not null]
   duracion_dias integer [not null]
   precio numeric(12,2) [not null]
   activo boolean [not null, default: true]
+  referencia_mensual_id bigint [ref: > plan_membresia.id, note: 'Plan de 30 días contra el que se calcula el ahorro; opcional']
 
-  Note: 'CHECK duracion_dias > 0, precio >= 0. Los descuentos son planes propios.'
+  Indexes {
+    nombre [unique, note: 'En PostgreSQL: UNIQUE (lower(nombre))']
+  }
+
+  Note: 'CHECK duracion_dias BETWEEN 1 AND 730, precio > 0, referencia_mensual_id <> id. Los descuentos son planes propios.'
 }
 
 Table metodo_pago {
   id bigint [pk, increment]
-  nombre varchar(40) [not null, unique]
+  nombre varchar(40) [not null]
   es_efectivo boolean [not null, default: false, note: 'Si es efectivo se pide lo recibido y se calcula el cambio']
   activo boolean [not null, default: true]
-}
 
-Table motivo_movimiento {
-  id bigint [pk, increment]
-  nombre varchar(60) [not null, unique]
-  es_sistema boolean [not null, default: false, note: "'Existencia inicial' lo usa el sistema"]
-  activo boolean [not null, default: true]
-}
-
-Table categoria_producto {
-  id bigint [pk, increment]
-  nombre varchar(60) [not null, unique]
-  activo boolean [not null, default: true]
+  Indexes {
+    nombre [unique, note: 'En PostgreSQL: UNIQUE (lower(nombre))']
+  }
 }
 
 Table socio {
@@ -90,7 +90,7 @@ Table socio {
     telefono
   }
 
-  Note: 'CHECK telefono ~ ^[0-9]{10}$. El estado y las bajas NO se guardan: se derivan de las membresías y de dias_baja_automatica. Sin membresías, el estado es Sin membresía.'
+  Note: 'CHECK telefono ~ ^[0-9]{10}$. El estado y las bajas NO se guardan: se derivan de las membresías, dias_aviso y dias_baja_automatica.'
 }
 
 Table pago {
@@ -102,6 +102,8 @@ Table pago {
   monto numeric(12,2) [not null, note: 'Precio del plan en ese momento']
   efectivo_recibido numeric(12,2) [note: 'Solo en efectivo; cambio = recibido - monto']
   fecha_hora timestamptz [not null, default: `now()`]
+  tipo_cobro tipo_cobro [not null, note: 'Lo que fue el cobro en su momento']
+  operacion_id varchar(64) [unique, note: 'Lo genera la UI; un segundo envío no cobra dos veces']
 
   Indexes {
     (id, socio_id) [unique, note: 'Para la clave compuesta de membresia']
@@ -109,7 +111,7 @@ Table pago {
     fecha_hora
   }
 
-  Note: 'Nunca se borra (trigger). CHECK monto >= 0, efectivo_recibido >= monto.'
+  Note: 'CHECK monto >= 0, efectivo_recibido >= monto.'
 }
 
 Table membresia {
@@ -124,74 +126,7 @@ Table membresia {
     (socio_id, fecha_vencimiento)
   }
 
-  Note: 'Historial; nunca se borra (trigger). Se crea al cobrar. La vigente es la de vencimiento más reciente. CHECK fecha_vencimiento > fecha_inicio. Al cobrar, bloquear la fila del socio con SELECT ... FOR UPDATE.'
+  Note: 'Historial: se crea al cobrar. La vigente es la de vencimiento más reciente. CHECK fecha_vencimiento > fecha_inicio. Al cobrar se bloquea la fila del socio con SELECT ... FOR UPDATE.'
 }
 
 Ref: membresia.(pago_id, socio_id) > pago.(id, socio_id)
-
-
-Table producto {
-  id bigint [pk, increment]
-  clave varchar(20) [not null]
-  nombre varchar(100) [not null]
-  categoria_id bigint [not null, ref: > categoria_producto.id]
-  precio numeric(12,2) [not null]
-  minimo integer [not null, default: 0]
-  existencia integer [not null, default: 0, note: 'Se actualiza en la misma transacción que el movimiento']
-  activo boolean [not null, default: true]
-
-  Indexes {
-    clave [unique, note: 'En PostgreSQL: UNIQUE (lower(clave))']
-    nombre
-  }
-
-  Note: 'CHECK precio >= 0, minimo >= 0. Bajo = existencia <= minimo. La existencia inicial se registra como primer movimiento, con motivo de sistema.'
-}
-
-Table venta {
-  id bigint [pk, increment]
-  folio varchar(30) [not null, unique]
-  fecha_hora timestamptz [not null, default: `now()`]
-  metodo_pago_id bigint [not null, ref: > metodo_pago.id]
-  total numeric(12,2) [not null]
-  efectivo_recibido numeric(12,2)
-  usuario_id bigint [not null, ref: > usuario.id, note: 'Quién vendió']
-
-  Indexes {
-    fecha_hora
-  }
-
-  Note: 'Nunca se borra (trigger). CHECK total >= 0, efectivo_recibido >= total.'
-}
-
-Table detalle_venta {
-  id bigint [pk, increment]
-  venta_id bigint [not null, ref: > venta.id]
-  producto_id bigint [not null, ref: > producto.id]
-  cantidad integer [not null]
-  precio_unitario numeric(12,2) [not null, note: 'Precio del producto en ese momento']
-
-  Indexes {
-    (venta_id, producto_id) [unique]
-  }
-
-  Note: 'Nunca se borra (trigger). CHECK cantidad > 0. importe = cantidad * precio_unitario (columna generada).'
-}
-
-Table movimiento_inventario {
-  id bigint [pk, increment]
-  fecha_hora timestamptz [not null, default: `now()`]
-  producto_id bigint [not null, ref: > producto.id]
-  tipo tipo_movimiento [not null]
-  cantidad integer [not null, note: 'Con signo: positiva suma, negativa resta']
-  existencia_resultante integer [not null]
-  motivo_movimiento_id bigint [ref: > motivo_movimiento.id]
-  detalle_venta_id bigint [ref: > detalle_venta.id, note: 'Si lo causó una venta']
-  usuario_id bigint [not null, ref: > usuario.id]
-
-  Indexes {
-    (producto_id, fecha_hora)
-  }
-
-  Note: 'CHECK cantidad <> 0; entrada => cantidad > 0; salida => cantidad < 0. Debe tener motivo_movimiento_id o detalle_venta_id. Nunca se borra.'
-}

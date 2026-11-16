@@ -199,9 +199,9 @@ public final class SettingsViewModel {
         folioNumber.set(example.startsWith(prefix) ? example.substring(prefix.length()) : "");
         currencyLocked.set(view.currencyLocked());
         currencyHelp.set(view.currencyLocked()
-                ? "Bloqueada: ya hay " + recorded(view.paymentsCount(), view.salesCount()) + " registrados en "
+                ? "Bloqueada: ya hay " + recorded(view.paymentsCount()) + " registrados en "
                 + view.currency().getCurrencyCode() + ". Cambiarla alteraría el significado de esos importes."
-                : "Solo se puede elegir mientras no haya cobros ni ventas.");
+                : "Solo se puede elegir mientras no haya cobros.");
         List<Currency> options = new ArrayList<>(OFFERED);
         if (view.currency() != null && !options.contains(view.currency())) {
             options.add(view.currency());
@@ -240,16 +240,9 @@ public final class SettingsViewModel {
         }
     }
 
-    /** «41 cobros y 18 ventas», «1 cobro», «3 ventas». */
-    static String recorded(int payments, int sales) {
-        List<String> parts = new ArrayList<>();
-        if (payments > 0) {
-            parts.add(payments + (payments == 1 ? " cobro" : " cobros"));
-        }
-        if (sales > 0) {
-            parts.add(sales + (sales == 1 ? " venta" : " ventas"));
-        }
-        return String.join(" y ", parts);
+    /** «41 cobros», «1 cobro». */
+    static String recorded(int payments) {
+        return payments + (payments == 1 ? " cobro" : " cobros");
     }
 
     /** «MXN · Peso mexicano»; una moneda sin nombre conocido, solo con su clave. */

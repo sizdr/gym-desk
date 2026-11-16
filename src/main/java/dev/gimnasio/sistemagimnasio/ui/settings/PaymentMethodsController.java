@@ -75,8 +75,8 @@ public final class PaymentMethodsController {
     private void build() {
         Label title = new Label("Métodos de pago");
         title.getStyleClass().add("titulo-16");
-        Label description = new Label("Aparecen al cobrar membresías y al vender. Los cambios de esta lista se "
-                + "aplican al momento; desactivar uno no cambia los cobros ni las ventas ya registrados.");
+        Label description = new Label("Aparecen al cobrar membresías. Los cambios de esta lista se aplican al "
+                + "momento; desactivar uno no cambia los cobros ya registrados.");
         description.getStyleClass().addAll("t-13", "texto-3");
         description.setWrapText(true);
         VBox heading = new VBox(4, title, description);

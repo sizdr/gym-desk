@@ -3,7 +3,6 @@ package dev.gimnasio.sistemagimnasio.application.usecase.settings;
 import dev.gimnasio.sistemagimnasio.application.fakes.ImmediateTransactions;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryFolioSeries;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryMembershipPayments;
-import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySales;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySettings;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryUsers;
 import dev.gimnasio.sistemagimnasio.application.shared.Authorizer;
@@ -37,9 +36,8 @@ class UpdateSettingsTest {
     private final InMemoryUsers users = new InMemoryUsers();
     private final InMemoryFolioSeries folioSeries = new InMemoryFolioSeries();
     private final InMemoryMembershipPayments payments = new InMemoryMembershipPayments();
-    private final InMemorySales sales = new InMemorySales();
     private final ImmediateTransactions transactions = new ImmediateTransactions();
-    private final UpdateSettings update = new UpdateSettings(settings, folioSeries, payments, sales, transactions,
+    private final UpdateSettings update = new UpdateSettings(settings, folioSeries, payments, transactions,
             new Authorizer(users));
     private final User admin = users.admin();
 
@@ -60,7 +58,7 @@ class UpdateSettingsTest {
 
     @Test
     void todoOcurreEnUnaSolaTransaccion() {
-        for (var guard : List.of(settings.guard, folioSeries.guard, payments.guard, sales.guard, users.guard)) {
+        for (var guard : List.of(settings.guard, folioSeries.guard, payments.guard, users.guard)) {
             guard.watch(transactions);
         }
         update.execute(admin, valid());
@@ -174,23 +172,17 @@ class UpdateSettingsTest {
     }
 
     @Test
-    void conCobrosOVentas_noSePuedeCambiarLaMoneda_peroSiConservarla() {
+    void conCobros_noSePuedeCambiarLaMoneda_peroSiConservarla() {
         payments.count = 1;
 
-        assertEquals(Map.of("currency", "No se puede cambiar: ya hay cobros o ventas registrados en MXN."),
+        assertEquals(Map.of("currency", "No se puede cambiar: ya hay cobros registrados en MXN."),
                 errors(with("Gym", null, null, null, null, USD, 7, 30, "GYM-")));
         update.execute(admin, with("Gym", null, null, null, null, MXN, 7, 30, "GYM-"));
         assertEquals(MXN, settings.settings.currency());
     }
 
     @Test
-    void conSoloVentas_tambienSeBloqueaLaMoneda() {
-        sales.count = 3;
-        assertEquals(List.of("currency"), List.copyOf(errors(with("Gym", null, null, null, null, USD, 7, 30, "GYM-")).keySet()));
-    }
-
-    @Test
-    void sinCobrosNiVentas_laMonedaSePuedeCambiar() {
+    void sinCobros_laMonedaSePuedeCambiar() {
         update.execute(admin, with("Gym", null, null, null, null, USD, 7, 30, "GYM-"));
         assertEquals(USD, settings.settings.currency());
     }

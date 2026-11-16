@@ -2,7 +2,6 @@ package dev.gimnasio.sistemagimnasio.application.usecase.settings;
 
 import dev.gimnasio.sistemagimnasio.application.port.out.FolioSeriesRepository;
 import dev.gimnasio.sistemagimnasio.application.port.out.MembershipPaymentRepository;
-import dev.gimnasio.sistemagimnasio.application.port.out.SaleRepository;
 import dev.gimnasio.sistemagimnasio.application.port.out.SettingsRepository;
 import dev.gimnasio.sistemagimnasio.application.port.out.TransactionRunner;
 import dev.gimnasio.sistemagimnasio.application.shared.Authorizer;
@@ -33,17 +32,15 @@ public final class UpdateSettings {
     private final SettingsRepository settings;
     private final FolioSeriesRepository folioSeries;
     private final MembershipPaymentRepository payments;
-    private final SaleRepository sales;
     private final TransactionRunner transactions;
     private final Authorizer authorizer;
 
     public UpdateSettings(SettingsRepository settings, FolioSeriesRepository folioSeries,
-                          MembershipPaymentRepository payments, SaleRepository sales,
-                          TransactionRunner transactions, Authorizer authorizer) {
+                          MembershipPaymentRepository payments, TransactionRunner transactions,
+                          Authorizer authorizer) {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.folioSeries = Objects.requireNonNull(folioSeries, "folioSeries");
         this.payments = Objects.requireNonNull(payments, "payments");
-        this.sales = Objects.requireNonNull(sales, "sales");
         this.transactions = Objects.requireNonNull(transactions, "transactions");
         this.authorizer = Objects.requireNonNull(authorizer, "authorizer");
     }
@@ -53,7 +50,7 @@ public final class UpdateSettings {
             authorizer.require(actor, Permission.MANAGE_SETTINGS);
             GymSettings current = settings.get();
             FolioSeries series = folioSeries.get(FolioSeries.MEMBERSHIP_PAYMENTS);
-            RecordedOperations operations = RecordedOperations.count(payments, sales);
+            RecordedOperations operations = RecordedOperations.count(payments);
 
             String gymName = strip(command.gymName());
             String address = strip(command.address());
@@ -77,7 +74,7 @@ public final class UpdateSettings {
             if (currency == null) {
                 errors.put("currency", CURRENCY_REQUIRED);
             } else if (operations.locksCurrency() && !currency.equals(current.currency())) {
-                errors.put("currency", "No se puede cambiar: ya hay cobros o ventas registrados en "
+                errors.put("currency", "No se puede cambiar: ya hay cobros registrados en "
                         + current.currency().getCurrencyCode() + ".");
             }
             if (!GymSettings.isValidWarningDays(command.warningDays())) {

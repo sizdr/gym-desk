@@ -147,7 +147,7 @@ class PaymentMethodsViewModelTest {
         assertFalse(model.editorOpenProperty().get());
         waitUntil(() -> model.snapshot().size() == 4);
         assertEquals(List.of("Efectivo", "Tarjeta", "Transferencia", "Vales de despensa"), names());
-        assertEquals(List.of("Se agregó «Vales de despensa». Ya se ofrece al cobrar y al vender."), ok);
+        assertEquals(List.of("Se agregó «Vales de despensa». Ya se ofrece al cobrar."), ok);
     }
 
     @Test
@@ -210,12 +210,12 @@ class PaymentMethodsViewModelTest {
         onUi(() -> model.setActive(model.snapshot().get(1), false));
         settle();
         assertFalse(item(card).active());
-        assertEquals("«Tarjeta» ya no se ofrece al cobrar ni al vender. Los cobros y ventas anteriores no cambian.", ok.getLast());
+        assertEquals("«Tarjeta» ya no se ofrece al cobrar. Los cobros anteriores no cambian.", ok.getLast());
 
         onUi(() -> model.setActive(model.snapshot().get(2), true));
         settle();
         assertTrue(item(transfer).active());
-        assertEquals("«Transferencia» se ofrece de nuevo al cobrar y al vender.", ok.getLast());
+        assertEquals("«Transferencia» se ofrece de nuevo al cobrar.", ok.getLast());
     }
 
     @Test
@@ -246,7 +246,7 @@ class PaymentMethodsViewModelTest {
         loadAndWait();
         onUi(() -> model.delete(model.snapshot().get(1)));
         settle();
-        assertEquals(List.of("No puedes eliminar «Tarjeta»: ya se usó en cobros o ventas. Desactívalo para dejar de "
+        assertEquals(List.of("No puedes eliminar «Tarjeta»: ya se usó en cobros. Desactívalo para dejar de "
                 + "ofrecerlo."), errors);
         assertEquals(List.of("Efectivo", "Tarjeta", "Transferencia"), names());
     }

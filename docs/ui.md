@@ -211,3 +211,18 @@ Al revisar las capturas y las pruebas se corrigieron:
 - **Alineación de las filas.** El nombre quedaba arriba en las filas sin descripción.
 - **Ayuda de «Es efectivo» recortada** en el diálogo.
 - **Moneda recortada a 1024 × 680** («MXN · Peso mexica…»): la columna de la moneda es un poco más ancha que la del prefijo.
+
+### Alcance del proyecto: sin productos, ventas ni inventario (15/11/2026)
+
+El proyecto final se limita a socios, planes, métodos de pago, usuarios y cobro de membresías (ver [modelo-de-datos.md](modelo-de-datos.md#alcance)). En la UI:
+
+- El menú pierde **Punto de venta**, **Productos** e **Inventario**, y los permisos `SELL`, `MANAGE_PRODUCTS`, `VIEW_INVENTORY` y `REGISTER_STOCK_MOVEMENT`. Recepción ve Tablero, Cobrar membresía y Socios; Caja, Cobrar membresía y Socios.
+- **Cobrar membresía** y **Usuarios** pasan a «Pantalla en preparación»: sus casos de uso ya existen. Tablero y Socios siguen esperando los suyos.
+- En Configuración, la moneda se bloquea solo por cobros y los textos de métodos de pago ya no hablan de ventas.
+- Las validaciones por entrega anteriores conservan el menú de entonces; las capturas se regeneran con el menú nuevo.
+
+| Comprobación | Resultado |
+|---|---|
+| `./mvnw clean test` | 609 pruebas: 0 fallos, 0 errores; 9 omitidas (`CapturasUiTest`, que corre aparte: 9 de 9) |
+| Teclado | Tab en el menú del administrador: Tablero → Cobrar membresía → Socios → Planes → Usuarios → Configuración → Cerrar sesión → tema → atajos |
+

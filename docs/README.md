@@ -1,6 +1,6 @@
 # Sistema Gimnasio
 
-Aplicación de escritorio (JavaFX 21, Java 25, Maven) para administrar un gimnasio: socios, cobros, ventas de mostrador, inventario, usuarios y configuración.
+Aplicación de escritorio (JavaFX 21, Java 25, Maven) para administrar un gimnasio: socios, planes de membresía, cobro de membresías, métodos de pago, usuarios y configuración. Productos, ventas de mostrador e inventario quedaron fuera del alcance (ver [modelo-de-datos.md](modelo-de-datos.md#alcance)).
 
 Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada; la aplicación define casos de uso y puertos; infraestructura y UI implementan esos puertos o los consumen.
 
@@ -10,7 +10,7 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 |---|---|
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
 | `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro), los usuarios (con el primer administrador) y el cobro de membresías con su recibo; `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
-| `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales, planes y cobros), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago, planes, socios, membresías y cobros, `Argon2PasswordHasher`, recibo como archivo de texto, lectura del `.env` y creación del primer administrador al arrancar |
+| `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales, planes, cobros y el recorte del alcance), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago, planes, socios, membresías y cobros, `Argon2PasswordHasher`, recibo como archivo de texto, lectura del `.env` y creación del primer administrador al arrancar |
 | `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, Configuración y métodos de pago, y piezas comunes en `ui/common/`. El resto de las pantallas de negocio aún no existe: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
 
 ## Modelo de datos
@@ -54,19 +54,21 @@ gym-desk/
     │   │   ├── shared/                  Authorizer, ValidationException, NotFoundException
     │   │   ├── port/out/                lo que la aplicación pide al exterior: UserRepository, UserCredentials, PasswordHasher,
     │   │   │                            SettingsRepository, FolioSeriesRepository, PaymentMethodRepository, PlanRepository,
-    │   │   │                            MembershipPaymentRepository, SaleRepository, TransactionRunner
+    │   │   │                            MembershipPaymentRepository, MemberRepository, MembershipRepository, ReceiptPrinter, TransactionRunner
     │   │   └── usecase/                 una carpeta por caso de uso o por área: el caso, su command, su result y sus excepciones
     │   │       ├── authenticate/        Authenticate, AuthenticateCommand, AuthenticationException
     │   │       ├── gyminfo/             GetGymInfo, GymInfo
     │   │       ├── settings/            GetSettings, UpdateSettings, SettingsView, LogoFormat
     │   │       ├── paymentmethods/      List, Create, Update, SetActive y Delete de métodos de pago
     │   │       ├── plans/               ListPlans, PreviewPlanSavings, Create, Update, SetActive y DeletePlan
-    │   │       └── (planeado)           socios, cobro, venta, inventario, productos, usuarios y resumen del día (ver contratos.md)
+    │   │       ├── users/               ListUsers, Create, Update, SetActive y DeleteUser; CreateInitialAdmin
+    │   │       ├── billing/             ListChargeOptions, PreviewMembershipCharge, ChargeMembership y el recibo
+    │   │       └── (planeado)           alta, edición, borrado y búsqueda de socios, y resumen del día (ver contratos.md)
     │   │
     │   ├── infrastructure/              implementa los puertos
     │   │   ├── persistence/             DatabaseConfig, Database (HikariCP + Flyway), JdbiTransactionRunner, Postgres*Repository
     │   │   ├── security/                Argon2PasswordHasher
-    │   │   ├── printing/                (planeado) recibos y tickets
+    │   │   ├── printing/                TextFileReceiptPrinter (recibo de cobro como archivo de texto)
     │   │   └── backup/                  (planeado) pg_dump diario
     │   │
     │   └── ui/                          una carpeta por pantalla (controlador + ViewModel); ver docs/ui.md
@@ -78,7 +80,7 @@ gym-desk/
     │       └── (planeado)               una carpeta por pantalla de negocio: plans/, settings/, members/, billing/…
     │
     ├── main/resources/
-    │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual), V4__cobros.sql (tipo de cobro y operación)
+    │   ├── db/migration/                V1__esquema_inicial.sql (todo el modelo), V2__configuracion_inicial.sql (reglas y datos iniciales), V3__planes.sql (referencia mensual), V4__cobros.sql (tipo de cobro y operación), V5__alcance_proyecto.sql (quita productos, ventas e inventario)
     │   ├── fxml/  css/  fonts/  icons/  vistas, tema, Instrument Sans e iconos Lucide de la UI
     │   └── logback.xml                  registros a consola y archivo
     │

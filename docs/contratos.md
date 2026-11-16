@@ -26,7 +26,7 @@ Están implementados `Authenticate`, `GetGymInfo`, Configuración, el catálogo 
 
 ### Vista previa y confirmación
 
-Cobro, venta y movimiento de inventario tienen una consulta `Preview…` y un comando que confirma.
+El cobro de membresías tiene una consulta `Preview…` y un comando que confirma.
 
 - La vista previa **no lanza excepciones por datos incompletos o incorrectos**: devuelve todo lo que ya se puede calcular, más `errors` (`Map<String, String>`: campo → mensaje) y `ready` (`true` si se puede confirmar). Así el resumen se dibuja mientras se llena el formulario.
 - Solo lanza por permiso o usuario desactivado.
@@ -34,7 +34,7 @@ Cobro, venta y movimiento de inventario tienen una consulta `Preview…` y un co
 
 ### Operaciones que no se repiten
 
-`ChargeMembership`, `Sell` y `RegisterStockMovement` reciben `operationId` (`String`), que la UI genera al abrir cada formulario. Si la misma operación llega dos veces (doble clic, reintento), el caso de uso no la registra otra vez: devuelve el resultado original con `repeated = true`.
+`ChargeMembership` recibe `operationId` (`String`), que la UI genera al abrir cada formulario. Si la misma operación llega dos veces (doble clic, reintento), el caso de uso no la registra otra vez: devuelve el resultado original con `repeated = true`.
 
 ### Fechas de vigencia
 
@@ -78,8 +78,6 @@ Contraseñas y hashes no aparecen en `toString()` (se muestran como `***`) y nin
 |---|---|
 | `MemberStatus` | `SIN_MEMBRESIA`, `VIGENTE`, `POR_VENCER`, `VENCIDA`, `BAJA` |
 | `ChargeKind` | `PRIMERA` (empieza hoy), `RENOVACION_ANTICIPADA` (empieza el día en que termina la vigencia actual), `RENOVACION_VENCIDA` (empieza hoy), `REACTIVACION` (estaba en baja; empieza hoy) |
-| `StockLevel` | `AGOTADO` (existencia 0), `BAJO` (mayor que 0 e igual o menor al mínimo), `SUFICIENTE` |
-| `MovementType` | `ENTRADA`, `SALIDA`, `AJUSTE` |
 | `MemberSort` | `VENCIMIENTO`, `VENCIMIENTO_DESC`, `NOMBRE` |
 
 ### `MemberRow`
@@ -120,20 +118,6 @@ Un cobro de membresía.
 | `amount` | `Money` | |
 | `cashierName` | `String` | Quién atendió. |
 
-### `TransactionRow`
-
-Un cobro o una venta en la lista combinada del tablero.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `type` | `TransactionType` | `COBRO` o `VENTA`; con `id` abre el recibo o el ticket. |
-| `id` | `long` | |
-| `folio` | `String` | |
-| `dateTime` | `LocalDateTime` | |
-| `concept` | `String` | «Membresía mensual · Ana López» o «Venta de mostrador · 3 piezas». |
-| `paymentMethodName` | `String` | |
-| `amount` | `Money` | |
-
 ### `DeactivationView`
 
 Una baja de la ficha del socio, abierta o ya reactivada.
@@ -167,12 +151,10 @@ Cada catálogo tiene su propio record, con solo los campos que le aplican:
 | Record | Campos |
 |---|---|
 | `PaymentMethodItem` | `id`, `name`, `cash` (`true` si es efectivo y pide lo recibido), `active` |
-| `MovementReasonItem` | `id`, `name`, `system` (los que usa el sistema, como «Venta» o «Existencia inicial»; no se ofrecen, editan ni desactivan), `active` |
-| `ProductCategoryItem` | `id`, `name`, `active` |
 
 ### `GymHeader`
 
-Encabezado de recibos y tickets: `gymName`, `logo` (`byte[]`, *opcional*), `address`, `phone`, `receiptFooter` (los tres *opcionales*) y `currency`, para dar formato a los importes.
+Encabezado de los recibos: `gymName`, `logo` (`byte[]`, *opcional*), `address`, `phone`, `receiptFooter` (los tres *opcionales*) y `currency`, para dar formato a los importes.
 
 ## Acceso
 
@@ -237,11 +219,9 @@ Permiso: `VIEW_DAILY_SUMMARY`.
 | `expiredCount` | `int` | `VENCIDA` (aún no en baja). |
 | `membershipIncomeToday` | `Money` | Suma de los cobros de hoy. |
 | `paymentsToday` | `int` | Cuántos cobros hubo hoy. |
-| `salesIncomeToday` | `Money` | Suma de las ventas de hoy. |
-| `salesToday` | `int` | Cuántas ventas hubo hoy. |
 | `expiring` | `List<MemberRow>` | `POR_VENCER`, del vencimiento más próximo al más lejano. |
 | `expired` | `List<MemberRow>` | `VENCIDA`, del vencimiento más reciente al más antiguo. Cada fila trae `deactivatesOn`. |
-| `recentTransactions` | `List<TransactionRow>` | Últimos 8 cobros y ventas mezclados, el más reciente primero. |
+| `recentPayments` | `List<PaymentRow>` | Últimos 8 cobros, el más reciente primero. |
 
 ## Socios
 
@@ -421,179 +401,6 @@ Permiso: `CHARGE_MEMBERSHIP`. Se abre al terminar un cobro y desde cualquier fol
 
 **Errores:** `NotFoundException` «El cobro no existe.»; los fallos de impresora llegan como error técnico.
 
-## Venta de mostrador
-
-El ticket en armado (agregar, cambiar cantidad, quitar, vaciar) vive en la UI. El sistema interviene para listar, previsualizar y cobrar.
-
-### `GetSaleOptions` · Opciones del punto de venta
-
-Permiso: `SELL`.
-
-**Salida:** `SaleOptions(categories, paymentMethods)`: `List<ProductCategoryItem>` y `List<PaymentMethodItem>`, con solo activos.
-
-### `SearchProductsForSale` · Buscar productos
-
-Permiso: `SELL`.
-
-**Entrada:** `SearchProductsQuery(text, categoryId)`, ambos *opcionales*. `text` busca en clave, nombre y categoría.
-
-**Salida:** `List<ProductOption>`, solo productos activos, por nombre.
-
-| Campo | Tipo |
-|---|---|
-| `id` | `long` |
-| `code` | `String` |
-| `name` | `String` |
-| `categoryName` | `String` |
-| `price` | `Money` |
-| `stock` | `int` |
-| `minStock` | `int` |
-| `level` | `StockLevel` |
-
-### `PreviewSale` · Totales del ticket
-
-Permiso: `SELL`. No guarda nada ni lanza por datos incompletos.
-
-**Entrada:** `SellCommand` (el mismo de la venta).
-
-**Salida:** `SalePreview`
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `lines` | `List<SaleLineView>` | `productId`, `code`, `name`, `unitPrice`, `quantity`, `subtotal`, `stock`. Con `stock` la UI deshabilita «+» al llegar a la existencia. |
-| `pieces` | `int` | Suma de cantidades. |
-| `total` | `Money` | |
-| `paymentMethod` | `PaymentMethodItem` | *opcional* |
-| `cashReceived`, `change`, `missing` | `Money` | *opcionales*, igual que en el cobro. |
-| `errors` | `Map<String, String>` | |
-| `ready` | `boolean` | |
-
-### `Sell` · Cobrar la venta
-
-Permiso: `SELL`.
-
-**Entrada:** `SellCommand`
-
-| Campo | Tipo | Reglas |
-|---|---|---|
-| `operationId` | `String` | Obligatorio. |
-| `lines` | `List<SaleLineInput>` | Al menos una. Cada una: `productId` y `quantity` (mayor que 0). Si un producto aparece dos veces, se suman las cantidades. |
-| `paymentMethodId` | `Long` | Método activo. |
-| `cashReceived` | `Money` | Igual que en `ChargeMembership`. |
-
-No hay campo de precio: se usa el precio actual del producto. Cada línea descuenta existencia y genera su movimiento de inventario, vinculado al folio.
-
-**Salida:** `SaleResult`
-
-| Campo | Tipo |
-|---|---|
-| `saleId` | `long` |
-| `folio` | `String` |
-| `dateTime` | `LocalDateTime` |
-| `lines` | `List<SaleLineView>` |
-| `total` | `Money` |
-| `paymentMethodName` | `String` |
-| `cashReceived`, `change` | `Money` (*opcionales*) |
-| `cashierName` | `String` |
-| `repeated` | `boolean` |
-
-**Errores** (`ValidationException`):
-
-| Campo | Mensaje |
-|---|---|
-| `lines` | Agrega al menos un producto al ticket. · Revisa las cantidades del ticket. · Hay un producto que ya no está disponible; quítalo del ticket. · Solo hay 3 de Agua 1 L. |
-| `paymentMethodId`, `cashReceived` | Los mismos de `ChargeMembership`. |
-
-### `GetSaleTicket` / `PrintSaleTicket` · Ticket
-
-Permiso: `SELL`. **Entrada:** `long saleId`. **Salida de `GetSaleTicket`:** `SaleTicket(header, sale)`, con `sale` de tipo `SaleResult`. **Errores:** `NotFoundException` «La venta no existe.».
-
-## Inventario
-
-### `GetInventory` · Existencias
-
-Permiso: `VIEW_INVENTORY`.
-
-**Entrada:** `InventoryQuery(text, onlyLow)`; `text` *opcional* (clave, nombre o categoría), `onlyLow` `boolean` (agotados y bajos).
-
-**Salida:** `List<StockRow>` de productos activos: `productId`, `code`, `name`, `categoryName`, `stock`, `minStock`, `level`. Primero agotados, luego bajos, luego suficientes; dentro de cada grupo, por nombre.
-
-### `ListStockMovements` · Movimientos recientes
-
-Permiso: `VIEW_INVENTORY`.
-
-**Entrada:** `MovementsQuery(productId)`; *opcional*, `null` muestra todos.
-
-**Salida:** `List<MovementRow>`, últimos 50, el más reciente primero.
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `dateTime` | `LocalDateTime` | |
-| `productCode`, `productName` | `String` | |
-| `type` | `MovementType` | |
-| `fromSale` | `boolean` | `true` si lo generó una venta; la UI lo muestra como tipo «Venta». |
-| `quantity` | `int` | Con signo: positivo suma, negativo resta. |
-| `resultingStock` | `int` | «Queda». |
-| `reasonName` | `String` | *opcional*; `null` si viene de una venta. |
-| `saleFolio` | `String` | *opcional*; folio de la venta que lo generó. |
-| `userName` | `String` | Quién lo registró. |
-
-### `GetMovementOptions` · Opciones del formulario de movimiento
-
-Permiso: `REGISTER_STOCK_MOVEMENT`.
-
-**Salida:** `MovementOptions`
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `products` | `List<StockRow>` | Productos activos. |
-| `reasons` | `List<MovementReasonItem>` | Motivos activos, sin los de sistema. Es una sola lista para los tres tipos, como en la especificación. |
-
-### `PreviewStockMovement` · Cómo quedará la existencia
-
-Permiso: `REGISTER_STOCK_MOVEMENT`. No guarda nada ni lanza por datos incompletos.
-
-**Entrada:** `RegisterStockMovementCommand` (el mismo del registro).
-
-**Salida:** `StockPreview`
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `product` | `StockRow` | *opcional* |
-| `currentStock` | `Integer` | *opcional* |
-| `delta` | `Integer` | *opcional*; con signo («+5», «−3»). |
-| `resultingStock` | `Integer` | *opcional* |
-| `levelAfter` | `StockLevel` | *opcional* |
-| `errors` | `Map<String, String>` | |
-| `ready` | `boolean` | |
-
-### `RegisterStockMovement` · Registrar movimiento
-
-Permiso: `REGISTER_STOCK_MOVEMENT`.
-
-**Entrada:** `RegisterStockMovementCommand`
-
-| Campo | Tipo | Reglas |
-|---|---|---|
-| `operationId` | `String` | Obligatorio. |
-| `productId` | `Long` | Producto activo. |
-| `type` | `MovementType` | Obligatorio. |
-| `quantity` | `Integer` | `ENTRADA` y `SALIDA`: piezas, mayor que 0 y sin signo; el sistema pone el signo. Se ignora en `AJUSTE`. |
-| `countedStock` | `Integer` | Solo `AJUSTE`: existencia contada, 0 o más y distinta a la actual. El sistema calcula la diferencia. |
-| `reasonId` | `Long` | Motivo activo que no sea de sistema. |
-
-**Salida:** `MovementRow` del movimiento guardado, con `repeated` (`boolean`).
-
-**Errores** (`ValidationException`):
-
-| Campo | Mensaje |
-|---|---|
-| `productId` | Elige un producto. · El producto está inactivo. |
-| `type` | Elige el tipo de movimiento. |
-| `quantity` | Escribe una cantidad entera mayor que cero, sin signo. · No puedes sacar 8; solo hay 5 en existencia. |
-| `countedStock` | Escribe la existencia contada: un número entero, 0 o mayor. · La existencia contada es igual a la registrada; no hay nada que ajustar. |
-| `reasonId` | Elige el motivo. · Ese motivo ya no está disponible. |
-
 ## Planes · *implementado*
 
 Permiso: `MANAGE_PLANS` en todos.
@@ -635,32 +442,6 @@ Un id que ya no existe lanza `NotFoundException`: «El plan ya no existe. Recarg
 | `price` | Escribe un precio mayor que cero, por ejemplo 450.00. |
 | `referenceMonthlyPlanId` | Elige un plan de 30 días distinto de este. |
 
-## Productos
-
-Permiso: `MANAGE_PRODUCTS` en todos.
-
-| Caso de uso | Entrada | Salida |
-|---|---|---|
-| `ListProducts` | `ProductsQuery(text, categoryId, active)`, todos *opcionales* | `List<ProductRow>` por nombre |
-| `CreateProduct` | `CreateProductCommand(code, name, categoryId, price, minStock, initialStock)` | `ProductRow` |
-| `UpdateProduct` | `long productId` + `UpdateProductCommand(code, name, categoryId, price, minStock)` | `ProductRow` |
-| `SetProductActive` | `long productId`, `boolean active` | `ProductRow` |
-
-**`ProductRow`:** `id`, `code`, `name`, `categoryId`, `categoryName`, `price`, `minStock`, `stock`, `level`, `active`.
-
-La existencia no se edita aquí: solo cambia con ventas y movimientos. Si `initialStock` es mayor que 0, al crear se registra una entrada con el motivo de sistema «Existencia inicial». La clave se guarda en mayúsculas.
-
-**Errores** (`ValidationException`):
-
-| Campo | Mensaje |
-|---|---|
-| `code` | Escribe la clave del producto. · Usa de 2 a 12 letras, números o guiones, por ejemplo AGU-02. · Ya existe un producto con esa clave. |
-| `name` | Escribe el nombre del producto. |
-| `categoryId` | Elige una categoría. · Esa categoría ya no está activa; elige otra. |
-| `price` | Escribe un precio mayor que cero, por ejemplo 25.00. |
-| `minStock` | Escribe el mínimo: un número entero, 0 o mayor. |
-| `initialStock` | Escribe la existencia inicial: un número entero, 0 o mayor. |
-
 ## Usuarios · *implementado*
 
 Permiso: `MANAGE_USERS` en todos, salvo `CreateInitialAdmin`.
@@ -673,7 +454,7 @@ Permiso: `MANAGE_USERS` en todos, salvo `CreateInitialAdmin`.
 | `SetUserActive` | `long userId`, `boolean active` | `UserRow` |
 | `DeleteUser` | `long userId` | nada |
 
-`newPassword` es *opcional*: `null` o vacío conserva la actual (y entonces no se revisa la confirmación). Las contraseñas no se recortan. El nombre de usuario se recorta y se guarda en minúsculas; «Admin» y «admin» son el mismo. Todos los errores del formulario se reportan juntos. Los que escriben corren en una transacción, que protege la regla del último administrador. `CreateUser` deja al usuario activo; `UpdateUser` no cambia si está activo; `SetUserActive` con el estado que ya tiene no hace nada. Un cambio de rol o una desactivación se aplica en la siguiente operación de ese usuario. Desactivar a un usuario conserva sus cobros, ventas y movimientos. La matriz de permisos de la pantalla sale de `Role.permissions()`, sin caso de uso.
+`newPassword` es *opcional*: `null` o vacío conserva la actual (y entonces no se revisa la confirmación). Las contraseñas no se recortan. El nombre de usuario se recorta y se guarda en minúsculas; «Admin» y «admin» son el mismo. Todos los errores del formulario se reportan juntos. Los que escriben corren en una transacción, que protege la regla del último administrador. `CreateUser` deja al usuario activo; `UpdateUser` no cambia si está activo; `SetUserActive` con el estado que ya tiene no hace nada. Un cambio de rol o una desactivación se aplica en la siguiente operación de ese usuario. Desactivar a un usuario conserva sus cobros. La matriz de permisos de la pantalla sale de `Role.permissions()`, sin caso de uso.
 
 **Errores:**
 
@@ -688,7 +469,7 @@ Permiso: `MANAGE_USERS` en todos, salvo `CreateInitialAdmin`.
 | Desactivar al último administrador activo | `DomainException` | Debe quedar al menos un administrador activo. |
 | Desactivarse a sí mismo | `DomainException` | No puedes desactivar tu propio usuario mientras lo usas. |
 | Eliminarse a sí mismo | `DomainException` | No puedes eliminar tu propio usuario mientras lo usas. |
-| Eliminar a quien ya registró cobros, ventas o movimientos | `DomainException` | No puedes eliminar a «Lucía Pérez»: ya tiene cobros, ventas o movimientos registrados. Desactívalo para que no pueda entrar. |
+| Eliminar a quien ya registró cobros | `DomainException` | No puedes eliminar a «Lucía Pérez»: ya tiene cobros registrados. Desactívalo para que no pueda entrar. |
 | Eliminar al último administrador activo | `DomainException` | Debe quedar al menos un administrador activo. |
 | Usuario inexistente | `NotFoundException` | El usuario ya no existe. Recarga la pantalla. |
 
@@ -718,13 +499,13 @@ Permiso: `MANAGE_SETTINGS` en todos.
 | `gymName` | `String` | Obligatorio, 100 caracteres o menos. |
 | `address`, `phone` | `String` | *opcionales*; 200 y 30 caracteres o menos. |
 | `receiptFooter` | `String` | *opcional*, 160 caracteres o menos. |
-| `logo` | `byte[]` | *opcional*. PNG o JPG de hasta 300 KB, reconocido por sus primeros bytes. Son los formatos que JavaFX dibuja en la app y en recibos y tickets; WEBP y SVG se rechazan porque nunca se verían. |
-| `currency` | `Currency` | No se puede cambiar si ya hay cobros o ventas. |
+| `logo` | `byte[]` | *opcional*. PNG o JPG de hasta 300 KB, reconocido por sus primeros bytes. Son los formatos que JavaFX dibuja en la app y en los recibos; WEBP y SVG se rechazan porque nunca se verían. |
+| `currency` | `Currency` | No se puede cambiar si ya hay cobros. |
 | `warningDays` | `int` | De 1 a 60. |
 | `autoDeactivationDays` | `int` | De 1 a 365. |
 | `folioPrefix` | `String` | De 1 a 8 letras mayúsculas, números o guiones. Es el de la serie de cobros. |
-| `currencyLocked` | `boolean` | Solo lectura: `true` si ya hay cobros o ventas. |
-| `paymentsCount`, `salesCount` | `int` | Solo lectura, para explicar el bloqueo («ya hay 41 cobros y 18 ventas registrados en MXN»). |
+| `currencyLocked` | `boolean` | Solo lectura: `true` si ya hay cobros. |
+| `paymentsCount` | `int` | Solo lectura, para explicar el bloqueo («ya hay 41 cobros registrados en MXN»). |
 | `folioExample` | `String` | Solo lectura; un folio de cobro con el prefijo y el ancho actuales, por ejemplo `GYM-0001`. La UI pone el texto alrededor. |
 
 **Errores** (`ValidationException`):
@@ -736,16 +517,14 @@ Permiso: `MANAGE_SETTINGS` en todos.
 | `phone` | Usa 30 caracteres o menos. |
 | `warningDays` | Escribe un número de días entre 1 y 60. |
 | `autoDeactivationDays` | Escribe un número de días entre 1 y 365. |
-| `currency` | Elige una moneda. · No se puede cambiar: ya hay cobros o ventas registrados en MXN. |
+| `currency` | Elige una moneda. · No se puede cambiar: ya hay cobros registrados en MXN. |
 | `folioPrefix` | Usa de 1 a 8 letras mayúsculas, números o guiones, por ejemplo GYM-. |
 | `receiptFooter` | Usa 160 caracteres o menos. |
 | `logo` | Usa una imagen PNG o JPG de hasta 300 KB. |
 
 ### Catálogos
 
-Implementado: métodos de pago. Motivos de movimiento y categorías de producto son de la fase 2.
-
-Los tres catálogos tienen los mismos cuatro casos de uso, cada uno con su command y su item:
+Implementado: métodos de pago.
 
 | Caso de uso | Entrada | Salida |
 |---|---|---|
@@ -755,7 +534,7 @@ Los tres catálogos tienen los mismos cuatro casos de uso, cada uno con su comma
 | `SetPaymentMethodActive` | `long id`, `boolean active` | `PaymentMethodItem` |
 | `DeletePaymentMethod` | `long id` | nada |
 
-Motivos y categorías siguen la misma forma con `MovementReasonCommand(name)` / `ProductCategoryCommand(name)` y sus items. Crear, editar, activar y borrar corren cada uno en una transacción. Borrar solo se permite si el elemento nunca se usó; si ya se usó, se desactiva. El nombre se recorta y no puede repetirse sin distinguir mayúsculas, aunque el otro esté inactivo. `Create…` deja el elemento activo; `Update…` no cambia si está activo; `Set…Active` con el estado que ya tiene no hace nada. La lista va ordenada por nombre. Desactivar no cambia los registros anteriores.
+Crear, editar, activar y borrar corren cada uno en una transacción. Borrar solo se permite si el elemento nunca se usó; si ya se usó, se desactiva. El nombre se recorta y no puede repetirse sin distinguir mayúsculas, aunque el otro esté inactivo. `Create…` deja el elemento activo; `Update…` no cambia si está activo; `Set…Active` con el estado que ya tiene no hace nada. La lista va ordenada por nombre. Desactivar no cambia los registros anteriores.
 
 **Errores:**
 
@@ -763,27 +542,20 @@ Motivos y categorías siguen la misma forma con `MovementReasonCommand(name)` / 
 |---|---|---|
 | Nombre vacío, largo o repetido | `ValidationException` (`name`) | Escribe el nombre. · Usa 40 caracteres o menos. · Ya existe uno con ese nombre. |
 | El id ya no existe | `NotFoundException` | El método de pago ya no existe. Recarga la pantalla. |
-| Desactivar el último método de pago, motivo o categoría activos | `DomainException` | Deja al menos un método de pago. · Deja al menos un motivo. · Deja al menos una categoría. |
-| Desactivar una categoría con productos activos | `DomainException` | No puedes desactivar «Bebidas»: la usa Agua 1 L. Cambia su categoría antes. |
-| Editar o desactivar un motivo de sistema | `DomainException` | Los motivos del sistema no se pueden modificar. |
-| Cambiar «es efectivo» de un método ya usado en cobros o ventas | `ValidationException` (`cash`) | No puedes cambiar si «Efectivo» es efectivo: ya se usó en cobros o ventas. Crea un método nuevo y desactiva este. |
-| Borrar un método ya usado en cobros o ventas | `DomainException` | No puedes eliminar «Efectivo»: ya se usó en cobros o ventas. Desactívalo para dejar de ofrecerlo. |
+| Desactivar el último método de pago activo | `DomainException` | Deja al menos un método de pago. |
+| Cambiar «es efectivo» de un método ya usado en cobros | `ValidationException` (`cash`) | No puedes cambiar si «Efectivo» es efectivo: ya se usó en cobros. Crea un método nuevo y desactiva este. |
+| Borrar un método ya usado en cobros | `DomainException` | No puedes eliminar «Efectivo»: ya se usó en cobros. Desactívalo para dejar de ofrecerlo. |
 | Borrar el último método activo | `DomainException` | Deja al menos un método de pago. |
 
 ## Pendientes que afectan los contratos
 
 | Tema | Qué falta decidir | Qué cambiaría |
 |---|---|---|
-| Folios de ventas | Una serie para cobros y ventas, o dos (`GYM-` y `GYM-V-`). Hoy solo existe la serie `COBRO`. | `folioExample` y la numeración; los contratos no cambian. |
 | Deshacer un cobro | Si se podrá, quién y durante cuánto tiempo. | Un caso de uso `VoidMembershipPayment`. |
 
 ## Cambios que estos contratos piden al código
 
-Lo que hoy no coincide con los contratos y hay que ajustar al implementar cada caso de uso.
-
-| Dónde | Cambio |
-|---|---|
-| Precios de productos | Mayores que cero (hoy `Product` y la base admiten 0). |
+Lo que hoy no coincide con los contratos y hay que ajustar al implementar cada caso de uso. Por ahora, nada.
 
 ## Arranque
 
@@ -810,7 +582,7 @@ Lo que los casos de uso piden a `infrastructure`. Los puertos de los casos plane
 | `User insert(User user, String passwordHash)` | Lo devuelve con su id. |
 | `void update(User user)` | Nombre, usuario, rol y activo; no toca el hash. Lanza `IllegalStateException` si el id no existe. |
 | `void updatePasswordHash(long id, String passwordHash)` | Solo el hash. Lanza `IllegalStateException` si el id no existe. |
-| `boolean hasOperations(long id)` | `true` si tiene cobros, ventas o movimientos de inventario. |
+| `boolean hasOperations(long id)` | `true` si tiene cobros registrados. |
 | `void delete(long id)` | Borra el usuario. |
 
 `UserCredentials(User user, String passwordHash)` va separado de `User` para que el hash solo viaje entre el repositorio y el caso de uso. Implementación: `PostgresUserRepository`.
@@ -844,13 +616,13 @@ Implementación: `PostgresSettingsRepository`.
 
 Implementación: `PostgresFolioSeriesRepository`.
 
-### `MembershipPaymentRepository` y `SaleRepository`
+### `MembershipPaymentRepository`
 
 | Método | Contrato |
 |---|---|
-| `int count()` | Cobros (o ventas) registrados. Con alguno, la moneda queda bloqueada. |
+| `int count()` | Cobros registrados. Con alguno, la moneda queda bloqueada. |
 
-Implementaciones: `PostgresMembershipPaymentRepository` y `PostgresSaleRepository`. La venta crece con su paso.
+Implementación: `PostgresMembershipPaymentRepository`.
 
 `MembershipPaymentRepository` además:
 
@@ -902,7 +674,7 @@ Todo caso de uso que lea para decidir y luego escriba usa una transacción: `Upd
 | `int countActive()` | Métodos activos. |
 | `PaymentMethod insert(PaymentMethod method)` | Lo devuelve con su id. |
 | `void update(PaymentMethod method)` | Nombre, efectivo y activo. Lanza `IllegalStateException` si el id no existe. |
-| `boolean isUsed(long id)` | `true` si hay cobros o ventas con este método. |
+| `boolean isUsed(long id)` | `true` si hay cobros con este método. |
 | `void delete(long id)` | Borra el método. |
 
 Implementación: `PostgresPaymentMethodRepository`.

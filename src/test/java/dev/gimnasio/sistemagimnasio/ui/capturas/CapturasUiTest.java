@@ -205,23 +205,23 @@ class CapturasUiTest {
     @Test
     void entrega3MenuAdministrador() throws Exception {
         Scene scene = signIn(staff(), "admin");
-        assertEquals(List.of("nav-tablero", "nav-cobro", "nav-venta", "nav-socios", "nav-planes", "nav-productos",
-                "nav-inventario", "nav-usuarios", "nav-configuracion"), navIds(scene));
+        assertEquals(List.of("nav-tablero", "nav-cobro", "nav-socios", "nav-planes", "nav-usuarios",
+                "nav-configuracion"), navIds(scene));
         assertEquals("Tablero", text(scene, "titulo-pagina"));
         assertEquals("nav-tablero", FxHarness.focusOwner(scene));
         assertEquals("mar 10 nov 2026", FxHarness.onFx(() -> ((javafx.scene.control.Label) scene.lookup(".fecha")).getText()));
         captureAll("entrega-3", "tablero-administrador");
         FxHarness.resizeScene(stage, AppWindow.MIN_WIDTH, AppWindow.MIN_HEIGHT);
-        // A 1024×680 las secciones del administrador no caben: la lista se desplaza con barra visible.
+        // A 1024×680, si las secciones del administrador no caben, la lista se desplaza con barra visible.
         assertEquals(true, FxHarness.onFx(() -> {
             var sp = (javafx.scene.control.ScrollPane) scene.lookup(".nav-desplazable");
+            boolean overflows = sp.getContent().getLayoutBounds().getHeight() > sp.getViewportBounds().getHeight();
             var bar = sp.lookupAll(".scroll-bar").stream()
                     .map(n -> (javafx.scene.control.ScrollBar) n)
                     .filter(b -> b.getOrientation() == javafx.geometry.Orientation.VERTICAL).findFirst().orElseThrow();
             var thumb = bar.lookup(".thumb");
-            return sp.getContent().getLayoutBounds().getHeight() > sp.getViewportBounds().getHeight()
-                    && bar.isVisible() && thumb.getLayoutBounds().getWidth() > 0;
-        }), "barra del menú visible al mínimo");
+            return !overflows || (bar.isVisible() && thumb.getLayoutBounds().getWidth() > 0);
+        }), "barra del menú visible al mínimo si hace falta");
         FxHarness.runFx(() -> scene.lookup("#nav-configuracion").requestFocus());
         FxHarness.settle();
         assertEquals(true, FxHarness.onFx(() -> {
@@ -235,10 +235,10 @@ class CapturasUiTest {
         FxHarness.resizeScene(stage, AppWindow.WIDTH, AppWindow.HEIGHT);
 
         // Tab recorre el menú, Cerrar sesión, el tema y los atajos, y vuelve al menú.
-        List<String> order = tabOrder(scene, 12);
+        List<String> order = tabOrder(scene, 9);
         System.out.println("[teclado] menú administrador, Tab: " + order);
-        assertEquals(List.of("nav-tablero", "nav-cobro", "nav-venta", "nav-socios", "nav-planes", "nav-productos",
-                "nav-inventario", "nav-usuarios", "nav-configuracion", "signOut", "tema-claro", "atajos", "nav-tablero"), order);
+        assertEquals(List.of("nav-tablero", "nav-cobro", "nav-socios", "nav-planes", "nav-usuarios",
+                "nav-configuracion", "signOut", "tema-claro", "atajos", "nav-tablero"), order);
 
         // Espacio sobre una sección la abre.
         FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
@@ -283,13 +283,13 @@ class CapturasUiTest {
     @Test
     void entrega3MenuRecepcionYCaja() throws Exception {
         Scene recepcion = signIn(staff(), "rocio");
-        assertEquals(List.of("nav-tablero", "nav-cobro", "nav-venta", "nav-socios", "nav-inventario"), navIds(recepcion));
+        assertEquals(List.of("nav-tablero", "nav-cobro", "nav-socios"), navIds(recepcion));
         assertEquals("Tablero", text(recepcion, "titulo-pagina"));
         captureAll("entrega-3", "tablero-recepcion");
         closeWindow();
 
         Scene caja = signIn(staff(), "carlos");
-        assertEquals(List.of("nav-cobro", "nav-venta", "nav-socios"), navIds(caja));
+        assertEquals(List.of("nav-cobro", "nav-socios"), navIds(caja));
         assertEquals("Cobrar membresía", text(caja, "titulo-pagina"), "Caja no ve el tablero: empieza en Cobrar");
         assertEquals("nav-cobro", FxHarness.focusOwner(caja));
         assertEquals("Carlos Ruiz", text(caja, "userName"));
@@ -479,7 +479,7 @@ class CapturasUiTest {
         // 2. Lo guardado, sin barra de cambios.
         assertEquals("Gimnasio Fuerza", text(scene, "cf-nombre"));
         assertEquals("Ejemplo de folio: GYM-0001. Los folios ya emitidos no cambian.", text(scene, "folioHelp"));
-        assertEquals("Solo se puede elegir mientras no haya cobros ni ventas.", text(scene, "currencyHelp"));
+        assertEquals("Solo se puede elegir mientras no haya cobros.", text(scene, "currencyHelp"));
         assertEquals(false, visible(scene, "barra-guardar"));
         assertEquals("nav-configuracion", FxHarness.focusOwner(scene), "abrir la sección deja el foco en el menú");
         captureAll("fase-2-entrega-1", "configuracion");
@@ -580,10 +580,9 @@ class CapturasUiTest {
     void fase2Entrega1MonedaBloqueada() throws Exception {
         UiFakes.Backend backend = new UiFakes.Backend(staff());
         backend.payments.count = 41;
-        backend.sales.count = 18;
         Scene scene = openSettings(backend);
         assertEquals(true, FxHarness.onFx(() -> scene.lookup("#cf-moneda").isDisabled()));
-        assertEquals("Bloqueada: ya hay 41 cobros y 18 ventas registrados en MXN. Cambiarla alteraría el "
+        assertEquals("Bloqueada: ya hay 41 cobros registrados en MXN. Cambiarla alteraría el "
                 + "significado de esos importes.", text(scene, "currencyHelp"));
         FxHarness.runFx(() -> {
             var sp = (javafx.scene.control.ScrollPane) scene.lookup(".lienzo .scroll-pane");
@@ -670,7 +669,7 @@ class CapturasUiTest {
         FxHarness.press(dialog, KeyCode.ENTER, false);
         FxHarness.waitUntil("diálogo cerrado", () -> dialogScene() == null);
         FxHarness.waitUntil("fila nueva", () -> scene.lookup("#mp-editar-4") != null);
-        assertEquals("Se agregó «Vales de despensa». Ya se ofrece al cobrar y al vender.", FxHarness.onFx(() -> toastText(scene, "aviso")));
+        assertEquals("Se agregó «Vales de despensa». Ya se ofrece al cobrar.", FxHarness.onFx(() -> toastText(scene, "aviso")));
         scrollToBottom(scene);
         captureAll("fase-2-entrega-2", "agregado");
         clearToasts(scene);
@@ -708,7 +707,7 @@ class CapturasUiTest {
         captureDialog("confirmar-eliminar");
         clickInDialog(FxHarness.onFx(() -> dialogWithButton("Eliminar")), "Eliminar");
         FxHarness.waitUntil("aviso de error", () -> toastText(scene, "aviso-error") != null);
-        assertEquals("No puedes eliminar «Efectivo»: ya se usó en cobros o ventas. Desactívalo para dejar de ofrecerlo.",
+        assertEquals("No puedes eliminar «Efectivo»: ya se usó en cobros. Desactívalo para dejar de ofrecerlo.",
                 FxHarness.onFx(() -> toastText(scene, "aviso-error")));
         scrollToBottom(scene);
         captureAll("fase-2-entrega-2", "eliminar-rechazado");

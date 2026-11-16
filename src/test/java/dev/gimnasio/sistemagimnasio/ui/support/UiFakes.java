@@ -5,7 +5,6 @@ import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryFolioSeries;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryMembershipPayments;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryPaymentMethods;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryPlans;
-import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySales;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySettings;
 import dev.gimnasio.sistemagimnasio.application.port.out.PasswordHasher;
 import dev.gimnasio.sistemagimnasio.application.port.out.UserCredentials;
@@ -171,7 +170,6 @@ public final class UiFakes {
         public final InMemorySettings settings = new InMemorySettings();
         public final InMemoryFolioSeries folios = new InMemoryFolioSeries();
         public final InMemoryMembershipPayments payments = new InMemoryMembershipPayments();
-        public final InMemorySales sales = new InMemorySales();
         public final InMemoryPaymentMethods methods = new InMemoryPaymentMethods();
         public final InMemoryPlans plans = new InMemoryPlans();
 
@@ -186,8 +184,8 @@ public final class UiFakes {
             return new UseCases(
                     new Authenticate(users, HASHER),
                     new GetGymInfo(settings, clock),
-                    new GetSettings(settings, folios, payments, sales, authorizer),
-                    new UpdateSettings(settings, folios, payments, sales, transactions, authorizer),
+                    new GetSettings(settings, folios, payments, authorizer),
+                    new UpdateSettings(settings, folios, payments, transactions, authorizer),
                     new ListPaymentMethods(methods, authorizer),
                     new CreatePaymentMethod(methods, transactions, authorizer),
                     new UpdatePaymentMethod(methods, transactions, authorizer),

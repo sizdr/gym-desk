@@ -2,7 +2,6 @@ package dev.gimnasio.sistemagimnasio.application.usecase.settings;
 
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryFolioSeries;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryMembershipPayments;
-import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySales;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemorySettings;
 import dev.gimnasio.sistemagimnasio.application.fakes.InMemoryUsers;
 import dev.gimnasio.sistemagimnasio.application.shared.Authorizer;
@@ -25,8 +24,7 @@ class GetSettingsTest {
     private final InMemoryUsers users = new InMemoryUsers();
     private final InMemoryFolioSeries folioSeries = new InMemoryFolioSeries();
     private final InMemoryMembershipPayments payments = new InMemoryMembershipPayments();
-    private final InMemorySales sales = new InMemorySales();
-    private final GetSettings getSettings = new GetSettings(settings, folioSeries, payments, sales,
+    private final GetSettings getSettings = new GetSettings(settings, folioSeries, payments,
             new Authorizer(users));
 
     @Test
@@ -48,20 +46,17 @@ class GetSettingsTest {
         assertEquals("GF-", view.folioPrefix());
         assertFalse(view.currencyLocked());
         assertEquals(0, view.paymentsCount());
-        assertEquals(0, view.salesCount());
         assertEquals("GF-0001", view.folioExample());
     }
 
     @Test
-    void conCobrosOVentas_laMonedaQuedaBloqueada_yTraeLosConteos() {
+    void conCobros_laMonedaQuedaBloqueada_yTraeElConteo() {
         payments.count = 41;
-        sales.count = 18;
 
         SettingsView view = getSettings.execute(users.admin());
 
         assertTrue(view.currencyLocked());
         assertEquals(41, view.paymentsCount());
-        assertEquals(18, view.salesCount());
     }
 
     @Test

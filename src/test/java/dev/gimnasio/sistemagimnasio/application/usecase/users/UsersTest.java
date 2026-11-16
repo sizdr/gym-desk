@@ -252,7 +252,7 @@ class UsersTest {
 
             DomainException e = assertThrows(DomainException.class, () -> delete.execute(admin, lucia.id()));
 
-            assertEquals("No puedes eliminar a «Lucía Pérez»: ya tiene cobros, ventas o movimientos registrados. "
+            assertEquals("No puedes eliminar a «Lucía Pérez»: ya tiene cobros registrados. "
                     + "Desactívalo para que no pueda entrar.", e.getMessage());
             assertEquals(lucia, users.get(lucia.id()));
         }

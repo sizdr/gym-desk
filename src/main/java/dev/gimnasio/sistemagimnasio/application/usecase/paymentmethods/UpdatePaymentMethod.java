@@ -22,7 +22,7 @@ public final class UpdatePaymentMethod {
     }
 
     /**
-     * Cambia nombre y si es efectivo; no cambia si está activo. Si ya hay cobros o ventas, «es efectivo» queda
+     * Cambia nombre y si es efectivo; no cambia si está activo. Si ya hay cobros, «es efectivo» queda
      * fijo: los registros anteriores no copian ese dato y cambiarlo los reclasificaría.
      */
     public PaymentMethodItem execute(User actor, long id, PaymentMethodCommand command) {
@@ -32,7 +32,7 @@ public final class UpdatePaymentMethod {
             String name = PaymentMethodRules.validName(methods, command.name(), id);
             if (current.cash() != command.cash() && methods.isUsed(id)) {
                 throw ValidationException.of("cash", "No puedes cambiar si «" + current.name()
-                        + "» es efectivo: ya se usó en cobros o ventas. Crea un método nuevo y desactiva este.");
+                        + "» es efectivo: ya se usó en cobros. Crea un método nuevo y desactiva este.");
             }
             PaymentMethod updated = new PaymentMethod(id, name, command.cash(), current.active());
             methods.update(updated);

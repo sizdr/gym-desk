@@ -18,7 +18,7 @@ class SessionTest {
         Session session = new Session();
 
         assertFalse(session.isOpen());
-        assertFalse(session.can(Permission.SELL));
+        assertFalse(session.can(Permission.CHARGE_MEMBERSHIP));
         assertThrows(IllegalStateException.class, session::actor);
     }
 
@@ -28,7 +28,7 @@ class SessionTest {
         session.open(CASHIER);
 
         assertSame(CASHIER, session.actor());
-        assertTrue(session.can(Permission.SELL));
+        assertTrue(session.can(Permission.CHARGE_MEMBERSHIP));
         assertFalse(session.can(Permission.MANAGE_SETTINGS));
     }
 

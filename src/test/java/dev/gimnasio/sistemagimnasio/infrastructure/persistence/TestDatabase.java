@@ -56,9 +56,7 @@ final class TestDatabase {
 
     static void clean() {
         jdbi().useHandle(handle -> handle.execute("""
-                TRUNCATE configuracion, folio_secuencia, usuario, plan_membresia, metodo_pago, motivo_movimiento,
-                         categoria_producto, socio, pago, membresia, producto, venta, detalle_venta,
-                         movimiento_inventario
+                TRUNCATE configuracion, folio_secuencia, usuario, plan_membresia, metodo_pago, socio, pago, membresia
                 RESTART IDENTITY CASCADE"""));
     }
 

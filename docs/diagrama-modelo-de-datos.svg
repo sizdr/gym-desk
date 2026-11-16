@@ -1,103 +1,200 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2030" height="920" viewBox="0 0 2030 920" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
-<rect width="2030" height="920" fill="#f7f8fa"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1210" height="898" viewBox="0 0 1210 898" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect width="1210" height="898" fill="#f7f8fa"/>
 <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#dde1e7"/></pattern></defs>
-<rect width="2030" height="920" fill="url(#grid)"/>
+<rect width="1210" height="898" fill="url(#grid)"/>
 <text x="40" y="40" font-size="20" font-weight="700" fill="#1f2a37">Sistema de gestión de gimnasio · modelo de datos</text>
-<path d="M460,168.0 C385.0,168.0 385.0,120.0 310,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="460" cy="168.0" r="3" fill="#9aa4b2"/>
-<circle cx="310" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M730,192.0 C805.0,192.0 805.0,120.0 880,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="730" cy="192.0" r="3" fill="#9aa4b2"/>
-<circle cx="880" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M730,216.0 C805.0,216.0 805.0,376.0 880,376.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="730" cy="216.0" r="3" fill="#9aa4b2"/>
-<circle cx="880" cy="376.0" r="3" fill="#9aa4b2"/>
-<path d="M460,472.0 C385.0,472.0 385.0,352.0 310,352.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="460" cy="472.0" r="3" fill="#9aa4b2"/>
-<circle cx="310" cy="352.0" r="3" fill="#9aa4b2"/>
-<path d="M1720,192.0 C1650,192.0 1650,424.0 1720,424.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1720" cy="192.0" r="3" fill="#9aa4b2"/>
-<circle cx="1720" cy="424.0" r="3" fill="#9aa4b2"/>
-<path d="M1300,192.0 C1225.0,192.0 1225.0,376.0 1150,376.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1300" cy="192.0" r="3" fill="#9aa4b2"/>
-<circle cx="1150" cy="376.0" r="3" fill="#9aa4b2"/>
-<path d="M1300,264.0 C1225.0,264.0 1225.0,120.0 1150,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1300" cy="264.0" r="3" fill="#9aa4b2"/>
-<circle cx="1150" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M1300,424.0 C1230,424.0 1230,120.0 1300,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1300" cy="424.0" r="3" fill="#9aa4b2"/>
-<circle cx="1300" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M1570,448.0 C1645.0,448.0 1645.0,120.0 1720,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1570" cy="448.0" r="3" fill="#9aa4b2"/>
-<circle cx="1720" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M1570,680.0 C1645.0,680.0 1645.0,120.0 1720,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1570" cy="680.0" r="3" fill="#9aa4b2"/>
-<circle cx="1720" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M1570,776.0 C1645.0,776.0 1645.0,608.0 1720,608.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1570" cy="776.0" r="3" fill="#9aa4b2"/>
-<circle cx="1720" cy="608.0" r="3" fill="#9aa4b2"/>
-<path d="M1300,800.0 C1230,800.0 1230,400.0 1300,400.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1300" cy="800.0" r="3" fill="#9aa4b2"/>
-<circle cx="1300" cy="400.0" r="3" fill="#9aa4b2"/>
-<path d="M1300,824.0 C1225.0,824.0 1225.0,120.0 1150,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="1300" cy="824.0" r="3" fill="#9aa4b2"/>
-<circle cx="1150" cy="120.0" r="3" fill="#9aa4b2"/>
-<path d="M460,496.0 C390,496.0 390,120.0 460,120.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
-<circle cx="460" cy="496.0" r="3" fill="#9aa4b2"/>
-<circle cx="460" cy="120.0" r="3" fill="#9aa4b2"/>
-<g><rect x="42" y="537" width="270" height="258" rx="8" fill="#000" opacity="0.06"/>
-<rect x="40" y="534" width="270" height="258" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M40,568 V542 Q40,534 48,534 H302 Q310,534 310,542 V568 Z" fill="#8a8a8a"/>
-<text x="52" y="556" font-size="14" font-weight="700" fill="#ffffff">configuracion</text>
-<text x="52" y="585" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="73.2" y="573" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="84.2" y="583.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="298" y="585" font-size="12" fill="#7a8594" text-anchor="end">smallint</text>
-<rect x="41" y="592" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="609" font-size="13" fill="#1f2a37">nombre_gimnasio</text>
-<text x="298" y="609" font-size="12" fill="#7a8594" text-anchor="end">varchar(100)</text>
-<text x="52" y="633" font-size="13" fill="#1f2a37">direccion</text>
-<text x="298" y="633" font-size="12" fill="#7a8594" text-anchor="end">varchar(200)?</text>
-<rect x="41" y="640" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="657" font-size="13" fill="#1f2a37">telefono</text>
-<text x="298" y="657" font-size="12" fill="#7a8594" text-anchor="end">varchar(30)?</text>
-<text x="52" y="681" font-size="13" fill="#1f2a37">logotipo</text>
-<text x="298" y="681" font-size="12" fill="#7a8594" text-anchor="end">bytea?</text>
-<rect x="41" y="688" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="705" font-size="13" fill="#1f2a37">leyenda_recibo</text>
-<text x="298" y="705" font-size="12" fill="#7a8594" text-anchor="end">varchar(200)?</text>
-<text x="52" y="729" font-size="13" fill="#1f2a37">moneda</text>
-<text x="298" y="729" font-size="12" fill="#7a8594" text-anchor="end">char(3)</text>
-<rect x="41" y="736" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="753" font-size="13" fill="#1f2a37">dias_aviso</text>
-<text x="298" y="753" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<text x="52" y="777" font-size="13" fill="#1f2a37">dias_baja_automatica</text>
-<text x="298" y="777" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
+<path d="M460,534.0 C400,534.0 400,116.0 460,116.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
+<circle cx="460" cy="534.0" r="3" fill="#9aa4b2"/>
+<circle cx="460" cy="116.0" r="3" fill="#9aa4b2"/>
+<text x="446" y="528.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<text x="446" y="110.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<path d="M460,510.0 C385.0,510.0 385.0,342.0 310,342.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
+<circle cx="460" cy="510.0" r="3" fill="#9aa4b2"/>
+<circle cx="310" cy="342.0" r="3" fill="#9aa4b2"/>
+<text x="446" y="504.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
+<text x="318" y="336.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<path d="M730,212.0 C805.0,212.0 805.0,366.0 880,366.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
+<circle cx="730" cy="212.0" r="3" fill="#9aa4b2"/>
+<circle cx="880" cy="366.0" r="3" fill="#9aa4b2"/>
+<text x="738" y="206.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
+<text x="866" y="360.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<path d="M460,164.0 C385.0,164.0 385.0,116.0 310,116.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
+<circle cx="460" cy="164.0" r="3" fill="#9aa4b2"/>
+<circle cx="310" cy="116.0" r="3" fill="#9aa4b2"/>
+<text x="446" y="158.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
+<text x="318" y="110.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<path d="M730,188.0 C805.0,188.0 805.0,116.0 880,116.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
+<circle cx="730" cy="188.0" r="3" fill="#9aa4b2"/>
+<circle cx="880" cy="116.0" r="3" fill="#9aa4b2"/>
+<text x="738" y="182.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
+<text x="866" y="110.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<path d="M310,462.0 C356,462.0 356,342.0 310,342.0" fill="none" stroke="#9aa4b2" stroke-width="1.6"/>
+<circle cx="310" cy="462.0" r="3" fill="#9aa4b2"/>
+<circle cx="310" cy="342.0" r="3" fill="#9aa4b2"/>
+<text x="318" y="456.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
+<text x="318" y="336.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
+<g><rect x="42" y="73" width="270" height="162" rx="8" fill="#000" opacity="0.06"/>
+<rect x="40" y="70" width="270" height="162" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M40,104 V78 Q40,70 48,70 H302 Q310,70 310,78 V104 Z" fill="#3f6fb5"/>
+<text x="52" y="92" font-size="14" font-weight="700" fill="#ffffff">socio</text>
+<text x="52" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
+<rect x="75.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="86.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="298" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="41" y="128" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="145" font-size="13" fill="#1f2a37">nombre</text>
+<text x="298" y="145" font-size="12" fill="#7a8594" text-anchor="end">varchar(100)</text>
+<text x="52" y="169" font-size="13" fill="#1f2a37">telefono</text>
+<text x="298" y="169" font-size="12" fill="#7a8594" text-anchor="end">char(10)</text>
+<rect x="41" y="176" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="193" font-size="13" fill="#1f2a37">correo</text>
+<text x="298" y="193" font-size="12" fill="#7a8594" text-anchor="end">varchar(120)?</text>
+<text x="52" y="217" font-size="13" fill="#1f2a37">fecha_alta</text>
+<text x="298" y="217" font-size="12" fill="#7a8594" text-anchor="end">date</text>
 </g>
-<g><rect x="462" y="633" width="270" height="138" rx="8" fill="#000" opacity="0.06"/>
-<rect x="460" y="630" width="270" height="138" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M460,664 V638 Q460,630 468,630 H722 Q730,630 730,638 V664 Z" fill="#8a8a8a"/>
-<text x="472" y="652" font-size="14" font-weight="700" fill="#ffffff">folio_secuencia</text>
-<text x="472" y="681" font-size="13" fill="#1f2a37" font-weight="700">serie</text>
-<rect x="516.0" y="669" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="527.0" y="679.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="718" y="681" font-size="12" fill="#7a8594" text-anchor="end">varchar(10)</text>
-<rect x="461" y="688" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="705" font-size="13" fill="#1f2a37">prefijo</text>
-<text x="718" y="705" font-size="12" fill="#7a8594" text-anchor="end">varchar(20)</text>
-<text x="472" y="729" font-size="13" fill="#1f2a37">ultimo</text>
-<text x="718" y="729" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="461" y="736" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="753" font-size="13" fill="#1f2a37">ancho</text>
-<text x="718" y="753" font-size="12" fill="#7a8594" text-anchor="end">smallint</text>
+<g><rect x="42" y="299" width="270" height="186" rx="8" fill="#000" opacity="0.06"/>
+<rect x="40" y="296" width="270" height="186" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M40,330 V304 Q40,296 48,296 H302 Q310,296 310,304 V330 Z" fill="#3f6fb5"/>
+<text x="52" y="318" font-size="14" font-weight="700" fill="#ffffff">plan_membresia</text>
+<text x="52" y="347" font-size="13" fill="#1f2a37" font-weight="700">id</text>
+<rect x="75.2" y="335" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="86.2" y="345.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="298" y="347" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="41" y="354" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="371" font-size="13" fill="#1f2a37">nombre</text>
+<text x="298" y="371" font-size="12" fill="#7a8594" text-anchor="end">varchar(60)</text>
+<text x="52" y="395" font-size="13" fill="#1f2a37">duracion_dias</text>
+<text x="298" y="395" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
+<rect x="41" y="402" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="419" font-size="13" fill="#1f2a37">precio</text>
+<text x="298" y="419" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
+<text x="52" y="443" font-size="13" fill="#1f2a37">activo</text>
+<text x="298" y="443" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
+<rect x="41" y="450" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="467" font-size="13" fill="#1f2a37">referencia_mensual_id</text>
+<rect x="219.6" y="455" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="230.6" y="465.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="298" y="467" font-size="12" fill="#7a8594" text-anchor="end">bigint?</text>
+</g>
+<g><rect x="42" y="549" width="270" height="258" rx="8" fill="#000" opacity="0.06"/>
+<rect x="40" y="546" width="270" height="258" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M40,580 V554 Q40,546 48,546 H302 Q310,546 310,554 V580 Z" fill="#8a8a8a"/>
+<text x="52" y="568" font-size="14" font-weight="700" fill="#ffffff">configuracion</text>
+<text x="52" y="597" font-size="13" fill="#1f2a37" font-weight="700">id</text>
+<rect x="75.2" y="585" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="86.2" y="595.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="298" y="597" font-size="12" fill="#7a8594" text-anchor="end">smallint</text>
+<rect x="41" y="604" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="621" font-size="13" fill="#1f2a37">nombre_gimnasio</text>
+<text x="298" y="621" font-size="12" fill="#7a8594" text-anchor="end">varchar(100)</text>
+<text x="52" y="645" font-size="13" fill="#1f2a37">direccion</text>
+<text x="298" y="645" font-size="12" fill="#7a8594" text-anchor="end">varchar(200)?</text>
+<rect x="41" y="652" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="669" font-size="13" fill="#1f2a37">telefono</text>
+<text x="298" y="669" font-size="12" fill="#7a8594" text-anchor="end">varchar(30)?</text>
+<text x="52" y="693" font-size="13" fill="#1f2a37">logotipo</text>
+<text x="298" y="693" font-size="12" fill="#7a8594" text-anchor="end">bytea?</text>
+<rect x="41" y="700" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="717" font-size="13" fill="#1f2a37">leyenda_recibo</text>
+<text x="298" y="717" font-size="12" fill="#7a8594" text-anchor="end">varchar(160)?</text>
+<text x="52" y="741" font-size="13" fill="#1f2a37">moneda</text>
+<text x="298" y="741" font-size="12" fill="#7a8594" text-anchor="end">char(3)</text>
+<rect x="41" y="748" width="268" height="24" fill="#f8f9fb"/>
+<text x="52" y="765" font-size="13" fill="#1f2a37">dias_aviso</text>
+<text x="298" y="765" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
+<text x="52" y="789" font-size="13" fill="#1f2a37">dias_baja_automatica</text>
+<text x="298" y="789" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
+</g>
+<g><rect x="462" y="73" width="270" height="282" rx="8" fill="#000" opacity="0.06"/>
+<rect x="460" y="70" width="270" height="282" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M460,104 V78 Q460,70 468,70 H722 Q730,70 730,78 V104 Z" fill="#3f6fb5"/>
+<text x="472" y="92" font-size="14" font-weight="700" fill="#ffffff">pago</text>
+<text x="472" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
+<rect x="495.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="506.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="718" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="461" y="128" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="145" font-size="13" fill="#1f2a37">folio</text>
+<text x="718" y="145" font-size="12" fill="#7a8594" text-anchor="end">varchar(30)</text>
+<text x="472" y="169" font-size="13" fill="#1f2a37">socio_id</text>
+<rect x="540.8" y="157" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="551.8" y="167.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="718" y="169" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="461" y="176" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="193" font-size="13" fill="#1f2a37">usuario_id</text>
+<rect x="556.0" y="181" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="567.0" y="191.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="718" y="193" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<text x="472" y="217" font-size="13" fill="#1f2a37">metodo_pago_id</text>
+<rect x="586.4" y="205" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="597.4" y="215.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="718" y="217" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="461" y="224" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="241" font-size="13" fill="#1f2a37">monto</text>
+<text x="718" y="241" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
+<text x="472" y="265" font-size="13" fill="#1f2a37">efectivo_recibido</text>
+<text x="718" y="265" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)?</text>
+<rect x="461" y="272" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="289" font-size="13" fill="#1f2a37">fecha_hora</text>
+<text x="718" y="289" font-size="12" fill="#7a8594" text-anchor="end">timestamptz</text>
+<text x="472" y="313" font-size="13" fill="#1f2a37">tipo_cobro</text>
+<text x="718" y="313" font-size="12" fill="#7a8594" text-anchor="end">tipo_cobro</text>
+<rect x="461" y="320" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="337" font-size="13" fill="#1f2a37">operacion_id</text>
+<text x="718" y="337" font-size="12" fill="#7a8594" text-anchor="end">varchar(64)?</text>
+</g>
+<g><rect x="462" y="419" width="270" height="186" rx="8" fill="#000" opacity="0.06"/>
+<rect x="460" y="416" width="270" height="186" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M460,450 V424 Q460,416 468,416 H722 Q730,416 730,424 V450 Z" fill="#3f6fb5"/>
+<text x="472" y="438" font-size="14" font-weight="700" fill="#ffffff">membresia</text>
+<text x="472" y="467" font-size="13" fill="#1f2a37" font-weight="700">id</text>
+<rect x="495.2" y="455" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="506.2" y="465.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="718" y="467" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="461" y="474" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="491" font-size="13" fill="#1f2a37">socio_id</text>
+<rect x="540.8" y="479" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="551.8" y="489.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="718" y="491" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<text x="472" y="515" font-size="13" fill="#1f2a37">plan_id</text>
+<rect x="533.2" y="503" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="544.2" y="513.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="718" y="515" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="461" y="522" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="539" font-size="13" fill="#1f2a37">pago_id</text>
+<rect x="533.2" y="527" width="22" height="14" rx="3" fill="#6b8fc9"/>
+<text x="544.2" y="537.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
+<text x="718" y="539" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<text x="472" y="563" font-size="13" fill="#1f2a37">fecha_inicio</text>
+<text x="718" y="563" font-size="12" fill="#7a8594" text-anchor="end">date</text>
+<rect x="461" y="570" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="587" font-size="13" fill="#1f2a37">fecha_vencimiento</text>
+<text x="718" y="587" font-size="12" fill="#7a8594" text-anchor="end">date</text>
+</g>
+<g><rect x="462" y="669" width="270" height="138" rx="8" fill="#000" opacity="0.06"/>
+<rect x="460" y="666" width="270" height="138" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M460,700 V674 Q460,666 468,666 H722 Q730,666 730,674 V700 Z" fill="#8a8a8a"/>
+<text x="472" y="688" font-size="14" font-weight="700" fill="#ffffff">folio_secuencia</text>
+<text x="472" y="717" font-size="13" fill="#1f2a37" font-weight="700">serie</text>
+<rect x="518.0" y="705" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="529.0" y="715.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="718" y="717" font-size="12" fill="#7a8594" text-anchor="end">varchar(10)</text>
+<rect x="461" y="724" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="741" font-size="13" fill="#1f2a37">prefijo</text>
+<text x="718" y="741" font-size="12" fill="#7a8594" text-anchor="end">varchar(20)</text>
+<text x="472" y="765" font-size="13" fill="#1f2a37">ultimo</text>
+<text x="718" y="765" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="461" y="772" width="268" height="24" fill="#f8f9fb"/>
+<text x="472" y="789" font-size="13" fill="#1f2a37">ancho</text>
+<text x="718" y="789" font-size="12" fill="#7a8594" text-anchor="end">smallint</text>
 </g>
 <g><rect x="882" y="73" width="270" height="186" rx="8" fill="#000" opacity="0.06"/>
 <rect x="880" y="70" width="270" height="186" rx="8" fill="#ffffff" stroke="#d5dae1"/>
 <path d="M880,104 V78 Q880,70 888,70 H1142 Q1150,70 1150,78 V104 Z" fill="#7b5ea7"/>
 <text x="892" y="92" font-size="14" font-weight="700" fill="#ffffff">usuario</text>
 <text x="892" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="913.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="924.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<rect x="915.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="926.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
 <text x="1138" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
 <rect x="881" y="128" width="268" height="24" fill="#f8f9fb"/>
 <text x="892" y="145" font-size="13" fill="#1f2a37">nombre</text>
@@ -113,319 +210,49 @@
 <text x="892" y="241" font-size="13" fill="#1f2a37">activo</text>
 <text x="1138" y="241" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
 </g>
-<g><rect x="42" y="305" width="270" height="162" rx="8" fill="#000" opacity="0.06"/>
-<rect x="40" y="302" width="270" height="162" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M40,336 V310 Q40,302 48,302 H302 Q310,302 310,310 V336 Z" fill="#3f6fb5"/>
-<text x="52" y="324" font-size="14" font-weight="700" fill="#ffffff">plan_membresia</text>
-<text x="52" y="353" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="73.2" y="341" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="84.2" y="351.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="298" y="353" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="41" y="360" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="377" font-size="13" fill="#1f2a37">nombre</text>
-<text x="298" y="377" font-size="12" fill="#7a8594" text-anchor="end">varchar(60)</text>
-<text x="52" y="401" font-size="13" fill="#1f2a37">duracion_dias</text>
-<text x="298" y="401" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<rect x="41" y="408" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="425" font-size="13" fill="#1f2a37">precio</text>
-<text x="298" y="425" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
-<text x="52" y="449" font-size="13" fill="#1f2a37">activo</text>
-<text x="298" y="449" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
+<g><rect x="882" y="323" width="270" height="138" rx="8" fill="#000" opacity="0.06"/>
+<rect x="880" y="320" width="270" height="138" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M880,354 V328 Q880,320 888,320 H1142 Q1150,320 1150,328 V354 Z" fill="#7b5ea7"/>
+<text x="892" y="342" font-size="14" font-weight="700" fill="#ffffff">metodo_pago</text>
+<text x="892" y="371" font-size="13" fill="#1f2a37" font-weight="700">id</text>
+<rect x="915.2" y="359" width="22" height="14" rx="3" fill="#e8a33d"/>
+<text x="926.2" y="369.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
+<text x="1138" y="371" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
+<rect x="881" y="378" width="268" height="24" fill="#f8f9fb"/>
+<text x="892" y="395" font-size="13" fill="#1f2a37">nombre</text>
+<text x="1138" y="395" font-size="12" fill="#7a8594" text-anchor="end">varchar(40)</text>
+<text x="892" y="419" font-size="13" fill="#1f2a37">es_efectivo</text>
+<text x="1138" y="419" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
+<rect x="881" y="426" width="268" height="24" fill="#f8f9fb"/>
+<text x="892" y="443" font-size="13" fill="#1f2a37">activo</text>
+<text x="1138" y="443" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
 </g>
-<g><rect x="882" y="329" width="270" height="138" rx="8" fill="#000" opacity="0.06"/>
-<rect x="880" y="326" width="270" height="138" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M880,360 V334 Q880,326 888,326 H1142 Q1150,326 1150,334 V360 Z" fill="#7b5ea7"/>
-<text x="892" y="348" font-size="14" font-weight="700" fill="#ffffff">metodo_pago</text>
-<text x="892" y="377" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="913.2" y="365" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="924.2" y="375.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1138" y="377" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="881" y="384" width="268" height="24" fill="#f8f9fb"/>
-<text x="892" y="401" font-size="13" fill="#1f2a37">nombre</text>
-<text x="1138" y="401" font-size="12" fill="#7a8594" text-anchor="end">varchar(40)</text>
-<text x="892" y="425" font-size="13" fill="#1f2a37">es_efectivo</text>
-<text x="1138" y="425" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
-<rect x="881" y="432" width="268" height="24" fill="#f8f9fb"/>
-<text x="892" y="449" font-size="13" fill="#1f2a37">activo</text>
-<text x="1138" y="449" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
+<g><rect x="882" y="525" width="270" height="114" rx="8" fill="#000" opacity="0.06"/>
+<rect x="880" y="522" width="270" height="114" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M880,556 V530 Q880,522 888,522 H1142 Q1150,522 1150,530 V556 Z" fill="#b07a2a"/>
+<text x="892" y="544" font-size="14" font-weight="700" fill="#ffffff">enum rol_usuario</text>
+<text x="892" y="573" font-size="13" fill="#1f2a37">administrador</text>
+<text x="1138" y="573" font-size="12" fill="#7a8594" text-anchor="end"></text>
+<rect x="881" y="580" width="268" height="24" fill="#f8f9fb"/>
+<text x="892" y="597" font-size="13" fill="#1f2a37">recepcion</text>
+<text x="1138" y="597" font-size="12" fill="#7a8594" text-anchor="end"></text>
+<text x="892" y="621" font-size="13" fill="#1f2a37">caja</text>
+<text x="1138" y="621" font-size="12" fill="#7a8594" text-anchor="end"></text>
 </g>
-<g><rect x="1722" y="561" width="270" height="138" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1720" y="558" width="270" height="138" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1720,592 V566 Q1720,558 1728,558 H1982 Q1990,558 1990,566 V592 Z" fill="#2f8f6b"/>
-<text x="1732" y="580" font-size="14" font-weight="700" fill="#ffffff">motivo_movimiento</text>
-<text x="1732" y="609" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="1753.2" y="597" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="1764.2" y="607.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1978" y="609" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1721" y="616" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="633" font-size="13" fill="#1f2a37">nombre</text>
-<text x="1978" y="633" font-size="12" fill="#7a8594" text-anchor="end">varchar(60)</text>
-<text x="1732" y="657" font-size="13" fill="#1f2a37">es_sistema</text>
-<text x="1978" y="657" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
-<rect x="1721" y="664" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="681" font-size="13" fill="#1f2a37">activo</text>
-<text x="1978" y="681" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
+<g><rect x="882" y="703" width="270" height="138" rx="8" fill="#000" opacity="0.06"/>
+<rect x="880" y="700" width="270" height="138" rx="8" fill="#ffffff" stroke="#d5dae1"/>
+<path d="M880,734 V708 Q880,700 888,700 H1142 Q1150,700 1150,708 V734 Z" fill="#b07a2a"/>
+<text x="892" y="722" font-size="14" font-weight="700" fill="#ffffff">enum tipo_cobro</text>
+<text x="892" y="751" font-size="13" fill="#1f2a37">primera</text>
+<text x="1138" y="751" font-size="12" fill="#7a8594" text-anchor="end"></text>
+<rect x="881" y="758" width="268" height="24" fill="#f8f9fb"/>
+<text x="892" y="775" font-size="13" fill="#1f2a37">renovacion_anticipada</text>
+<text x="1138" y="775" font-size="12" fill="#7a8594" text-anchor="end"></text>
+<text x="892" y="799" font-size="13" fill="#1f2a37">renovacion_vencida</text>
+<text x="1138" y="799" font-size="12" fill="#7a8594" text-anchor="end"></text>
+<rect x="881" y="806" width="268" height="24" fill="#f8f9fb"/>
+<text x="892" y="823" font-size="13" fill="#1f2a37">reactivacion</text>
+<text x="1138" y="823" font-size="12" fill="#7a8594" text-anchor="end"></text>
 </g>
-<g><rect x="1722" y="377" width="270" height="114" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1720" y="374" width="270" height="114" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1720,408 V382 Q1720,374 1728,374 H1982 Q1990,374 1990,382 V408 Z" fill="#2f8f6b"/>
-<text x="1732" y="396" font-size="14" font-weight="700" fill="#ffffff">categoria_producto</text>
-<text x="1732" y="425" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="1753.2" y="413" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="1764.2" y="423.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1978" y="425" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1721" y="432" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="449" font-size="13" fill="#1f2a37">nombre</text>
-<text x="1978" y="449" font-size="12" fill="#7a8594" text-anchor="end">varchar(60)</text>
-<text x="1732" y="473" font-size="13" fill="#1f2a37">activo</text>
-<text x="1978" y="473" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
-</g>
-<g><rect x="42" y="73" width="270" height="162" rx="8" fill="#000" opacity="0.06"/>
-<rect x="40" y="70" width="270" height="162" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M40,104 V78 Q40,70 48,70 H302 Q310,70 310,78 V104 Z" fill="#3f6fb5"/>
-<text x="52" y="92" font-size="14" font-weight="700" fill="#ffffff">socio</text>
-<text x="52" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="73.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="84.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="298" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="41" y="128" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="145" font-size="13" fill="#1f2a37">nombre</text>
-<text x="298" y="145" font-size="12" fill="#7a8594" text-anchor="end">varchar(100)</text>
-<text x="52" y="169" font-size="13" fill="#1f2a37">telefono</text>
-<text x="298" y="169" font-size="12" fill="#7a8594" text-anchor="end">char(10)</text>
-<rect x="41" y="176" width="268" height="24" fill="#f8f9fb"/>
-<text x="52" y="193" font-size="13" fill="#1f2a37">correo</text>
-<text x="298" y="193" font-size="12" fill="#7a8594" text-anchor="end">varchar(120)?</text>
-<text x="52" y="217" font-size="13" fill="#1f2a37">fecha_alta</text>
-<text x="298" y="217" font-size="12" fill="#7a8594" text-anchor="end">date</text>
-</g>
-<g><rect x="462" y="73" width="270" height="234" rx="8" fill="#000" opacity="0.06"/>
-<rect x="460" y="70" width="270" height="234" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M460,104 V78 Q460,70 468,70 H722 Q730,70 730,78 V104 Z" fill="#3f6fb5"/>
-<text x="472" y="92" font-size="14" font-weight="700" fill="#ffffff">pago</text>
-<text x="472" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="493.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="504.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="718" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="461" y="128" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="145" font-size="13" fill="#1f2a37">folio</text>
-<text x="718" y="145" font-size="12" fill="#7a8594" text-anchor="end">varchar(30)</text>
-<text x="472" y="169" font-size="13" fill="#1f2a37">socio_id</text>
-<rect x="538.8" y="157" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="549.8" y="167.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="718" y="169" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="461" y="176" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="193" font-size="13" fill="#1f2a37">usuario_id</text>
-<rect x="554.0" y="181" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="565.0" y="191.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="718" y="193" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<text x="472" y="217" font-size="13" fill="#1f2a37">metodo_pago_id</text>
-<rect x="584.4" y="205" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="595.4" y="215.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="718" y="217" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="461" y="224" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="241" font-size="13" fill="#1f2a37">monto</text>
-<text x="718" y="241" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
-<text x="472" y="265" font-size="13" fill="#1f2a37">efectivo_recibido</text>
-<text x="718" y="265" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)?</text>
-<rect x="461" y="272" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="289" font-size="13" fill="#1f2a37">fecha_hora</text>
-<text x="718" y="289" font-size="12" fill="#7a8594" text-anchor="end">timestamptz</text>
-</g>
-<g><rect x="462" y="377" width="270" height="186" rx="8" fill="#000" opacity="0.06"/>
-<rect x="460" y="374" width="270" height="186" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M460,408 V382 Q460,374 468,374 H722 Q730,374 730,382 V408 Z" fill="#3f6fb5"/>
-<text x="472" y="396" font-size="14" font-weight="700" fill="#ffffff">membresia</text>
-<text x="472" y="425" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="493.2" y="413" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="504.2" y="423.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="718" y="425" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="461" y="432" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="449" font-size="13" fill="#1f2a37">socio_id</text>
-<rect x="538.8" y="437" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="549.8" y="447.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="718" y="449" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<text x="472" y="473" font-size="13" fill="#1f2a37">plan_id</text>
-<rect x="531.2" y="461" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="542.2" y="471.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="718" y="473" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="461" y="480" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="497" font-size="13" fill="#1f2a37">pago_id</text>
-<rect x="531.2" y="485" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="542.2" y="495.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="718" y="497" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<text x="472" y="521" font-size="13" fill="#1f2a37">fecha_inicio</text>
-<text x="718" y="521" font-size="12" fill="#7a8594" text-anchor="end">date</text>
-<rect x="461" y="528" width="268" height="24" fill="#f8f9fb"/>
-<text x="472" y="545" font-size="13" fill="#1f2a37">fecha_vencimiento</text>
-<text x="718" y="545" font-size="12" fill="#7a8594" text-anchor="end">date</text>
-</g>
-<g><rect x="1722" y="73" width="270" height="234" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1720" y="70" width="270" height="234" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1720,104 V78 Q1720,70 1728,70 H1982 Q1990,70 1990,78 V104 Z" fill="#2f8f6b"/>
-<text x="1732" y="92" font-size="14" font-weight="700" fill="#ffffff">producto</text>
-<text x="1732" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="1753.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="1764.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1978" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1721" y="128" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="145" font-size="13" fill="#1f2a37">clave</text>
-<text x="1978" y="145" font-size="12" fill="#7a8594" text-anchor="end">varchar(20)</text>
-<text x="1732" y="169" font-size="13" fill="#1f2a37">nombre</text>
-<text x="1978" y="169" font-size="12" fill="#7a8594" text-anchor="end">varchar(100)</text>
-<rect x="1721" y="176" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="193" font-size="13" fill="#1f2a37">categoria_id</text>
-<rect x="1829.2" y="181" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1840.2" y="191.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1978" y="193" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<text x="1732" y="217" font-size="13" fill="#1f2a37">precio</text>
-<text x="1978" y="217" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
-<rect x="1721" y="224" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="241" font-size="13" fill="#1f2a37">minimo</text>
-<text x="1978" y="241" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<text x="1732" y="265" font-size="13" fill="#1f2a37">existencia</text>
-<text x="1978" y="265" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<rect x="1721" y="272" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="289" font-size="13" fill="#1f2a37">activo</text>
-<text x="1978" y="289" font-size="12" fill="#7a8594" text-anchor="end">boolean</text>
-</g>
-<g><rect x="1302" y="73" width="270" height="210" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1300" y="70" width="270" height="210" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1300,104 V78 Q1300,70 1308,70 H1562 Q1570,70 1570,78 V104 Z" fill="#2f8f6b"/>
-<text x="1312" y="92" font-size="14" font-weight="700" fill="#ffffff">venta</text>
-<text x="1312" y="121" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="1333.2" y="109" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="1344.2" y="119.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1558" y="121" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1301" y="128" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="145" font-size="13" fill="#1f2a37">folio</text>
-<text x="1558" y="145" font-size="12" fill="#7a8594" text-anchor="end">varchar(30)</text>
-<text x="1312" y="169" font-size="13" fill="#1f2a37">fecha_hora</text>
-<text x="1558" y="169" font-size="12" fill="#7a8594" text-anchor="end">timestamptz</text>
-<rect x="1301" y="176" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="193" font-size="13" fill="#1f2a37">metodo_pago_id</text>
-<rect x="1424.4" y="181" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1435.4" y="191.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="193" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<text x="1312" y="217" font-size="13" fill="#1f2a37">total</text>
-<text x="1558" y="217" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
-<rect x="1301" y="224" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="241" font-size="13" fill="#1f2a37">efectivo_recibido</text>
-<text x="1558" y="241" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)?</text>
-<text x="1312" y="265" font-size="13" fill="#1f2a37">usuario_id</text>
-<rect x="1394.0" y="253" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1405.0" y="263.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="265" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-</g>
-<g><rect x="1302" y="353" width="270" height="162" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1300" y="350" width="270" height="162" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1300,384 V358 Q1300,350 1308,350 H1562 Q1570,350 1570,358 V384 Z" fill="#2f8f6b"/>
-<text x="1312" y="372" font-size="14" font-weight="700" fill="#ffffff">detalle_venta</text>
-<text x="1312" y="401" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="1333.2" y="389" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="1344.2" y="399.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1558" y="401" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1301" y="408" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="425" font-size="13" fill="#1f2a37">venta_id</text>
-<rect x="1378.8" y="413" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1389.8" y="423.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="425" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<text x="1312" y="449" font-size="13" fill="#1f2a37">producto_id</text>
-<rect x="1401.6" y="437" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1412.6" y="447.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="449" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1301" y="456" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="473" font-size="13" fill="#1f2a37">cantidad</text>
-<text x="1558" y="473" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<text x="1312" y="497" font-size="13" fill="#1f2a37">precio_unitario</text>
-<text x="1558" y="497" font-size="12" fill="#7a8594" text-anchor="end">numeric(12,2)</text>
-</g>
-<g><rect x="1302" y="585" width="270" height="258" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1300" y="582" width="270" height="258" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1300,616 V590 Q1300,582 1308,582 H1562 Q1570,582 1570,590 V616 Z" fill="#2f8f6b"/>
-<text x="1312" y="604" font-size="14" font-weight="700" fill="#ffffff">movimiento_inventario</text>
-<text x="1312" y="633" font-size="13" fill="#1f2a37" font-weight="700">id</text>
-<rect x="1333.2" y="621" width="22" height="14" rx="3" fill="#e8a33d"/>
-<text x="1344.2" y="631.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">PK</text>
-<text x="1558" y="633" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1301" y="640" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="657" font-size="13" fill="#1f2a37">fecha_hora</text>
-<text x="1558" y="657" font-size="12" fill="#7a8594" text-anchor="end">timestamptz</text>
-<text x="1312" y="681" font-size="13" fill="#1f2a37">producto_id</text>
-<rect x="1401.6" y="669" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1412.6" y="679.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="681" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-<rect x="1301" y="688" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="705" font-size="13" fill="#1f2a37">tipo</text>
-<text x="1558" y="705" font-size="12" fill="#7a8594" text-anchor="end">tipo_movimiento</text>
-<text x="1312" y="729" font-size="13" fill="#1f2a37">cantidad</text>
-<text x="1558" y="729" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<rect x="1301" y="736" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="753" font-size="13" fill="#1f2a37">existencia_resultante</text>
-<text x="1558" y="753" font-size="12" fill="#7a8594" text-anchor="end">integer</text>
-<text x="1312" y="777" font-size="13" fill="#1f2a37">motivo_movimiento_id</text>
-<rect x="1470.0" y="765" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1481.0" y="775.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="777" font-size="12" fill="#7a8594" text-anchor="end">bigint?</text>
-<rect x="1301" y="784" width="268" height="24" fill="#f8f9fb"/>
-<text x="1312" y="801" font-size="13" fill="#1f2a37">detalle_venta_id</text>
-<rect x="1439.6" y="789" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1450.6" y="799.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="801" font-size="12" fill="#7a8594" text-anchor="end">bigint?</text>
-<text x="1312" y="825" font-size="13" fill="#1f2a37">usuario_id</text>
-<rect x="1394.0" y="813" width="22" height="14" rx="3" fill="#6b8fc9"/>
-<text x="1405.0" y="823.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">FK</text>
-<text x="1558" y="825" font-size="12" fill="#7a8594" text-anchor="end">bigint</text>
-</g>
-<g><rect x="882" y="537" width="270" height="114" rx="8" fill="#000" opacity="0.06"/>
-<rect x="880" y="534" width="270" height="114" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M880,568 V542 Q880,534 888,534 H1142 Q1150,534 1150,542 V568 Z" fill="#b07a2a"/>
-<text x="892" y="556" font-size="14" font-weight="700" fill="#ffffff">enum rol_usuario</text>
-<text x="892" y="585" font-size="13" fill="#1f2a37">administrador</text>
-<text x="1138" y="585" font-size="12" fill="#7a8594" text-anchor="end"></text>
-<rect x="881" y="592" width="268" height="24" fill="#f8f9fb"/>
-<text x="892" y="609" font-size="13" fill="#1f2a37">recepcion</text>
-<text x="1138" y="609" font-size="12" fill="#7a8594" text-anchor="end"></text>
-<text x="892" y="633" font-size="13" fill="#1f2a37">caja</text>
-<text x="1138" y="633" font-size="12" fill="#7a8594" text-anchor="end"></text>
-</g>
-<g><rect x="1722" y="769" width="270" height="114" rx="8" fill="#000" opacity="0.06"/>
-<rect x="1720" y="766" width="270" height="114" rx="8" fill="#ffffff" stroke="#d5dae1"/>
-<path d="M1720,800 V774 Q1720,766 1728,766 H1982 Q1990,766 1990,774 V800 Z" fill="#b07a2a"/>
-<text x="1732" y="788" font-size="14" font-weight="700" fill="#ffffff">enum tipo_movimiento</text>
-<text x="1732" y="817" font-size="13" fill="#1f2a37">entrada</text>
-<text x="1978" y="817" font-size="12" fill="#7a8594" text-anchor="end"></text>
-<rect x="1721" y="824" width="268" height="24" fill="#f8f9fb"/>
-<text x="1732" y="841" font-size="13" fill="#1f2a37">salida</text>
-<text x="1978" y="841" font-size="12" fill="#7a8594" text-anchor="end"></text>
-<text x="1732" y="865" font-size="13" fill="#1f2a37">ajuste</text>
-<text x="1978" y="865" font-size="12" fill="#7a8594" text-anchor="end"></text>
-</g>
-<text x="446" y="162.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="316" y="114.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="736" y="186.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="866" y="114.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="736" y="210.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="866" y="370.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="446" y="466.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="316" y="346.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1708" y="186.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1708" y="418.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1286" y="186.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1156" y="370.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1286" y="258.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1156" y="114.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1288" y="418.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1288" y="114.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1576" y="442.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1706" y="114.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1576" y="674.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1576" y="770.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1706" y="602.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1288" y="794.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="1288" y="394.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="1286" y="818.0" font-size="13" font-weight="700" fill="#5b6675">*</text>
-<text x="448" y="490.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="448" y="114.0" font-size="13" font-weight="700" fill="#5b6675">1</text>
-<text x="40" y="902" font-size="12" fill="#5b6675">PK clave primaria · FK clave foránea · ? admite nulo · 1 / * cardinalidad</text>
+<text x="40" y="880" font-size="12" fill="#5b6675">PK clave primaria · FK clave foránea · ? admite nulo · 1 / * cardinalidad</text>
 </svg>

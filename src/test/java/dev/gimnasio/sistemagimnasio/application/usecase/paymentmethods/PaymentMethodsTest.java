@@ -129,7 +129,7 @@ class PaymentMethodsTest {
             methods.markUsed(efectivo.id());
             methods.markUsed(tarjeta.id());
 
-            assertEquals(Map.of("cash", "No puedes cambiar si «Efectivo» es efectivo: ya se usó en cobros o ventas. "
+            assertEquals(Map.of("cash", "No puedes cambiar si «Efectivo» es efectivo: ya se usó en cobros. "
                             + "Crea un método nuevo y desactiva este."),
                     errors(() -> update.execute(admin, efectivo.id(), new PaymentMethodCommand("Efectivo", false))));
             assertEquals(List.of("cash"), List.copyOf(
@@ -196,7 +196,7 @@ class PaymentMethodsTest {
 
             DomainException e = assertThrows(DomainException.class, () -> delete.execute(admin, efectivo.id()));
 
-            assertEquals("No puedes eliminar «Efectivo»: ya se usó en cobros o ventas. Desactívalo para dejar de ofrecerlo.",
+            assertEquals("No puedes eliminar «Efectivo»: ya se usó en cobros. Desactívalo para dejar de ofrecerlo.",
                     e.getMessage());
             assertEquals(efectivo, methods.get(efectivo.id()));
         }

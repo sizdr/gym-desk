@@ -131,7 +131,7 @@ public final class PaymentMethodsViewModel {
             editorSaving.set(false);
             editorOpen.set(false);
             notifier.ok(target == null
-                    ? "Se agregó «" + saved.name() + "». Ya se ofrece al cobrar y al vender."
+                    ? "Se agregó «" + saved.name() + "». Ya se ofrece al cobrar."
                     : "Se guardaron los cambios de «" + saved.name() + "».");
             refresh();
         }, error -> {
@@ -149,7 +149,7 @@ public final class PaymentMethodsViewModel {
         });
     }
 
-    /** Desactivar deja de ofrecerlo al cobrar y al vender; los cobros y ventas anteriores no cambian. */
+    /** Desactivar deja de ofrecerlo al cobrar; los cobros anteriores no cambian. */
     public void setActive(PaymentMethodItem item, boolean active) {
         if (busy.get()) {
             return;
@@ -160,8 +160,8 @@ public final class PaymentMethodsViewModel {
             busy.set(false);
             replace(updated);
             notifier.ok(active
-                    ? "«" + updated.name() + "» se ofrece de nuevo al cobrar y al vender."
-                    : "«" + updated.name() + "» ya no se ofrece al cobrar ni al vender. Los cobros y ventas anteriores no cambian.");
+                    ? "«" + updated.name() + "» se ofrece de nuevo al cobrar."
+                    : "«" + updated.name() + "» ya no se ofrece al cobrar. Los cobros anteriores no cambian.");
         }, this::actionFailed);
     }
 

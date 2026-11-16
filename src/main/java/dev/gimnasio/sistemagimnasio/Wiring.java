@@ -22,7 +22,6 @@ import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresFolioSeri
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMembershipPaymentRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresPaymentMethodRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresPlanRepository;
-import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresSaleRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresSettingsRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresUserRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.security.Argon2PasswordHasher;
@@ -50,7 +49,6 @@ final class Wiring {
         var settings = new PostgresSettingsRepository(jdbi);
         var folioSeries = new PostgresFolioSeriesRepository(jdbi);
         var payments = new PostgresMembershipPaymentRepository(jdbi);
-        var sales = new PostgresSaleRepository(jdbi);
         var paymentMethods = new PostgresPaymentMethodRepository(jdbi);
         var plans = new PostgresPlanRepository(jdbi);
         var transactions = new JdbiTransactionRunner(jdbi);
@@ -59,8 +57,8 @@ final class Wiring {
         return new UseCases(
                 new Authenticate(users, new Argon2PasswordHasher()),
                 new GetGymInfo(settings, clock),
-                new GetSettings(settings, folioSeries, payments, sales, authorizer),
-                new UpdateSettings(settings, folioSeries, payments, sales, transactions, authorizer),
+                new GetSettings(settings, folioSeries, payments, authorizer),
+                new UpdateSettings(settings, folioSeries, payments, transactions, authorizer),
                 new ListPaymentMethods(paymentMethods, authorizer),
                 new CreatePaymentMethod(paymentMethods, transactions, authorizer),
                 new UpdatePaymentMethod(paymentMethods, transactions, authorizer),
