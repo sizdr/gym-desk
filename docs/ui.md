@@ -303,3 +303,31 @@ Corregido de paso en Cobrar membresía: con el socio elegido y sin plan, el resu
 
 Corregido al revisar las capturas: a 1024 el precio y el ahorro se recortaban («$45…»); con el formulario vacío decía «Un plan de 30 días o menos no muestra ahorro.». La prueba de sección pendiente usa ahora Usuarios, la única que falta.
 
+### Proyecto final · Búsqueda del encabezado y Usuarios (16/11/2026)
+
+Con estas dos, ya no queda ninguna sección «en preparación» ni la etiqueta «Pendiente» en la búsqueda.
+
+**Búsqueda de socios del encabezado** (`QuickSearchViewModel`, `QuickSearchController`, con `SearchMembers`):
+
+- Mientras se escribe, un panel bajo la cápsula muestra hasta 7 socios por nombre, correo o teléfono, con su estado, vigencia y plan, y cuántos coinciden («7 de 11 socios»). Las respuestas viejas se descartan.
+- Elegir un socio abre **Cobrar membresía** con él ya elegido, aunque ya se esté en esa pantalla (`ShellController.open`). Enter o «Ver todos en Socios» abre Socios con lo escrito en su buscador.
+- Teclado: el campo es una parada de Tab entre «Cerrar sesión» y el tema; ↓ entra a los resultados, ↑ y ↓ se mueven, ↑ desde el primero vuelve al campo, Esc cierra. Salir de la búsqueda (clic o Tab fuera) la cierra.
+- El panel flota encima del contenido (`AnchoredLayer`), así que no mueve la pantalla.
+
+**Usuarios** (`ListUsers`, `CreateUser`, `UpdateUser`, `SetUserActive`, `DeleteUser`). Solo la ve el administrador:
+
+- **Cuentas:** activas primero; cada una con nombre, usuario, rol y estado. La propia cuenta dice «tu cuenta» y no ofrece Desactivar ni Eliminar (el caso de uso tampoco lo permite).
+- **Agregar y editar** en un diálogo: nombre, usuario, rol (con lo que puede hacer, sacado de `Role.permissions()`) y contraseña con su confirmación; al editar, la contraseña vacía conserva la actual. Los errores van a su campo; las contraseñas se borran del formulario al guardar o cancelar.
+- **Desactivar** impide entrar y conserva sus cobros; **eliminar** solo una cuenta sin cobros, con confirmación. Los mensajes (usuario repetido, último administrador, la propia cuenta, cuenta con cobros) son los del caso de uso.
+- **Qué puede hacer cada rol:** la matriz de permisos por rol, del mismo dato que decide el menú.
+
+| Comprobación | Resultado |
+|---|---|
+| `QuickSearchViewModelTest` (3) | Hasta 7 por nombre con el total; textos de cuántos; sin permiso queda el error |
+| `UsersViewModelTest` (6) | Orden y propia cuenta; errores por campo (usuario repetido sin distinguir mayúsculas) y luego bien, sin dejar la contraseña; editar sin contraseña y aviso del rol nuevo; desactivar y no poder desactivarse; eliminar rechazado y permitido; permisos de cada rol |
+| Capturas en ambos temas y tamaños | `proyecto-busqueda`: `resultados`, `sin-resultados`, `cobro-desde-busqueda`. `proyecto-usuarios`: `usuarios`, `cambios`; diálogos `agregar-errores`, `agregar-lleno`, `confirmar-eliminar` |
+| Teclado | Menú: … Cerrar sesión → búsqueda → tema → atajos → contenido. Usuarios: Agregar usuario → Editar (propia) → Editar, Desactivar y Eliminar de cada cuenta |
+| `./mvnw test` | 693 pruebas: 0 fallos, 0 errores; con `-Dui.capturas=true`, `CapturasUiTest` 15 de 15 |
+
+Corregido de paso en el doble de prueba de usuarios: daba a una cuenta nueva el id de otra después de un borrado.
+

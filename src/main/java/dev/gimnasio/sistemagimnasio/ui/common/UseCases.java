@@ -25,6 +25,11 @@ import dev.gimnasio.sistemagimnasio.application.usecase.plans.UpdatePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.settings.GetSettings;
 import dev.gimnasio.sistemagimnasio.application.usecase.settings.UpdateSettings;
 import dev.gimnasio.sistemagimnasio.application.usecase.summary.GetDaySummary;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.CreateUser;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.DeleteUser;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.ListUsers;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.SetUserActive;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.UpdateUser;
 
 import java.util.Objects;
 
@@ -57,7 +62,12 @@ public record UseCases(
         ChargeMembership chargeMembership,
         GetMembershipReceipt getMembershipReceipt,
         PrintMembershipReceipt printMembershipReceipt,
-        GetDaySummary getDaySummary) {
+        GetDaySummary getDaySummary,
+        ListUsers listUsers,
+        CreateUser createUser,
+        UpdateUser updateUser,
+        SetUserActive setUserActive,
+        DeleteUser deleteUser) {
 
     public UseCases {
         Objects.requireNonNull(authenticate, "authenticate");
@@ -85,5 +95,10 @@ public record UseCases(
         Objects.requireNonNull(getMembershipReceipt, "getMembershipReceipt");
         Objects.requireNonNull(printMembershipReceipt, "printMembershipReceipt");
         Objects.requireNonNull(getDaySummary, "getDaySummary");
+        Objects.requireNonNull(listUsers, "listUsers");
+        Objects.requireNonNull(createUser, "createUser");
+        Objects.requireNonNull(updateUser, "updateUser");
+        Objects.requireNonNull(setUserActive, "setUserActive");
+        Objects.requireNonNull(deleteUser, "deleteUser");
     }
 }

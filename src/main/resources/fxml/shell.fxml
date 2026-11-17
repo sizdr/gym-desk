@@ -44,14 +44,11 @@
     </left>
     <center>
         <!-- Encima del contenido: la barra fija de la pantalla (si tiene) y los avisos flotantes. -->
-        <StackPane>
+        <StackPane fx:id="layers">
         <VBox styleClass="lienzo">
             <HBox styleClass="cabecera">
-                <HBox fx:id="search" styleClass="capsula,capsula-busqueda" HBox.hgrow="ALWAYS">
-                    <Label text="Buscar socio por nombre o teléfono" styleClass="texto-3" minWidth="0"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="searchPending" text="Pendiente" styleClass="etiqueta-pendiente" minWidth="-Infinity"/>
-                </HBox>
+                <!-- El campo de búsqueda lo pone GymDeskUi con setSearch: depende de los casos de uso. -->
+                <HBox fx:id="search" styleClass="capsula,capsula-busqueda" HBox.hgrow="ALWAYS"/>
                 <HBox fx:id="sessionCapsule" styleClass="capsula,capsula-sesion" minWidth="-Infinity">
                     <VBox styleClass="capsula-fecha">
                         <Label fx:id="today" styleClass="fecha"/>

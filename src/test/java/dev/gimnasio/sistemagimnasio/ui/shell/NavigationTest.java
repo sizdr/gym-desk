@@ -53,10 +53,9 @@ class NavigationTest {
     }
 
     @Test
-    void settingsWorks_chargePlansAndUsersHaveTheirUseCases_andTheRestAreMissingThem() {
-        assertEquals(List.of(Route.TABLERO, Route.COBRO, Route.SOCIOS, Route.PLANES, Route.CONFIGURACION),
-                withStatus(Route.Status.READY));
-        assertEquals(List.of(Route.USUARIOS), withStatus(Route.Status.SCREEN_PENDING));
+    void todasLasSeccionesFuncionan_conSusCasosDeUso() {
+        assertEquals(List.of(Route.values()), withStatus(Route.Status.READY), "todas las secciones funcionan");
+        assertEquals(List.of(), withStatus(Route.Status.SCREEN_PENDING));
         assertEquals(List.of(), withStatus(Route.Status.MISSING_USE_CASES));
         for (Route route : Route.values()) {
             assertFalse(route.useCases().isEmpty(), route.name());

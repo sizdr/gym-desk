@@ -245,6 +245,17 @@ public final class MembersViewModel {
         return days == 1 ? "1 día" : days + " días";
     }
 
+    /** Clase de estilo de la etiqueta de cada estado ({@code estado-vigente}, {@code estado-por-vencer}…). */
+    public static String statusStyle(MemberStatus status) {
+        return switch (status) {
+            case VIGENTE -> "vigente";
+            case POR_VENCER -> "por-vencer";
+            case VENCIDA -> "vencida";
+            case BAJA -> "baja";
+            case SIN_MEMBRESIA -> "sin-membresia";
+        };
+    }
+
     /** Nombre para mostrar de cada estado. */
     public static String statusLabel(MemberStatus status) {
         return switch (status) {

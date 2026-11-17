@@ -29,6 +29,11 @@ import dev.gimnasio.sistemagimnasio.infrastructure.printing.TextFileReceiptPrint
 import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
 import dev.gimnasio.sistemagimnasio.application.usecase.summary.GetDaySummary;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.CreateUser;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.DeleteUser;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.ListUsers;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.SetUserActive;
+import dev.gimnasio.sistemagimnasio.application.usecase.users.UpdateUser;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.UpdateMember;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMemberRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMembershipRepository;
@@ -81,8 +86,9 @@ final class Wiring {
         var receipt = new GetMembershipReceipt(payments, memberships, members, plans, paymentMethods, users, settings,
                 authorizer);
 
+        var hasher = new Argon2PasswordHasher();
         return new UseCases(
-                new Authenticate(users, new Argon2PasswordHasher()),
+                new Authenticate(users, hasher),
                 new GetGymInfo(settings, clock),
                 new GetSettings(settings, folioSeries, payments, authorizer),
                 new UpdateSettings(settings, folioSeries, payments, transactions, authorizer),
@@ -108,6 +114,11 @@ final class Wiring {
                 receipt,
                 new PrintMembershipReceipt(receipt, new TextFileReceiptPrinter(receiptsDirectory())),
                 new GetDaySummary(members, memberships, plans, settings, payments, paymentMethods, users, authorizer,
-                        clock));
+                        clock),
+                new ListUsers(users, authorizer),
+                new CreateUser(users, hasher, transactions, authorizer),
+                new UpdateUser(users, hasher, transactions, authorizer),
+                new SetUserActive(users, transactions, authorizer),
+                new DeleteUser(users, transactions, authorizer));
     }
 }

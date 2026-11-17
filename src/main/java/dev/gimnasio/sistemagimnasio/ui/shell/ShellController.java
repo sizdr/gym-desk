@@ -13,6 +13,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -21,6 +22,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -72,8 +75,6 @@ public final class ShellController implements Notifier {
     @FXML
     private HBox search;
     @FXML
-    private Label searchPending;
-    @FXML
     private HBox sessionCapsule;
     @FXML
     private Label today;
@@ -85,6 +86,8 @@ public final class ShellController implements Notifier {
     private VBox footerLayer;
     @FXML
     private VBox toastLayer;
+    @FXML
+    private StackPane layers;
 
     /** Sin pantallas: todas las secciones muestran qué les falta. */
     public ShellController(GymInfo gymInfo, User user, Themes themes, Runnable onSignOut) {
@@ -113,8 +116,6 @@ public final class ShellController implements Notifier {
         signOut.setGraphic(Icons.icon("salir", 16));
 
         search.getChildren().addFirst(Icons.icon("buscar"));
-        search.setAccessibleText("Búsqueda de socios: pendiente, falta el caso de uso SearchMembers.");
-        Tooltip.install(searchPending, new Tooltip("Falta el caso de uso SearchMembers."));
 
         today.setText(Formats.mediumDate(gymInfo.today()));
         Button shortcuts = new Button();
@@ -171,10 +172,22 @@ public final class ShellController implements Notifier {
      * hace nada (no se pierde lo escrito); salir de una con cambios sin guardar pide confirmación.
      */
     public void navigate(Route route) {
+        show(route, false);
+    }
+
+    /**
+     * Como {@link #navigate}, pero si ya está en esa sección la vuelve a crear: para abrirla con algo ya elegido
+     * (el cobro de un socio desde la búsqueda, aunque ya se esté cobrando).
+     */
+    public void open(Route route) {
+        show(route, true);
+    }
+
+    private void show(Route route, boolean reload) {
         if (!navButtons.containsKey(route)) {
             throw new IllegalArgumentException("El rol " + user.role() + " no ve " + route);
         }
-        if (route == current || !canLeave()) {
+        if ((route == current && !reload) || !canLeave()) {
             return;
         }
         if (current != null) {
@@ -190,6 +203,16 @@ public final class ShellController implements Notifier {
         footerLayer.getChildren().setAll(currentScreen == null || currentScreen.footer() == null
                 ? List.of() : List.of(currentScreen.footer()));
         scroll.setVvalue(0);
+    }
+
+    /**
+     * Pone la búsqueda del encabezado: el campo va en la cápsula y el panel de resultados flota debajo de ella,
+     * encima del contenido y de la barra fija, pero debajo de los avisos.
+     */
+    public void setSearch(Node field, Region panel) {
+        HBox.setHgrow(field, Priority.ALWAYS);
+        search.getChildren().add(field);
+        layers.getChildren().add(layers.getChildren().indexOf(toastLayer), new AnchoredLayer(search, panel));
     }
 
     /**

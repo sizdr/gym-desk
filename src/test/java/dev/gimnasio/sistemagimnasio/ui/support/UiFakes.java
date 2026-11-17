@@ -74,7 +74,9 @@ public final class UiFakes {
         public volatile RuntimeException failure;
 
         public User add(String name, String username, Role role, boolean active) {
-            User user = new User((long) byId.size() + 1, name, username, role, active);
+            // Ids que no se repiten aunque se borre a alguien.
+            User user = new User(byId.keySet().stream().mapToLong(Long::longValue).max().orElse(0) + 1, name,
+                    username, role, active);
             byId.put(user.id(), user);
             return user;
         }
@@ -148,9 +150,12 @@ public final class UiFakes {
             // Todas las cuentas de prueba usan PASSWORD; el hash no se guarda.
         }
 
+        /** Quienes «ya registraron cobros», para probar que no se pueden eliminar. */
+        public final java.util.Set<Long> withOperations = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
         @Override
         public boolean hasOperations(long id) {
-            return false;
+            return withOperations.contains(id);
         }
 
         @Override
@@ -228,7 +233,16 @@ public final class UiFakes {
                     receipt(),
                     new PrintMembershipReceipt(receipt(), printer),
                     new dev.gimnasio.sistemagimnasio.application.usecase.summary.GetDaySummary(members, memberships,
-                            plans, settings, payments, methods, users, authorizer, clock));
+                            plans, settings, payments, methods, users, authorizer, clock),
+                    new dev.gimnasio.sistemagimnasio.application.usecase.users.ListUsers(users, authorizer),
+                    new dev.gimnasio.sistemagimnasio.application.usecase.users.CreateUser(users, HASHER, transactions,
+                            authorizer),
+                    new dev.gimnasio.sistemagimnasio.application.usecase.users.UpdateUser(users, HASHER, transactions,
+                            authorizer),
+                    new dev.gimnasio.sistemagimnasio.application.usecase.users.SetUserActive(users, transactions,
+                            authorizer),
+                    new dev.gimnasio.sistemagimnasio.application.usecase.users.DeleteUser(users, transactions,
+                            authorizer));
         }
     }
 

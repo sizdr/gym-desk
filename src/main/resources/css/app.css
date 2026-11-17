@@ -963,3 +963,32 @@
     -fx-border-width: 1 0 0 0;
 }
 .lista-vacia { -fx-padding: 4 20 12 20; }
+
+/* Búsqueda del encabezado */
+.capsula-busqueda .text-field.campo-busqueda,
+.capsula-busqueda .text-field.campo-busqueda:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0 4;
+    -fx-min-height: 34;
+}
+.capsula-busqueda:focus-within {
+    -fx-border-color: -gd-foco;
+    -fx-border-width: 2;
+    -fx-border-radius: 999;
+}
+.busqueda-resultados {
+    -fx-effect: dropshadow(gaussian, rgba(18, 24, 33, 0.18), 18, 0, 0, 6);
+    -fx-padding: 8 6 6 6;
+}
+.busqueda-cab { -fx-padding: 4 10 6 10; }
+.busqueda-mensaje { -fx-padding: 8 10 10 10; }
+.busqueda-lista, .busqueda-lista > .viewport { -fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0; }
+.busqueda-pie { -fx-padding: 6 4 0 4; -fx-border-color: -gd-linea transparent transparent transparent; -fx-border-width: 1 0 0 0; }
+
+/* Usuarios: qué puede hacer cada rol */
+.matriz-permisos { -fx-padding: 0 20 16 20; -fx-hgap: 12; -fx-vgap: 10; }
+.matriz-cab { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-2; }
+.matriz-permisos > .label { -fx-font-size: 13.5px; }
+.matriz-permisos .permiso-si .icono, .matriz-permisos .icono.permiso-si { -fx-stroke: -gd-ok; -fx-stroke-width: 2.4; }
+.matriz-permisos .permiso-no { -fx-text-fill: -gd-texto-3; }

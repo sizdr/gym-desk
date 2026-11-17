@@ -25,7 +25,7 @@ public enum Route {
             "PreviewPlanSavings")),
     USUARIOS("Administración", "Usuarios", "Usuarios", "escudo", Permission.MANAGE_USERS,
             "Personas que usan el sistema, su rol y si están activas.",
-            Status.SCREEN_PENDING, List.of("ListUsers", "CreateUser", "UpdateUser", "SetUserActive", "DeleteUser")),
+            Status.READY, List.of("ListUsers", "CreateUser", "UpdateUser", "SetUserActive", "DeleteUser")),
     CONFIGURACION("Administración", "Configuración", "Configuración", "ajustes", Permission.MANAGE_SETTINGS,
             "Datos del gimnasio, plazos de membresía, moneda, folios y métodos de pago.",
             Status.READY, List.of("GetSettings", "UpdateSettings", "métodos de pago"));
