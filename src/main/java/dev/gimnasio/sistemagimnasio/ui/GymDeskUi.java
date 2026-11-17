@@ -154,6 +154,7 @@ public final class GymDeskUi implements AutoCloseable {
             case TABLERO -> dashboardScreen();
             case COBRO -> chargeScreen();
             case SOCIOS -> membersScreen();
+            case PLANES -> plansScreen();
             default -> null;
         };
     }
@@ -189,6 +190,14 @@ public final class GymDeskUi implements AutoCloseable {
             model.chooseMember(pendingCharge);
             pendingCharge = null;
         }
+        model.load();
+        return Screen.of(controller.view());
+    }
+
+    private Screen plansScreen() {
+        var model = new dev.gimnasio.sistemagimnasio.ui.plans.PlansViewModel(useCases, background, session::actor,
+                notifier, gymInfo.currency());
+        var controller = new dev.gimnasio.sistemagimnasio.ui.plans.PlansController(model, gymInfo.currency());
         model.load();
         return Screen.of(controller.view());
     }

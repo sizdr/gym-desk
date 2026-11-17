@@ -21,7 +21,7 @@ public enum Route {
             Status.READY, List.of("SearchMembers", "RegisterMember", "UpdateMember", "DeleteMember")),
     PLANES("Catálogo", "Planes", "Planes de membresía", "calendario", Permission.MANAGE_PLANS,
             "Duración, precio y ahorro de cada plan.",
-            Status.SCREEN_PENDING, List.of("ListPlans", "CreatePlan", "UpdatePlan", "SetPlanActive", "DeletePlan",
+            Status.READY, List.of("ListPlans", "CreatePlan", "UpdatePlan", "SetPlanActive", "DeletePlan",
             "PreviewPlanSavings")),
     USUARIOS("Administración", "Usuarios", "Usuarios", "escudo", Permission.MANAGE_USERS,
             "Personas que usan el sistema, su rol y si están activas.",

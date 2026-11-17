@@ -244,11 +244,11 @@ class CapturasUiTest {
                 "nav-configuracion", "signOut", "tema-claro", "atajos", "tb-actualizar"), order);
 
         // Espacio sobre una sección la abre.
-        FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
+        FxHarness.runFx(() -> scene.lookup("#nav-usuarios").requestFocus());
         FxHarness.press(scene, KeyCode.SPACE, false);
-        assertEquals("Planes de membresía", text(scene, "titulo-pagina"));
+        assertEquals("Usuarios", text(scene, "titulo-pagina"));
         assertEquals("Pantalla en preparación", text(scene, "estado-pendiente"));
-        captureAll("entrega-3", "planes-administrador");
+        captureAll("entrega-3", "usuarios-administrador");
         FxHarness.runFx(() -> scene.lookup("#nav-configuracion").requestFocus());
         FxHarness.press(scene, KeyCode.ENTER, false);
         assertEquals("Configuración", text(scene, "titulo-pagina"), "Enter también abre la sección, como un enlace");
@@ -1037,6 +1037,113 @@ class CapturasUiTest {
         assertEquals("Sin cobros hoy", FxHarness.onFx(() -> ((javafx.scene.control.Label) empty.lookup("#tb-cobrado")
                 .getParent().getChildrenUnmodifiable().getLast()).getText()));
         captureAll("proyecto-tablero", "vacio");
+    }
+
+    @Test
+    void proyectoPlanes() throws Exception {
+        UiFakes.Backend backend = gymWithMembers();
+        long mensual = backend.plans.findAll().stream().filter(p -> p.name().equals("Mensual")).findFirst()
+                .orElseThrow().id();
+        long anual = backend.plans.findAll().stream().filter(p -> p.name().equals("Anual")).findFirst()
+                .orElseThrow().id();
+        long trimestral = backend.plans.add("Trimestral", 90, "1200", mensual, true).id();
+        backend.plans.add("Semestral", 180, "2400", mensual, true);
+        long visita = backend.plans.add("Visita", 1, "60", null, false).id();
+        backend.plans.giveMembership(mensual);
+
+        Scene scene = signIn(backend, "admin");
+        FxHarness.runFx(() -> ui.shell().setToastTime(javafx.util.Duration.minutes(1)));
+        FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("catálogo de planes", () -> onScreen(scene, "pl-tabla") && onScreen(scene, "pl-editar-" + visita));
+        assertEquals("Planes de membresía", title(scene));
+        assertEquals("5 planes · 4 activos", text(scene, "pl-resumen"));
+        captureAll("proyecto-planes", "planes");
+
+        // Teclado: Agregar plan → Editar, Desactivar y Eliminar de cada fila, del más corto al más largo.
+        FxHarness.runFx(() -> scene.lookup("#pl-agregar").requestFocus());
+        List<String> order = tabOrder(scene, 4);
+        System.out.println("[teclado] planes, Tab: " + order);
+        assertEquals(List.of("pl-agregar", "pl-editar-" + mensual, "pl-estado-" + mensual, "pl-eliminar-" + mensual,
+                "pl-editar-" + trimestral), order);
+
+        // Agregar: primero vacío (errores en sus campos), luego bien, con el ahorro a la vista.
+        fire(scene, "pl-agregar");
+        FxHarness.waitUntil("diálogo de alta", () -> dialogScene() != null && dialogScene().getFocusOwner() != null
+                && "pl-nombre".equals(dialogScene().getFocusOwner().getId()));
+        Scene dialog = FxHarness.onFx(this::dialogScene);
+        assertEquals("Escribe la duración y el precio para ver el ahorro.", text(dialog, "pl-ahorro"));
+        FxHarness.press(dialog, KeyCode.ENTER, false);
+        FxHarness.waitUntil("errores", () -> dialog.getRoot().lookupAll(".field-error").stream()
+                .filter(javafx.scene.Node::isVisible).count() == 3);
+        assertEquals("pl-nombre", FxHarness.focusOwner(dialog));
+        captureDialogIn("proyecto-planes", "agregar-errores");
+        typeInto(dialog, "pl-nombre", "Bimestral");
+        typeInto(dialog, "pl-duracion", "60");
+        assertEquals("pl-nombre", FxHarness.focusOwner(dialog), "corregir un campo no mueve el foco");
+        typeInto(dialog, "pl-precio", "880");
+        FxHarness.runFx(() -> {
+            @SuppressWarnings("unchecked")
+            var reference = (javafx.scene.control.ComboBox<Object>) dialog.lookup("#pl-referencia");
+            reference.getSelectionModel().select(1);
+        });
+        FxHarness.waitUntil("ahorro", () -> ((javafx.scene.control.Label) dialog.lookup("#pl-ahorro")).getText()
+                .startsWith("Ahorra"));
+        assertEquals("Ahorra $20.00 frente a 2 meses de «Mensual» ($900.00): 2% menos.", text(dialog, "pl-ahorro"));
+        assertEquals(0L, FxHarness.onFx(() -> dialog.getRoot().lookupAll(".field-error").stream()
+                .filter(javafx.scene.Node::isVisible).count()));
+        captureDialogIn("proyecto-planes", "agregar-ahorro");
+        FxHarness.runFx(() -> dialog.lookup("#pl-nombre").requestFocus());
+        FxHarness.press(dialog, KeyCode.ENTER, false);
+        FxHarness.waitUntil("diálogo cerrado", () -> dialogScene() == null);
+        FxHarness.waitUntil("plan agregado", () -> "6 planes · 5 activos".equals(
+                ((javafx.scene.control.Label) scene.lookup("#pl-resumen")).getText()));
+        assertEquals("Se agregó el plan «Bimestral». Ya se ofrece al cobrar.", FxHarness.onFx(() -> toastText(scene, "aviso")));
+        clearToasts(scene);
+
+        // Editar Anual para compararlo con Mensual: su ahorro aparece en la tabla.
+        fire(scene, "pl-editar-" + anual);
+        FxHarness.waitUntil("diálogo de edición", () -> dialogScene() != null && dialogScene().lookup("#pl-referencia") != null);
+        Scene edit = FxHarness.onFx(this::dialogScene);
+        FxHarness.runFx(() -> ((javafx.scene.control.ComboBox<?>) edit.lookup("#pl-referencia")).getSelectionModel().select(1));
+        FxHarness.waitUntil("ahorro del anual", () -> ((javafx.scene.control.Label) edit.lookup("#pl-ahorro")).getText()
+                .startsWith("Ahorra $1,200.00"));
+        FxHarness.runFx(() -> edit.lookup("#pl-nombre").requestFocus());
+        FxHarness.press(edit, KeyCode.ENTER, false);
+        FxHarness.waitUntil("diálogo cerrado", () -> dialogScene() == null);
+        FxHarness.waitUntil("ahorro en la tabla", () -> scene.lookup("#pl-tabla").lookupAll(".plan-ahorro").stream()
+                .anyMatch(n -> "$1,200.00 (22%)".equals(((javafx.scene.control.Label) n).getText())));
+        clearToasts(scene);
+        captureAll("proyecto-planes", "con-ahorro");
+
+        // Desactivar Mensual: deja de ofrecerse y el ahorro de quien se compara con él ya no se puede calcular.
+        fire(scene, "pl-estado-" + mensual);
+        FxHarness.waitUntil("aviso", () -> toastText(scene, "aviso") != null);
+        assertEquals("«Mensual» ya no se ofrece al cobrar. Sus membresías y cobros se conservan.",
+                FxHarness.onFx(() -> toastText(scene, "aviso")));
+        FxHarness.waitUntil("ahorro no disponible", () -> scene.lookup("#pl-tabla").lookupAll(".label").stream()
+                .filter(n -> "No disponible".equals(((javafx.scene.control.Label) n).getText())).count() == 4);
+        assertEquals("Activar", text(scene, "pl-estado-" + mensual));
+        captureAll("proyecto-planes", "mensual-inactivo");
+        clearToasts(scene);
+
+        // Eliminar: uno con membresías se rechaza con el mensaje del caso de uso; uno sin uso se borra.
+        FxHarness.runFx(() -> scene.lookup("#pl-eliminar-" + mensual).requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación", () -> dialogWithButton("Eliminar") != null);
+        captureDialogIn("proyecto-planes", "confirmar-eliminar");
+        clickInDialog(FxHarness.onFx(() -> dialogWithButton("Eliminar")), "Eliminar");
+        FxHarness.waitUntil("aviso de error", () -> toastText(scene, "aviso-error") != null);
+        assertEquals("No puedes eliminar «Mensual»: ya tiene membresías. Desactívalo para dejar de ofrecerlo.",
+                FxHarness.onFx(() -> toastText(scene, "aviso-error")));
+        captureAll("proyecto-planes", "eliminar-rechazado");
+        clearToasts(scene);
+        FxHarness.runFx(() -> scene.lookup("#pl-eliminar-" + visita).requestFocus());
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("confirmación", () -> dialogWithButton("Eliminar") != null);
+        clickInDialog(FxHarness.onFx(() -> dialogWithButton("Eliminar")), "Eliminar");
+        FxHarness.waitUntil("eliminado", () -> scene.lookup("#pl-editar-" + visita) == null);
+        assertEquals("Se eliminó el plan «Visita».", FxHarness.onFx(() -> toastText(scene, "aviso")));
     }
 
     private void captureDialogIn(String folder, String name) throws Exception {

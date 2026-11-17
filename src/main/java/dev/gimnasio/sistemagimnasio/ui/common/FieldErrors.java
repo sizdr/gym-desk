@@ -39,6 +39,14 @@ public final class FieldErrors {
      * @return los mensajes de campos que esta pantalla no tiene, para mostrarlos aparte
      */
     public List<String> show(Map<String, String> errors) {
+        return show(errors, true);
+    }
+
+    /**
+     * Como {@link #show(Map)}; con {@code focusFirst} en {@code false} no mueve el foco, para cuando solo se
+     * quitó el error del campo que se está corrigiendo.
+     */
+    public List<String> show(Map<String, String> errors, boolean focusFirst) {
         clear();
         List<String> unbound = new ArrayList<>();
         Control first = null;
@@ -57,7 +65,7 @@ public final class FieldErrors {
                 first = field.control();
             }
         }
-        if (first != null) {
+        if (first != null && focusFirst) {
             first.requestFocus();
         }
         return unbound;

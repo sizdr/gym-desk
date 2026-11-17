@@ -284,3 +284,22 @@ El **Tablero** es el segundo módulo integrador y la sección inicial del admini
 
 Corregido de paso en Cobrar membresía: con el socio elegido y sin plan, el resumen fallaba al escribir el periodo (no hay fin todavía); ahora dice «Desde el…». La prueba de capturas de Cobro lo comprueba. El recorrido del menú con Tab ya no vuelve al menú después de «atajos»: entra al contenido del tablero.
 
+### Proyecto final · Catálogo de Planes (16/11/2026)
+
+**Planes de membresía** completa el tercer catálogo con CRUD (`ListPlans`, `CreatePlan`, `UpdatePlan`, `SetPlanActive`, `DeletePlan` y `PreviewPlanSavings`). Solo la ve el administrador.
+
+- **Consultar:** activos primero, luego por duración. Cada plan con su duración y la referencia con la que se compara, el precio, el ahorro («$1,200.00 (22%)», «Sin ahorro», «No disponible» con el motivo al pasar el cursor) y su estado. «6 planes · 5 activos».
+- **Agregar y editar** en un diálogo: nombre, duración en días, precio y referencia mensual (solo planes de 30 días, sin el propio). Debajo, el ahorro calculado mientras se escribe, con la cuenta («Ahorra $20.00 frente a 2 meses de «Mensual» ($900.00): 2% menos.») o el motivo si no se puede calcular. Los errores van a su campo; corregir uno lo quita sin mover el foco. Al cambiar el precio, el aviso recuerda que aplica a los cobros nuevos.
+- **Activar y desactivar:** desactivar deja de ofrecerlo al cobrar y conserva su historial. La lista se vuelve a leer completa, porque el ahorro de los planes que se comparan con él cambia.
+- **Eliminar** con confirmación (abre en «Cancelar»); un plan con membresías o que es referencia de otros se rechaza con el mensaje del caso de uso.
+- `FieldErrors.show(errores, false)` muestra los errores sin mover el foco.
+
+| Comprobación | Resultado |
+|---|---|
+| `PlansViewModelTest` (7) | Orden, detalle, ahorro y resumen; referencias solo de 30 días y nunca el propio plan; ahorro mientras se escribe (con ahorro, sin ahorro, sin referencia, 30 días, vacío); errores en sus campos y corregir uno lo quita; un segundo envío no agrega otro; aviso del precio nuevo y ahorro recalculado; desactivar la referencia cambia el ahorro de los demás; eliminar rechazado y permitido |
+| Capturas en ambos temas y tamaños | `planes`, `con-ahorro`, `mensual-inactivo`, `eliminar-rechazado`; diálogos `agregar-errores`, `agregar-ahorro` y `confirmar-eliminar` |
+| Teclado | Agregar plan → Editar, Desactivar y Eliminar de cada fila. En el diálogo, Enter envía, el foco va al primer error y no se mueve al corregir |
+| `./mvnw test` | 679 pruebas: 0 fallos, 0 errores; con `-Dui.capturas=true`, `CapturasUiTest` 13 de 13 |
+
+Corregido al revisar las capturas: a 1024 el precio y el ahorro se recortaban («$45…»); con el formulario vacío decía «Un plan de 30 días o menos no muestra ahorro.». La prueba de sección pendiente usa ahora Usuarios, la única que falta.
+
