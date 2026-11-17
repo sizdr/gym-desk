@@ -144,10 +144,14 @@ public final class GymDeskUi implements AutoCloseable {
         window.setContent(FxmlView.load("shell", shell));
     }
 
+    /** El socio que el tablero pidió cobrar; lo toma la pantalla de cobro al crearse. */
+    private dev.gimnasio.sistemagimnasio.application.usecase.members.MemberRow pendingCharge;
+
     /** Las secciones que ya funcionan; las demás muestran qué les falta. */
     private Screen screenFor(Route route) {
         return switch (route) {
             case CONFIGURACION -> settingsScreen();
+            case TABLERO -> dashboardScreen();
             case COBRO -> chargeScreen();
             case SOCIOS -> membersScreen();
             default -> null;
@@ -181,8 +185,29 @@ public final class GymDeskUi implements AutoCloseable {
         var model = new dev.gimnasio.sistemagimnasio.ui.billing.ChargeViewModel(useCases, background, session::actor,
                 notifier);
         var controller = new dev.gimnasio.sistemagimnasio.ui.billing.ChargeController(model, gymInfo.currency());
+        if (pendingCharge != null) {
+            model.chooseMember(pendingCharge);
+            pendingCharge = null;
+        }
         model.load();
         return Screen.of(controller.view());
+    }
+
+    private Screen dashboardScreen() {
+        var model = new dev.gimnasio.sistemagimnasio.ui.dashboard.DashboardViewModel(useCases, background,
+                session::actor);
+        boolean canCharge = session.can(dev.gimnasio.sistemagimnasio.domain.user.Permission.CHARGE_MEMBERSHIP);
+        var controller = new dev.gimnasio.sistemagimnasio.ui.dashboard.DashboardController(model, gymInfo.currency(),
+                canCharge ? this::chargeFor : null);
+        model.load();
+        return Screen.of(controller.view());
+    }
+
+    /** Abre Cobrar membresía con el socio ya elegido (desde el tablero). */
+    private void chargeFor(dev.gimnasio.sistemagimnasio.application.usecase.members.MemberRow member) {
+        pendingCharge = member;
+        shell.navigate(Route.COBRO);
+        pendingCharge = null;
     }
 
     /** El nombre y el logotipo nuevos se ven enseguida en el menú, el título de la ventana y el acceso. */

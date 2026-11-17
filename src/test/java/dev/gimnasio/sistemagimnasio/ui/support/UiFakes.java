@@ -226,7 +226,9 @@ public final class UiFakes {
                     new ChargeMembership(members, memberships, plans, methods, settings, payments, folios, users,
                             transactions, authorizer, clock),
                     receipt(),
-                    new PrintMembershipReceipt(receipt(), printer));
+                    new PrintMembershipReceipt(receipt(), printer),
+                    new dev.gimnasio.sistemagimnasio.application.usecase.summary.GetDaySummary(members, memberships,
+                            plans, settings, payments, methods, users, authorizer, clock));
         }
     }
 

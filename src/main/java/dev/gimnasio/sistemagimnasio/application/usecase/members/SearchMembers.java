@@ -6,9 +6,6 @@ import dev.gimnasio.sistemagimnasio.application.port.out.PlanRepository;
 import dev.gimnasio.sistemagimnasio.application.port.out.SettingsRepository;
 import dev.gimnasio.sistemagimnasio.application.shared.Authorizer;
 import dev.gimnasio.sistemagimnasio.domain.member.MemberStatus;
-import dev.gimnasio.sistemagimnasio.domain.member.Membership;
-import dev.gimnasio.sistemagimnasio.domain.member.Plan;
-import dev.gimnasio.sistemagimnasio.domain.settings.GymSettings;
 import dev.gimnasio.sistemagimnasio.domain.user.Permission;
 import dev.gimnasio.sistemagimnasio.domain.user.User;
 
@@ -21,8 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Buscar, filtrar por estado y ordenar socios. El estado no se guarda: se calcula hoy con la última membresía
@@ -49,16 +44,7 @@ public final class SearchMembers {
     public MemberSearchResult execute(User actor, SearchMembersQuery query) {
         authorizer.require(actor, Permission.VIEW_MEMBERS);
         LocalDate today = LocalDate.now(clock);
-        GymSettings current = settings.get();
-        Map<Long, Membership> latest = memberships.findLatestPerMember().stream()
-                .collect(Collectors.toMap(Membership::memberId, Function.identity(), (a, b) -> a.end().isAfter(b.end()) ? a : b));
-        Map<Long, String> planNames = plans.findAll().stream().collect(Collectors.toMap(Plan::id, Plan::name));
-
-        List<MemberRow> rows = members.findAll().stream().map(member -> {
-            Membership last = latest.get(member.id());
-            return MemberRows.of(member, last, last == null ? null : planNames.get(last.planId()), today,
-                    current.warningDays(), current.autoDeactivationDays());
-        }).toList();
+        List<MemberRow> rows = MemberRows.all(members, memberships, plans, settings.get(), today);
 
         Map<MemberStatus, Integer> counts = new EnumMap<>(MemberStatus.class);
         for (MemberStatus status : MemberStatus.values()) {

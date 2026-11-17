@@ -1,16 +1,39 @@
 package dev.gimnasio.sistemagimnasio.application.usecase.members;
 
+import dev.gimnasio.sistemagimnasio.application.port.out.MemberRepository;
+import dev.gimnasio.sistemagimnasio.application.port.out.MembershipRepository;
+import dev.gimnasio.sistemagimnasio.application.port.out.PlanRepository;
 import dev.gimnasio.sistemagimnasio.domain.member.Member;
 import dev.gimnasio.sistemagimnasio.domain.member.MemberStatus;
 import dev.gimnasio.sistemagimnasio.domain.member.Membership;
 import dev.gimnasio.sistemagimnasio.domain.member.MembershipRules;
+import dev.gimnasio.sistemagimnasio.domain.member.Plan;
+import dev.gimnasio.sistemagimnasio.domain.settings.GymSettings;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /** Arma {@link MemberRow}; el estado sale de {@link MembershipRules}, nunca de la base. */
 public final class MemberRows {
     private MemberRows() {
+    }
+
+    /** Todos los socios con su estado de {@code today}, en el orden del repositorio. */
+    public static List<MemberRow> all(MemberRepository members, MembershipRepository memberships,
+                                      PlanRepository plans, GymSettings settings, LocalDate today) {
+        Map<Long, Membership> latest = memberships.findLatestPerMember().stream()
+                .collect(Collectors.toMap(Membership::memberId, Function.identity(),
+                        (a, b) -> a.end().isAfter(b.end()) ? a : b));
+        Map<Long, String> planNames = plans.findAll().stream().collect(Collectors.toMap(Plan::id, Plan::name));
+        return members.findAll().stream().map(member -> {
+            Membership last = latest.get(member.id());
+            return of(member, last, last == null ? null : planNames.get(last.planId()), today,
+                    settings.warningDays(), settings.autoDeactivationDays());
+        }).toList();
     }
 
     /**

@@ -3,9 +3,13 @@ package dev.gimnasio.sistemagimnasio.application.fakes;
 import dev.gimnasio.sistemagimnasio.application.port.out.MembershipPaymentRepository;
 import dev.gimnasio.sistemagimnasio.domain.billing.ChargeKind;
 import dev.gimnasio.sistemagimnasio.domain.billing.MembershipPayment;
+import dev.gimnasio.sistemagimnasio.domain.shared.Money;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -49,6 +53,29 @@ public final class InMemoryMembershipPayments implements MembershipPaymentReposi
     public Optional<Long> findIdByOperationId(String operationId) {
         guard.check("findIdByOperationId");
         return Optional.ofNullable(byOperation.get(operationId));
+    }
+
+    @Override
+    public List<Long> findRecentIds(int limit) {
+        guard.check("findRecentIds");
+        return byId.values().stream()
+                .map(RecordedPayment::payment)
+                .sorted(Comparator.comparing(MembershipPayment::dateTime).thenComparing(MembershipPayment::id)
+                        .reversed())
+                .limit(limit)
+                .map(MembershipPayment::id)
+                .toList();
+    }
+
+    @Override
+    public Totals totalsBetween(LocalDateTime from, LocalDateTime to) {
+        guard.check("totalsBetween");
+        List<MembershipPayment> inRange = byId.values().stream()
+                .map(RecordedPayment::payment)
+                .filter(p -> !p.dateTime().isBefore(from) && p.dateTime().isBefore(to))
+                .toList();
+        return new Totals(inRange.size(), inRange.stream().map(MembershipPayment::amount)
+                .reduce(Money.ZERO, Money::plus));
     }
 
     public RecordedPayment get(long id) {

@@ -11,7 +11,7 @@ import java.util.List;
 public enum Route {
     TABLERO(null, "Tablero", "Tablero", "tablero", Permission.VIEW_DAILY_SUMMARY,
             "Resumen del día: socios activos, vencimientos y cobros.",
-            Status.MISSING_USE_CASES, List.of("GetDaySummary")),
+            Status.READY, List.of("GetDaySummary")),
     COBRO("Mostrador", "Cobrar membresía", "Cobrar membresía", "tarjeta", Permission.CHARGE_MEMBERSHIP,
             "Cobra un plan a un socio y entrega su recibo.",
             Status.READY, List.of("ListChargeOptions", "PreviewMembershipCharge", "ChargeMembership",

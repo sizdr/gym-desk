@@ -86,6 +86,44 @@ class PostgresBillingRepositoriesTest {
         assertEquals(1, payments.count());
     }
 
+    private long paidAt(String folio, LocalDateTime when) {
+        MembershipPayment saved = payments.insert(payment(folio, when, null), ChargeKind.PRIMERA, "op-" + folio);
+        memberships.insert(new Membership(null, socio, plan, saved.id(), when.toLocalDate(), when.toLocalDate().plusDays(30)));
+        return saved.id();
+    }
+
+    @Test
+    void totalesDeUnDia_conLosLimitesEnLaHoraLocal() {
+        LocalDateTime dayStart = LocalDateTime.of(2026, 11, 12, 0, 0);
+        paidAt("GYM-0001", dayStart.minusSeconds(1));
+        paidAt("GYM-0002", dayStart);
+        paidAt("GYM-0003", dayStart.plusHours(23).plusMinutes(59));
+        paidAt("GYM-0004", dayStart.plusDays(1));
+
+        RecordedTotals.check(payments.totalsBetween(dayStart, dayStart.plusDays(1)), 2, "900.00");
+        RecordedTotals.check(payments.totalsBetween(dayStart.plusDays(5), dayStart.plusDays(6)), 0, "0");
+    }
+
+    /** Compara cuenta y suma sin depender de la escala del {@code BigDecimal}. */
+    private static final class RecordedTotals {
+        static void check(dev.gimnasio.sistemagimnasio.application.port.out.MembershipPaymentRepository.Totals totals,
+                          int count, String amount) {
+            assertEquals(count, totals.count());
+            assertEquals(0, new java.math.BigDecimal(amount).compareTo(totals.amount().amount()), totals.toString());
+        }
+    }
+
+    @Test
+    void ultimosCobros_elMasRecientePrimero_hastaElLimite() {
+        LocalDateTime nine = LocalDateTime.of(2026, 11, 12, 9, 0);
+        long first = paidAt("GYM-0001", nine);
+        long third = paidAt("GYM-0002", nine.plusHours(2));
+        long second = paidAt("GYM-0003", nine.plusHours(1));
+
+        assertEquals(java.util.List.of(third, second, first), payments.findRecentIds(8));
+        assertEquals(java.util.List.of(third, second), payments.findRecentIds(2));
+    }
+
     @Test
     void sinEfectivoRecibido_quedaVacio() {
         MembershipPayment saved = payments.insert(payment("GYM-0001", LocalDateTime.of(2026, 11, 12, 9, 0), null),

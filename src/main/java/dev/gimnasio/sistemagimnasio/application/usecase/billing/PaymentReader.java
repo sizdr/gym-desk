@@ -23,7 +23,7 @@ import java.util.Optional;
  * Arma un cobro guardado con los nombres de socio, plan, método y cajero. El periodo y su duración salen de la
  * membresía que generó: cambiar después la duración del plan no cambia lo que se pagó.
  */
-final class PaymentReader {
+public final class PaymentReader {
     private final MembershipPaymentRepository payments;
     private final MembershipRepository memberships;
     private final MemberRepository members;
@@ -31,7 +31,7 @@ final class PaymentReader {
     private final PaymentMethodRepository methods;
     private final UserRepository users;
 
-    PaymentReader(MembershipPaymentRepository payments, MembershipRepository memberships,
+    public PaymentReader(MembershipPaymentRepository payments, MembershipRepository memberships,
                          MemberRepository members, PlanRepository plans, PaymentMethodRepository methods,
                          UserRepository users) {
         this.payments = Objects.requireNonNull(payments, "payments");
@@ -43,7 +43,7 @@ final class PaymentReader {
     }
 
     /** Vacío si el cobro no existe. */
-    Optional<View> read(long paymentId) {
+    public Optional<View> read(long paymentId) {
         Optional<RecordedPayment> recorded = payments.findById(paymentId);
         if (recorded.isEmpty()) {
             return Optional.empty();
@@ -68,6 +68,6 @@ final class PaymentReader {
         return Optional.of(new View(row, durationDays, payment.cashReceived(), payment.change().orElse(null)));
     }
 
-    record View(PaymentRow row, int durationDays, Money cashReceived, Money change) {
+    public record View(PaymentRow row, int durationDays, Money cashReceived, Money change) {
     }
 }

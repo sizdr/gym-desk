@@ -9,7 +9,7 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | Capa | Estado |
 |---|---|
 | `domain` | Entidades, value objects y reglas creados a partir de la especificación |
-| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro), los usuarios (con el primer administrador) y el cobro de membresías con su recibo; `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
+| `application` | `Authenticate`, `GetGymInfo`, `GetSettings`/`UpdateSettings`, el catálogo de métodos de pago, los planes (con su ahorro), los usuarios (con el primer administrador) el cobro de membresías con su recibo y el resumen del día (tablero); `Authorizer`, `ValidationException` y `NotFoundException` en `shared/` |
 | `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales, planes, cobros y el recorte del alcance), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago, planes, socios, membresías y cobros, `Argon2PasswordHasher`, recibo como archivo de texto, lectura del `.env` y creación del primer administrador al arrancar |
 | `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, Configuración y métodos de pago, el catálogo de Socios, y piezas comunes en `ui/common/`. El resto de las pantallas de negocio aún no existe: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
 

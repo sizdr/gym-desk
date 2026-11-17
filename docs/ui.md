@@ -263,3 +263,24 @@ Corregido al revisar las capturas: el diálogo de formulario no crecía al apare
 
 Corregido al revisar las capturas: los paneles sin margen interior, el plan elegido que no se distinguía, «Cambiar» y «Forma de pago» recortados a 1024 y «Sin membresía» repetido en la ficha del socio.
 
+### Proyecto final · Módulo de Control de vigencias (16/11/2026)
+
+El **Tablero** es el segundo módulo integrador y la sección inicial del administrador y de Recepción (`GetDaySummary`).
+
+- **Encabezado:** la fecha y el domingo en que termina la semana; «Actualizar» vuelve a consultar sin borrar lo que se ve.
+- **Cuatro datos:** socios activos (vigentes y por vencer), por vencer («2 vencen esta semana»), vencidas («Pasan a baja si no renuevan») y cobrado hoy con cuántos cobros.
+- **Por vencer** (del vencimiento más próximo) y **Vencidas** (de la más reciente), cada socio con su vigencia y plan. «Cobrar» y «Renovar» abren Cobrar membresía con ese socio ya elegido; quien no puede cobrar no ve los botones.
+- **Últimos cobros:** los 8 más recientes con folio, fecha, socio, plan y periodo, forma de pago y monto.
+- Vacíos con texto («Nadie está por vencer.», «Aún no hay cobros registrados.») y error con «Reintentar».
+
+| Comprobación | Resultado |
+|---|---|
+| `DaySummaryTest` (6) | Conteos y orden de las listas; la semana termina el domingo; el plazo de aviso sale de Configuración; ingresos solo de hoy (el de las 00:00 cuenta, el de anoche no); los 8 últimos cobros con sus datos; todo en cero; Caja no lo ve |
+| `FnEstadoSocioTest` (2), `PostgresBillingRepositoriesTest` (+2) | `fn_estado_socio` coincide con `MembershipRules` en 18 casos límite con los plazos iniciales y con otros; totales de un día con sus límites en hora local; últimos cobros en orden |
+| `DashboardViewModelTest` (3) | Carga; sin permiso queda el error; textos de fecha, semana y conteos |
+| Capturas en ambos temas y tamaños | `tablero`, `renovar-desde-tablero`, `despues-del-cobro`, `vacio` |
+| Teclado | Actualizar → «Cobrar» de cada por vencer → «Renovar» de cada vencida. Espacio sobre «Renovar» abre el cobro con el socio; Enter cobra; al volver, el tablero ya cuenta ese cobro |
+| `./mvnw test` | 671 pruebas: 0 fallos, 0 errores; con `-Dui.capturas=true`, `CapturasUiTest` 12 de 12 |
+
+Corregido de paso en Cobrar membresía: con el socio elegido y sin plan, el resumen fallaba al escribir el periodo (no hay fin todavía); ahora dice «Desde el…». La prueba de capturas de Cobro lo comprueba. El recorrido del menú con Tab ya no vuelve al menú después de «atajos»: entra al contenido del tablero.
+

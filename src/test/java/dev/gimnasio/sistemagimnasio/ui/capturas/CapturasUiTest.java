@@ -239,8 +239,9 @@ class CapturasUiTest {
         // Tab recorre el menú, Cerrar sesión, el tema y los atajos, y vuelve al menú.
         List<String> order = tabOrder(scene, 9);
         System.out.println("[teclado] menú administrador, Tab: " + order);
+        // Después de los atajos, Tab entra al contenido: el tablero ya no es un aviso de sección pendiente.
         assertEquals(List.of("nav-tablero", "nav-cobro", "nav-socios", "nav-planes", "nav-usuarios",
-                "nav-configuracion", "signOut", "tema-claro", "atajos", "nav-tablero"), order);
+                "nav-configuracion", "signOut", "tema-claro", "atajos", "tb-actualizar"), order);
 
         // Espacio sobre una sección la abre.
         FxHarness.runFx(() -> scene.lookup("#nav-planes").requestFocus());
@@ -892,6 +893,10 @@ class CapturasUiTest {
         FxHarness.runFx(() -> scene.lookup("#co-socio-" + daniel).requestFocus());
         FxHarness.press(scene, KeyCode.SPACE, false);
         FxHarness.waitUntil("socio elegido", () -> onScreen(scene, "co-socio") && onScreen(scene, "co-cambiar"));
+        // Sin plan aún: el resumen ya sabe desde cuándo, pero no hasta cuándo.
+        FxHarness.waitUntil("periodo sin plan", () -> scene.lookup("#co-resumen").lookupAll(".label").stream()
+                .anyMatch(n -> ("Desde el " + dev.gimnasio.sistemagimnasio.ui.common.Formats.date(UiFakes.TODAY))
+                        .equals(((javafx.scene.control.Label) n).getText())));
 
         // Plan con el teclado, efectivo insuficiente: dice cuánto falta y no deja cobrar.
         FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.lookup("#co-plan-" + mensual)).fire());
@@ -941,6 +946,97 @@ class CapturasUiTest {
                 && !onScreen(scene, "co-efectivo"));
         assertTrue(text(scene, "co-regla").startsWith("Primera membresía"), text(scene, "co-regla"));
         captureAll("proyecto-cobro", "primera-membresia");
+    }
+
+    /** El gimnasio de Socios con más vencimientos, métodos de pago y dos cobros de hoy. */
+    private UiFakes.Backend gymForDashboard() throws Exception {
+        UiFakes.Backend backend = gymWithMembers();
+        long efectivo = backend.methods.add("Efectivo", true, true).id();
+        long tarjeta = backend.methods.add("Tarjeta", false, true).id();
+        long mensual = backend.plans.findAll().stream().filter(p -> p.name().equals("Mensual")).findFirst()
+                .orElseThrow().id();
+        Object[][] more = {{"Iván Cruz", 1}, {"Julia Vela", 6}, {"Karen Ortiz", -3}, {"Luis Mora", -24}};
+        for (Object[] socio : more) {
+            var member = backend.members.add((String) socio[0], UiFakes.TODAY.minusDays(200));
+            java.time.LocalDate end = UiFakes.TODAY.plusDays((Integer) socio[1]);
+            backend.memberships.add(member.id(), mensual, end.minusDays(30), end);
+            backend.members.markPaid(member.id());
+        }
+        var caja = backend.users.findAll().stream().filter(u -> u.username().equals("carlos")).findFirst()
+                .orElseThrow();
+        var cobro = backend.useCases().chargeMembership();
+        cobro.execute(caja, new dev.gimnasio.sistemagimnasio.application.usecase.billing.ChargeMembershipCommand(
+                "op-a", memberId(backend, "Fernando Gil"), mensual, tarjeta, null, null));
+        cobro.execute(caja, new dev.gimnasio.sistemagimnasio.application.usecase.billing.ChargeMembershipCommand(
+                "op-b", memberId(backend, "Gabriela Paz"), mensual, efectivo,
+                dev.gimnasio.sistemagimnasio.domain.shared.Money.of("500"), null));
+        return backend;
+    }
+
+    @Test
+    void proyectoTablero() throws Exception {
+        UiFakes.Backend backend = gymForDashboard();
+        long karen = memberId(backend, "Karen Ortiz");
+        long ivan = memberId(backend, "Iván Cruz");
+
+        // El administrador entra al tablero.
+        Scene scene = signIn(backend, "admin");
+        FxHarness.runFx(() -> ui.shell().setToastTime(javafx.util.Duration.minutes(1)));
+        FxHarness.waitUntil("tablero", () -> onScreen(scene, "tb-tabla-cobros") && onScreen(scene, "tb-cobrar-" + ivan));
+        assertEquals("Tablero", title(scene));
+        assertEquals("8", text(scene, "tb-activos"), "vigentes y por vencer");
+        assertEquals("3", text(scene, "tb-por-vencer"), "Iván (1), Bruno (3) y Julia (6)");
+        assertEquals("3", text(scene, "tb-vencidas"), "Karen (-3), Daniel (-10) y Luis (-24); Elena ya es baja");
+        assertEquals("$900.00", text(scene, "tb-cobrado"));
+        assertEquals("Martes 10 de noviembre de 2026 · la semana termina el domingo 15", text(scene, "tb-fecha"));
+        captureAll("proyecto-tablero", "tablero");
+
+        // Teclado: Actualizar → acciones de por vencer (de la más próxima) → acciones de vencidas.
+        FxHarness.runFx(() -> scene.lookup("#tb-actualizar").requestFocus());
+        List<String> order = tabOrder(scene, 4);
+        System.out.println("[teclado] tablero, Tab: " + order);
+        assertEquals("tb-actualizar", order.get(0));
+        assertEquals("tb-cobrar-" + ivan, order.get(1));
+        assertTrue(order.get(4).startsWith("tb-renovar-"), order.toString());
+        assertEquals("tb-renovar-" + karen, order.get(4), "la vencida más reciente primero");
+
+        // Renovar a Karen abre el cobro con ella elegida; Enter cobra.
+        FxHarness.pressLater(scene, KeyCode.SPACE);
+        FxHarness.waitUntil("cobro con el socio", () -> onScreen(scene, "co-socio") && onScreen(scene, "co-planes"));
+        assertEquals("Cobrar membresía", title(scene));
+        assertEquals(1, FxHarness.onFx(() -> scene.getRoot().lookupAll(".nav-enlace").stream()
+                .filter(n -> n.getPseudoClassStates().stream().anyMatch(p -> p.getPseudoClassName().equals("actual")))
+                .count()).intValue());
+        long mensual = backend.plans.findAll().stream().filter(p -> p.name().equals("Mensual")).findFirst()
+                .orElseThrow().id();
+        FxHarness.runFx(() -> ((javafx.scene.control.ToggleButton) scene.lookup("#co-plan-" + mensual)).fire());
+        typeInto(scene, "co-efectivo", "450");
+        FxHarness.waitUntil("listo", () -> enabled(scene, "co-cobrar"));
+        assertEquals("Renovación de una membresía vencida: empieza hoy.", text(scene, "co-regla"));
+        captureAll("proyecto-tablero", "renovar-desde-tablero");
+        FxHarness.runFx(() -> scene.lookup("#co-efectivo").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("recibo", () -> onScreen(scene, "co-folio"));
+        assertEquals("GYM-0003", text(scene, "co-folio"));
+        clearToasts(scene);
+
+        // De vuelta en el tablero, Karen ya no está vencida y el cobro aparece primero.
+        FxHarness.runFx(() -> scene.lookup("#nav-tablero").requestFocus());
+        FxHarness.press(scene, KeyCode.ENTER, false);
+        FxHarness.waitUntil("tablero actualizado", () -> onScreen(scene, "tb-tabla-cobros")
+                && "2".equals(((javafx.scene.control.Label) scene.lookup("#tb-vencidas")).getText()));
+        assertEquals("$1,350.00", text(scene, "tb-cobrado"));
+        assertEquals(false, FxHarness.onFx(() -> scene.lookup("#tb-renovar-" + karen) != null));
+        captureAll("proyecto-tablero", "despues-del-cobro");
+        closeWindow();
+
+        // Sin cobros ni socios: los vacíos dicen qué pasa.
+        Scene empty = signIn(new UiFakes.Backend(staff()), "rocio");
+        FxHarness.waitUntil("tablero vacío", () -> onScreen(empty, "tb-tabla-cobros")
+                && "0".equals(((javafx.scene.control.Label) empty.lookup("#tb-activos")).getText()));
+        assertEquals("Sin cobros hoy", FxHarness.onFx(() -> ((javafx.scene.control.Label) empty.lookup("#tb-cobrado")
+                .getParent().getChildrenUnmodifiable().getLast()).getText()));
+        captureAll("proyecto-tablero", "vacio");
     }
 
     private void captureDialogIn(String folder, String name) throws Exception {

@@ -201,9 +201,9 @@ Sin `actor` ni permiso: se usa también en la pantalla de acceso, antes de inici
 
 ## Resumen del día
 
-### `GetDaySummary` · Tablero
+### `GetDaySummary` · Tablero · *implementado*
 
-Permiso: `VIEW_DAILY_SUMMARY`.
+Permiso: `VIEW_DAILY_SUMMARY`. Es el módulo de control de vigencias: calcula el estado de cada socio con las mismas reglas que `SearchMembers` (`MemberRows.all`), así que el tablero y la lista de Socios nunca se contradicen. La función `fn_estado_socio` de la base da el mismo resultado en cada límite (`FnEstadoSocioTest`).
 
 **Entrada:** solo `actor`.
 
@@ -639,6 +639,8 @@ Implementación: `PostgresMembershipPaymentRepository`.
 | `MembershipPayment insert(MembershipPayment payment, ChargeKind kind, String operationId)` | Lo devuelve con su id. La base rechaza un `operationId` repetido. |
 | `Optional<RecordedPayment> findById(long id)` | El cobro con su tipo; necesita que exista su membresía. |
 | `Optional<Long> findIdByOperationId(String operationId)` | El cobro ya registrado con esa operación. |
+| `List<Long> findRecentIds(int limit)` | Los ids de los últimos cobros, el más reciente primero (por fecha y hora, luego id). |
+| `Totals totalsBetween(LocalDateTime from, LocalDateTime to)` | Cuántos cobros y cuánto sumaron de `from` (incluido) a `to` (excluido), en hora local. Sin cobros, 0 y $0. |
 
 `fecha_hora` es `timestamptz`: se guarda y se lee en la zona del equipo.
 

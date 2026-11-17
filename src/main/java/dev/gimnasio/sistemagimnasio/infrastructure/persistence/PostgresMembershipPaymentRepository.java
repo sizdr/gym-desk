@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,5 +103,31 @@ public final class PostgresMembershipPaymentRepository implements MembershipPaym
                 .bind("operacion", operationId)
                 .mapTo(Long.class)
                 .findOne());
+    }
+
+    @Override
+    public List<Long> findRecentIds(int limit) {
+        return jdbi.withHandle(handle -> handle.createQuery("""
+                        SELECT id
+                        FROM pago
+                        ORDER BY fecha_hora DESC, id DESC
+                        LIMIT :limite
+                        """)
+                .bind("limite", limit)
+                .mapTo(Long.class)
+                .list());
+    }
+
+    @Override
+    public Totals totalsBetween(LocalDateTime from, LocalDateTime to) {
+        return jdbi.withHandle(handle -> handle.createQuery("""
+                        SELECT COUNT(*) AS cobros, COALESCE(SUM(monto), 0) AS total
+                        FROM pago
+                        WHERE fecha_hora >= :desde AND fecha_hora < :hasta
+                        """)
+                .bind("desde", from.atZone(zone).toOffsetDateTime())
+                .bind("hasta", to.atZone(zone).toOffsetDateTime())
+                .map((rs, ctx) -> new Totals(rs.getInt("cobros"), new Money(rs.getBigDecimal("total"))))
+                .one());
     }
 }

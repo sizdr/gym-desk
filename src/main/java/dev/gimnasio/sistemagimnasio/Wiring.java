@@ -28,6 +28,7 @@ import dev.gimnasio.sistemagimnasio.application.usecase.members.DeleteMember;
 import dev.gimnasio.sistemagimnasio.infrastructure.printing.TextFileReceiptPrinter;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.RegisterMember;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.SearchMembers;
+import dev.gimnasio.sistemagimnasio.application.usecase.summary.GetDaySummary;
 import dev.gimnasio.sistemagimnasio.application.usecase.members.UpdateMember;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMemberRepository;
 import dev.gimnasio.sistemagimnasio.infrastructure.persistence.PostgresMembershipRepository;
@@ -105,6 +106,8 @@ final class Wiring {
                 new ChargeMembership(members, memberships, plans, paymentMethods, settings, payments, folioSeries, users,
                         transactions, authorizer, clock),
                 receipt,
-                new PrintMembershipReceipt(receipt, new TextFileReceiptPrinter(receiptsDirectory())));
+                new PrintMembershipReceipt(receipt, new TextFileReceiptPrinter(receiptsDirectory())),
+                new GetDaySummary(members, memberships, plans, settings, payments, paymentMethods, users, authorizer,
+                        clock));
     }
 }

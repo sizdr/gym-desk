@@ -24,6 +24,7 @@ import dev.gimnasio.sistemagimnasio.application.usecase.plans.SetPlanActive;
 import dev.gimnasio.sistemagimnasio.application.usecase.plans.UpdatePlan;
 import dev.gimnasio.sistemagimnasio.application.usecase.settings.GetSettings;
 import dev.gimnasio.sistemagimnasio.application.usecase.settings.UpdateSettings;
+import dev.gimnasio.sistemagimnasio.application.usecase.summary.GetDaySummary;
 
 import java.util.Objects;
 
@@ -55,7 +56,8 @@ public record UseCases(
         PreviewMembershipCharge previewMembershipCharge,
         ChargeMembership chargeMembership,
         GetMembershipReceipt getMembershipReceipt,
-        PrintMembershipReceipt printMembershipReceipt) {
+        PrintMembershipReceipt printMembershipReceipt,
+        GetDaySummary getDaySummary) {
 
     public UseCases {
         Objects.requireNonNull(authenticate, "authenticate");
@@ -82,5 +84,6 @@ public record UseCases(
         Objects.requireNonNull(chargeMembership, "chargeMembership");
         Objects.requireNonNull(getMembershipReceipt, "getMembershipReceipt");
         Objects.requireNonNull(printMembershipReceipt, "printMembershipReceipt");
+        Objects.requireNonNull(getDaySummary, "getDaySummary");
     }
 }

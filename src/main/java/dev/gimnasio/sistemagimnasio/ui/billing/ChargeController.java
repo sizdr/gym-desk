@@ -385,8 +385,7 @@ public final class ChargeController {
         r = row(rows, r, "Socio", preview == null || preview.member() == null ? "—" : preview.member().fullName());
         r = row(rows, r, "Plan", preview == null || preview.plan() == null ? "—"
                 : preview.plan().name() + " · " + preview.plan().durationDays() + " días");
-        r = row(rows, r, "Periodo", preview == null || preview.newStart() == null ? "—"
-                : DAY.format(preview.newStart()) + " al " + DAY.format(preview.newEnd()));
+        r = row(rows, r, "Periodo", period(preview));
         r = row(rows, r, "Forma de pago", preview == null || preview.paymentMethod() == null ? "—"
                 : preview.paymentMethod().name());
         if (preview != null && preview.cashReceived() != null) {
@@ -450,6 +449,15 @@ public final class ChargeController {
             note.getStyleClass().addAll("nota", "nota-error");
             summary.getChildren().add(note);
         }
+    }
+
+    /** Sin plan todavía se conoce el inicio, pero no el fin. */
+    static String period(ChargePreview preview) {
+        if (preview == null || preview.newStart() == null) {
+            return "—";
+        }
+        return preview.newEnd() == null ? "Desde el " + DAY.format(preview.newStart())
+                : DAY.format(preview.newStart()) + " al " + DAY.format(preview.newEnd());
     }
 
     private HBox amountLine(String caption, String value, String style, String id) {

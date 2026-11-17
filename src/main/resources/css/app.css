@@ -937,3 +937,29 @@
 .plan-precio { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 14.5px; -fx-text-fill: -gd-texto; }
 .plan-meta { -fx-font-family: "Instrument Sans"; -fx-font-size: 13px; -fx-text-fill: -gd-texto-2; }
 .plan-ahorro { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 13px; -fx-text-fill: -gd-ok; }
+
+/* Tablero */
+.tablero-datos { -fx-hgap: 16; }
+.dato { -fx-padding: 16 18; }
+.dato-titulo { -fx-font-family: "Instrument Sans Medium"; -fx-font-size: 13.5px; -fx-text-fill: -gd-texto-2; }
+.dato .icono { -fx-stroke: -gd-texto-3; }
+.dato-valor { -fx-font-family: "Instrument Sans SemiBold"; -fx-font-size: 28px; -fx-text-fill: -gd-texto; }
+.dato-detalle { -fx-font-size: 12.5px; -fx-text-fill: -gd-texto-3; }
+.dato-por-vencer .icono { -fx-stroke: -gd-aviso; }
+.dato-vencida .icono { -fx-stroke: -gd-peligro; }
+.tablero-listas { -fx-hgap: 16; }
+.panel-lista { -fx-padding: 0 0 8 0; }
+.conteo {
+    -fx-background-color: -gd-superficie-3;
+    -fx-background-radius: 999;
+    -fx-padding: 1 8;
+    -fx-font-family: "Instrument Sans Medium";
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -gd-texto-2;
+}
+.fila-lista {
+    -fx-padding: 10 20;
+    -fx-border-color: -gd-linea transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+.lista-vacia { -fx-padding: 4 20 12 20; }
