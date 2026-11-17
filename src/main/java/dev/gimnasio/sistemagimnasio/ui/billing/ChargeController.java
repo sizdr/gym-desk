@@ -68,6 +68,11 @@ public final class ChargeController {
         return root;
     }
 
+    /** «1 día», «30 días». */
+    static String days(int days) {
+        return days == 1 ? "1 día" : days + " días";
+    }
+
     private String money(Money amount) {
         return amount == null ? "—" : Formats.money(amount, currency);
     }
@@ -306,7 +311,7 @@ public final class ChargeController {
             Region gap = new Region();
             HBox.setHgrow(gap, Priority.ALWAYS);
             HBox top = new HBox(8, name, gap, price);
-            Label meta = new Label(plan.durationDays() + " días");
+            Label meta = new Label(days(plan.durationDays()));
             meta.getStyleClass().add("plan-meta");
             Label saving = new Label(plan.savings() != null && plan.savings().status() == SavingsStatus.AHORRO
                     ? "Ahorra " + money(plan.savings().amount()) : "");
@@ -322,7 +327,7 @@ public final class ChargeController {
             option.setUserData(plan);
             option.setId("co-plan-" + plan.id());
             option.getStyleClass().add("plan-opcion");
-            option.setAccessibleText(plan.name() + ", " + plan.durationDays() + " días, " + money(plan.price()));
+            option.setAccessibleText(plan.name() + ", " + days(plan.durationDays()) + ", " + money(plan.price()));
             if (model.planProperty().get() != null && model.planProperty().get().id() == plan.id()) {
                 option.setSelected(true);
             }
@@ -384,7 +389,7 @@ public final class ChargeController {
         int r = 0;
         r = row(rows, r, "Socio", preview == null || preview.member() == null ? "—" : preview.member().fullName());
         r = row(rows, r, "Plan", preview == null || preview.plan() == null ? "—"
-                : preview.plan().name() + " · " + preview.plan().durationDays() + " días");
+                : preview.plan().name() + " · " + days(preview.plan().durationDays()));
         r = row(rows, r, "Periodo", period(preview));
         r = row(rows, r, "Forma de pago", preview == null || preview.paymentMethod() == null ? "—"
                 : preview.paymentMethod().name());
@@ -505,7 +510,7 @@ public final class ChargeController {
         int r = 0;
         r = row(rows, r, "Fecha", DAY_TIME.format(payment.dateTime()));
         r = row(rows, r, "Socio", payment.memberName());
-        r = row(rows, r, "Plan", payment.planName() + " · " + result.durationDays() + " días");
+        r = row(rows, r, "Plan", payment.planName() + " · " + days(result.durationDays()));
         r = row(rows, r, "Periodo", DAY.format(payment.start()) + " al " + DAY.format(payment.end()));
         r = row(rows, r, "Forma de pago", payment.paymentMethodName());
         r = row(rows, r, "Monto", money(payment.amount()));

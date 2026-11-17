@@ -324,7 +324,7 @@ No hay una pantalla propia: la especificación muestra las bajas en el filtro `B
 
 ## Cobro de membresías · *implementado*
 
-Los casos de uso están en `application/usecase/billing/`; `MemberRow` y `MemberRows` (que lo arma con `MembershipRules`) en `application/usecase/members/`, para reutilizarlos en Socios. Todavía no están en `UseCases` de la UI: los conecta quien hace la UI.
+Los casos de uso están en `application/usecase/billing/`; `MemberRow` y `MemberRows` (que lo arma con `MembershipRules`) en `application/usecase/members/`, para reutilizarlos en Socios. La pantalla *Cobrar membresía* (`ui/billing/`) los usa desde `UseCases`.
 
 El tipo de cobro (`ChargeKind`) se calcula con el estado del socio al cobrar y se guarda con el pago, como hecho histórico. El periodo y la duración del recibo salen de la membresía que generó el cobro, no del plan actual.
 

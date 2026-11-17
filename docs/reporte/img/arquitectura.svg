@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" class="figura-arquitectura" role="img" aria-labelledby="arq-titulo arq-desc">
+  <title id="arq-titulo">Arquitectura de Gym Desk</title>
+  <desc id="arq-desc">Capas de la aplicación de escritorio (presentación, aplicación, dominio e infraestructura) y su conexión con PostgreSQL por JDBC; los scripts SQL del proyecto crean la misma base con psql.</desc>
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5566"/>
+    </marker>
+  </defs>
+  <style>
+    .capa { fill: #f4f6f9; stroke: #b9c1cc; stroke-width: 1.2; }
+    .caja { fill: #ffffff; stroke: #9aa4b2; stroke-width: 1; }
+    .bd { fill: #eef3fc; stroke: #1d56cc; stroke-width: 1.4; }
+    .scripts { fill: #fbf6ea; stroke: #b98a2e; stroke-width: 1.2; }
+    .t-capa { font: 600 14px "Instrument Sans", sans-serif; fill: #121821; }
+    .t-caja { font: 600 12.5px "Instrument Sans", sans-serif; fill: #121821; }
+    .t-det { font: 400 11px "Instrument Sans", sans-serif; fill: #444e5d; }
+    .t-flecha { font: 400 11px "Instrument Sans", sans-serif; fill: #444e5d; }
+    .linea { stroke: #4a5566; stroke-width: 1.4; fill: none; }
+    .punteada { stroke: #4a5566; stroke-width: 1.2; fill: none; stroke-dasharray: 5 4; }
+  </style>
+
+  <!-- Personas -->
+  <rect class="capa" x="30" y="16" width="620" height="44" rx="10"/>
+  <text class="t-capa" x="46" y="43">Personas</text>
+  <text class="t-det" x="130" y="43">Administrador · Recepción · Caja (cada rol ve solo sus secciones)</text>
+
+  <!-- Presentación -->
+  <rect class="capa" x="30" y="84" width="620" height="118" rx="10"/>
+  <text class="t-capa" x="46" y="106">Presentación · JavaFX 21</text>
+  <rect class="caja" x="46" y="116" width="196" height="74" rx="7"/>
+  <text class="t-caja" x="56" y="136">Pantallas</text>
+  <text class="t-det" x="56" y="153">Tablero, Cobrar, Socios, Planes,</text>
+  <text class="t-det" x="56" y="167">Usuarios, Configuración,</text>
+  <text class="t-det" x="56" y="181">búsqueda del encabezado</text>
+  <rect class="caja" x="252" y="116" width="190" height="74" rx="7"/>
+  <text class="t-caja" x="262" y="136">ViewModels</text>
+  <text class="t-det" x="262" y="153">estado de cada pantalla,</text>
+  <text class="t-det" x="262" y="167">errores por campo y textos</text>
+  <rect class="caja" x="452" y="116" width="186" height="74" rx="7"/>
+  <text class="t-caja" x="462" y="136">Background</text>
+  <text class="t-det" x="462" y="153">las consultas corren fuera</text>
+  <text class="t-det" x="462" y="167">del hilo de la interfaz</text>
+
+  <!-- Aplicación -->
+  <rect class="capa" x="30" y="226" width="620" height="118" rx="10"/>
+  <text class="t-capa" x="46" y="248">Aplicación · casos de uso</text>
+  <rect class="caja" x="46" y="258" width="250" height="74" rx="7"/>
+  <text class="t-caja" x="56" y="278">Casos de uso</text>
+  <text class="t-det" x="56" y="295">ChargeMembership, GetDaySummary,</text>
+  <text class="t-det" x="56" y="309">SearchMembers y el CRUD de socios,</text>
+  <text class="t-det" x="56" y="323">planes, métodos de pago y usuarios</text>
+  <rect class="caja" x="306" y="258" width="148" height="74" rx="7"/>
+  <text class="t-caja" x="316" y="278">Authorizer</text>
+  <text class="t-det" x="316" y="295">revisa el permiso</text>
+  <text class="t-det" x="316" y="309">del rol en cada</text>
+  <text class="t-det" x="316" y="323">operación</text>
+  <rect class="caja" x="464" y="258" width="174" height="74" rx="7"/>
+  <text class="t-caja" x="474" y="278">Puertos</text>
+  <text class="t-det" x="474" y="295">repositorios, transacciones,</text>
+  <text class="t-det" x="474" y="309">contraseñas, impresora</text>
+
+  <!-- Dominio -->
+  <rect class="capa" x="30" y="368" width="620" height="64" rx="10"/>
+  <text class="t-capa" x="46" y="392">Dominio</text>
+  <text class="t-det" x="46" y="414">MembershipRules (estado del socio e inicio de la vigencia), PlanSavings, Money, Folio, Role y Permission</text>
+
+  <!-- Infraestructura -->
+  <rect class="capa" x="30" y="456" width="620" height="118" rx="10"/>
+  <text class="t-capa" x="46" y="478">Infraestructura</text>
+  <rect class="caja" x="46" y="488" width="150" height="74" rx="7"/>
+  <text class="t-caja" x="56" y="508">Repositorios</text>
+  <text class="t-det" x="56" y="525">SQL con JDBI sobre</text>
+  <text class="t-det" x="56" y="539">las tablas de la base</text>
+  <rect class="caja" x="206" y="488" width="150" height="74" rx="7"/>
+  <text class="t-caja" x="216" y="508">HikariCP</text>
+  <text class="t-det" x="216" y="525">conexiones; transacción</text>
+  <text class="t-det" x="216" y="539">SERIALIZABLE con</text>
+  <text class="t-det" x="216" y="553">reintento</text>
+  <rect class="caja" x="366" y="488" width="130" height="74" rx="7"/>
+  <text class="t-caja" x="376" y="508">Flyway</text>
+  <text class="t-det" x="376" y="525">migraciones V1–V6</text>
+  <text class="t-det" x="376" y="539">al arrancar</text>
+  <rect class="caja" x="506" y="488" width="132" height="74" rx="7"/>
+  <text class="t-caja" x="516" y="508">Argon2id · .env</text>
+  <text class="t-det" x="516" y="525">hash de contraseñas;</text>
+  <text class="t-det" x="516" y="539">DB_URL, DB_USER,</text>
+  <text class="t-det" x="516" y="553">DB_PASSWORD</text>
+
+  <!-- Flechas entre capas -->
+  <line class="linea" x1="340" y1="60" x2="340" y2="82" marker-end="url(#flecha)"/>
+  <line class="linea" x1="340" y1="202" x2="340" y2="224" marker-end="url(#flecha)"/>
+  <line class="linea" x1="340" y1="344" x2="340" y2="366" marker-end="url(#flecha)"/>
+  <path class="punteada" d="M551,488 C590,440 620,380 568,334" marker-end="url(#flecha)"/>
+  <text class="t-flecha" x="562" y="452">implementa</text>
+  <text class="t-flecha" x="562" y="465">los puertos</text>
+
+  <!-- PostgreSQL -->
+  <rect class="bd" x="700" y="226" width="270" height="348" rx="12"/>
+  <text class="t-capa" x="716" y="252">PostgreSQL 16 (Docker)</text>
+  <text class="t-det" x="716" y="270">base gimnasio · solo en 127.0.0.1:5432</text>
+  <rect class="caja" x="716" y="284" width="238" height="64" rx="7"/>
+  <text class="t-caja" x="726" y="304">8 tablas · 2 tipos enumerados</text>
+  <text class="t-det" x="726" y="321">PRIMARY KEY, FOREIGN KEY, NOT NULL,</text>
+  <text class="t-det" x="726" y="335">UNIQUE, CHECK y DEFAULT</text>
+  <rect class="caja" x="716" y="358" width="238" height="64" rx="7"/>
+  <text class="t-caja" x="726" y="378">Funciones propias</text>
+  <text class="t-det" x="726" y="395">fn_fecha_vencimiento, fn_estado_socio,</text>
+  <text class="t-det" x="726" y="409">fn_formatear_folio</text>
+  <rect class="caja" x="716" y="432" width="238" height="50" rx="7"/>
+  <text class="t-caja" x="726" y="452">Procedimiento</text>
+  <text class="t-det" x="726" y="469">sp_registrar_cobro</text>
+  <rect class="caja" x="716" y="492" width="238" height="66" rx="7"/>
+  <text class="t-caja" x="726" y="512">Triggers</text>
+  <text class="t-det" x="726" y="529">trg_pago_sin_borrado,</text>
+  <text class="t-det" x="726" y="543">trg_membresia_sin_borrado</text>
+
+  <line class="linea" x1="650" y1="525" x2="698" y2="525" marker-end="url(#flecha)"/>
+  <text class="t-flecha" x="656" y="516">JDBC</text>
+
+  <!-- Scripts del proyecto -->
+  <rect class="scripts" x="700" y="84" width="270" height="118" rx="12"/>
+  <text class="t-capa" x="716" y="108">Scripts del proyecto</text>
+  <text class="t-det" x="716" y="128">sql/01_esquema.sql … 06_pruebas.sql</text>
+  <text class="t-det" x="716" y="144">crean la base gimnasio_proyecto con el</text>
+  <text class="t-det" x="716" y="160">mismo esquema, funciones, procedimiento</text>
+  <text class="t-det" x="716" y="176">y triggers (SqlScriptsTest lo compara)</text>
+  <line class="linea" x1="835" y1="202" x2="835" y2="224" marker-end="url(#flecha)"/>
+  <text class="t-flecha" x="843" y="218">psql</text>
+
+  <text class="t-flecha" x="30" y="610">Las flechas sólidas indican quién usa a quién; la punteada, que la infraestructura implementa los puertos de la aplicación.</text>
+  <text class="t-flecha" x="30" y="626">La interfaz nunca consulta la base directamente: todo pasa por un caso de uso.</text>
+</svg>

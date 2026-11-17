@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Gym Desk: gestión de gimnasio · Reporte técnico</title>
+<link rel="stylesheet" href="reporte.css">
+</head>
+<body>
+
+<!-- ===================================================================== Portada (5.1) -->
+<section class="portada">
+  <div class="institucion">Universidad Veracruzana</div>
+  <div class="materia">Experiencia educativa: Bases de Datos · Proyecto Final Integrador</div>
+  <h1>Gym Desk: gestión de gimnasio</h1>
+  <p class="subtitulo">Sistema de información de escritorio para socios, planes, cobro de membresías y control de vigencias, sobre PostgreSQL 16</p>
+  <div class="tipo">Reporte técnico del proyecto</div>
+  <dl>
+    <dt>Institución</dt><dd>Universidad Veracruzana</dd>
+    <dt>Experiencia educativa</dt><dd>Bases de Datos</dd>
+    <dt>Grupo</dt><dd>303-ISW</dd>
+    <dt>Docente</dt><dd>Mtro. Jorge E. González Díaz</dd>
+    <dt>Integrantes del equipo</dt><dd class="integrantes">Daniel Garcia Chable<br>Jaasiel Delgado Reyes<br>Josue Miguel Cruz Bautista<br>Raul Azael Rojas Martinez</dd>
+    <dt>Repositorio</dt><dd>github.com/sizdr/gym-desk</dd>
+  </dl>
+</section>
+
+<!-- ===================================================================== Índice -->
+<h2 id="indice">Índice</h2>
+<!--INDICE-->
+
+<!-- ===================================================================== 1 · 5.2 -->
+<h2 class="seccion" id="s1" data-indice>1. Introducción y planteamiento del problema</h2>
+
+<h3 id="s1-1" data-indice>1.1 Contexto</h3>
+<p>Un gimnasio de barrio vende membresías por periodo: una visita, una semana, un mes, un trimestre, un semestre o un año. En el mostrador se atiende a cada socio que llega, se le cobra su plan y se le dice hasta cuándo puede entrar. Sin un sistema, esa información vive en libretas u hojas de cálculo: no se sabe con certeza quién está al corriente, a quién se le acaba la membresía esta semana ni cuánto se cobró en el día, y cada renovación obliga a calcular a mano desde qué fecha cuenta el nuevo periodo.</p>
+
+<h3 id="s1-2" data-indice>1.2 Necesidad de información</h3>
+<p>El gimnasio necesita registrar a sus socios y sus planes, cobrar cada membresía con un folio consecutivo y un recibo, y consultar en cualquier momento el estado de cada socio: si su membresía está vigente, por vencer, vencida o si ya causó baja por falta de renovación. También necesita saber cuánto se cobró en el día y quién lo cobró, y conservar el historial completo de pagos aunque cambien los precios o los planes.</p>
+<p>Gym Desk atiende esa necesidad con una aplicación de escritorio conectada a PostgreSQL. La base de datos guarda los socios, los planes, los métodos de pago, los usuarios, cada pago y la membresía que generó; el estado de cada socio no se guarda, se calcula a partir de sus membresías y de los plazos configurados, de modo que siempre está al día.</p>
+
+<h3 id="s1-3" data-indice>1.3 Usuarios del sistema</h3>
+<table>
+  <caption>Tabla 1. Quién usa el sistema y qué información registra o consulta</caption>
+  <thead><tr><th>Rol</th><th>Quién es</th><th>Qué registra o consulta</th></tr></thead>
+  <tbody>
+    <tr><td>Administrador</td><td>Dueño o encargado del gimnasio</td><td>Todo: tablero, cobros, socios, planes y precios, métodos de pago, cuentas de usuario y configuración (nombre, logotipo, plazos, moneda y folio).</td></tr>
+    <tr><td>Recepción</td><td>Personal del mostrador</td><td>Tablero de vigencias, cobro de membresías y catálogo de socios (registrar, corregir y eliminar).</td></tr>
+    <tr><td>Caja</td><td>Personal que solo cobra</td><td>Cobro de membresías y consulta de socios.</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================================================================== 2 · 5.3 -->
+<h2 class="seccion" id="s2" data-indice>2. Objetivos y alcance funcional</h2>
+
+<h3 id="s2-1" data-indice>2.1 Objetivo general</h3>
+<p>Desarrollar un sistema de información de escritorio, conectado a una base de datos relacional en PostgreSQL 16, que administre los socios, los planes y los métodos de pago de un gimnasio, registre el cobro de membresías con folio y recibo, y permita controlar la vigencia de cada socio a partir de sus pagos.</p>
+
+<h3 id="s2-2" data-indice>2.2 Objetivos específicos</h3>
+<table>
+  <caption>Tabla 2. Objetivos específicos y cómo se verifica cada uno</caption>
+  <thead><tr><th>ID</th><th>Objetivo</th><th>Verificación</th></tr></thead>
+  <tbody>
+    <tr><td>OE1</td><td>Diseñar e implementar un modelo relacional de 8 tablas en tercera forma normal, con claves primarias y foráneas, <code>NOT NULL</code>, <code>UNIQUE</code>, <code>CHECK</code> y <code>DEFAULT</code>.</td><td><code>sql/01_esquema.sql</code>, diagrama (Figura 2) y diccionario (Anexo A).</td></tr>
+    <tr><td>OE2</td><td>Ofrecer CRUD completo y persistente de tres catálogos: socios, planes de membresía y métodos de pago (más el de usuarios).</td><td>Pantallas de la sección 7 y pruebas PR04–PR17.</td></tr>
+    <tr><td>OE3</td><td>Registrar el cobro de una membresía en una sola transacción: pago, membresía y folio, con el periodo y el tipo de cobro calculados por el sistema.</td><td>Módulo M01 (7.6), evidencia E1 y pruebas PR18–PR21.</td></tr>
+    <tr><td>OE4</td><td>Mostrar el control de vigencias del día (activos, por vencer, vencidos, ingresos) con el mismo cálculo de estado que la función <code>fn_estado_socio</code>.</td><td>Módulo M02 (7.7) y pruebas PR22–PR24.</td></tr>
+    <tr><td>OE5</td><td>Resolver necesidades del sistema con 13 consultas (5 con <code>WHERE</code>, 2 con funciones de PostgreSQL, 3 con <code>JOIN</code> y 3 con subconsultas), 3 funciones propias, 1 procedimiento almacenado y 1 trigger.</td><td>Matriz de evidencias (8.1) y Anexos B a D.</td></tr>
+    <tr><td>OE6</td><td>Permitir reconstruir la base y verificar el sistema en otro equipo con scripts numerados, datos de prueba y pruebas automatizadas.</td><td>Sección 10 y 693 pruebas automatizadas (9.1).</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s2-3" data-indice>2.3 Alcance: catálogos y módulos</h3>
+<table>
+  <caption>Tabla 3. Catálogos y módulos integradores de la versión entregada</caption>
+  <thead><tr><th>ID</th><th>Componente</th><th>Operaciones principales</th><th>Tablas</th></tr></thead>
+  <tbody>
+    <tr><td>C01</td><td>Catálogo de socios</td><td>Registrar, consultar (buscar y filtrar por estado), modificar y eliminar.</td><td><code>socio</code></td></tr>
+    <tr><td>C02</td><td>Catálogo de métodos de pago</td><td>Registrar, consultar, modificar, activar o desactivar y eliminar.</td><td><code>metodo_pago</code></td></tr>
+    <tr><td>C03</td><td>Catálogo de planes de membresía</td><td>Registrar, consultar, modificar, activar o desactivar y eliminar, con el ahorro frente al plan mensual.</td><td><code>plan_membresia</code></td></tr>
+    <tr><td>C04</td><td>Catálogo de usuarios (adicional)</td><td>Registrar, consultar, modificar, activar o desactivar y eliminar cuentas con su rol.</td><td><code>usuario</code></td></tr>
+    <tr><td>M01</td><td>Cobro de membresías</td><td>Elegir socio, plan y método; calcular periodo, tipo de cobro, total y cambio; registrar pago, membresía y folio; emitir el recibo.</td><td><code>pago</code>, <code>membresia</code>, <code>socio</code>, <code>plan_membresia</code>, <code>metodo_pago</code>, <code>usuario</code>, <code>folio_secuencia</code>, <code>configuracion</code></td></tr>
+    <tr><td>M02</td><td>Control de vigencias (tablero)</td><td>Socios activos, por vencer, vencidos con su día de baja, cobrado hoy y últimos cobros; abrir el cobro de un socio desde la lista.</td><td><code>socio</code>, <code>membresia</code>, <code>pago</code>, <code>plan_membresia</code>, <code>configuracion</code></td></tr>
+  </tbody>
+</table>
+
+<h3 id="s2-4" data-indice>2.4 Fuera del alcance</h3>
+<p>Productos, ventas de mostrador e inventario se descartaron del proyecto final: sus tablas se retiraron con la migración <code>V5__alcance_proyecto.sql</code> antes de capturar datos. Tampoco forman parte de esta versión el control de asistencia (entradas al gimnasio), la impresión en una impresora física (el recibo se genera como archivo de texto) ni la ficha histórica detallada de cada socio.</p>
+
+<!-- ===================================================================== 3 · 5.4 -->
+<h2 class="seccion" id="s3" data-indice>3. Requerimientos y reglas de negocio</h2>
+
+<h3 id="s3-1" data-indice>3.1 Requerimientos funcionales</h3>
+<table>
+  <caption>Tabla 4. Requerimientos funcionales</caption>
+  <thead><tr><th>ID</th><th>Requerimiento</th><th>Componente</th></tr></thead>
+  <tbody>
+    <tr><td>RF01</td><td>Iniciar sesión con usuario y contraseña; el menú muestra solo las secciones del rol.</td><td>Acceso</td></tr>
+    <tr><td>RF02</td><td>Registrar socios con nombre, teléfono, correo opcional y fecha de alta.</td><td>C01</td></tr>
+    <tr><td>RF03</td><td>Buscar socios por nombre (sin distinguir mayúsculas ni acentos), correo o teléfono, y filtrarlos por estado.</td><td>C01</td></tr>
+    <tr><td>RF04</td><td>Corregir los datos de un socio y eliminar un socio sin cobros.</td><td>C01</td></tr>
+    <tr><td>RF05</td><td>Administrar métodos de pago, indicando cuáles son efectivo.</td><td>C02</td></tr>
+    <tr><td>RF06</td><td>Administrar planes con duración, precio y plan mensual de referencia, y mostrar el ahorro de cada uno.</td><td>C03</td></tr>
+    <tr><td>RF07</td><td>Administrar cuentas de usuario con su rol y contraseña.</td><td>C04</td></tr>
+    <tr><td>RF08</td><td>Cobrar una membresía mostrando antes el periodo, el tipo de cobro, el total y el cambio.</td><td>M01</td></tr>
+    <tr><td>RF09</td><td>Asignar un folio consecutivo a cada cobro y emitir su recibo.</td><td>M01</td></tr>
+    <tr><td>RF10</td><td>Mostrar socios activos, por vencer (y cuántos vencen en la semana), vencidos con su día de baja, lo cobrado hoy y los últimos cobros.</td><td>M02</td></tr>
+    <tr><td>RF11</td><td>Abrir el cobro de un socio desde el tablero o desde la búsqueda del encabezado.</td><td>M01, M02</td></tr>
+    <tr><td>RF12</td><td>Configurar nombre, dirección, teléfono, logotipo y leyenda del recibo, días de aviso, días para la baja, moneda y prefijo de folio.</td><td>Configuración</td></tr>
+    <tr><td>RF13</td><td>Avisar si la base de datos no responde al arrancar y permitir reintentar.</td><td>Integración</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s3-2" data-indice>3.2 Reglas de negocio</h3>
+<p>Cada regla se cumple en la base de datos (restricción, función o trigger), en la aplicación (caso de uso) o en ambas. Las de la aplicación responden con un mensaje que indica qué corregir.</p>
+<table>
+  <caption>Tabla 5. Reglas de negocio verificables</caption>
+  <thead><tr><th>ID</th><th>Regla</th><th>Entidad o proceso</th><th>Dónde se cumple</th></tr></thead>
+  <tbody>
+    <tr><td>RN01</td><td>El estado de un socio se calcula con su último vencimiento: sin membresías, <em>Sin membresía</em>; si faltan más días que <code>dias_aviso</code>, <em>Vigente</em>; si faltan de 0 a <code>dias_aviso</code>, <em>Por vencer</em>; si venció hace menos de <code>dias_baja_automatica</code> días, <em>Vencida</em>; si no, <em>Baja</em>.</td><td>Socio, M02</td><td>App (<code>MembershipRules</code>) y BD (<code>fn_estado_socio</code>)</td></tr>
+    <tr><td>RN02</td><td>Se cobra siempre el precio del plan; el monto no se captura.</td><td>M01</td><td>App y procedimiento</td></tr>
+    <tr><td>RN03</td><td>El tipo de cobro depende del estado al cobrar: <em>primera</em> (sin membresías), <em>renovación anticipada</em> (vigente o por vencer), <em>renovación vencida</em> (vencida) o <em>reactivación</em> (en baja).</td><td>M01, <code>pago.tipo_cobro</code></td><td>App y procedimiento</td></tr>
+    <tr><td>RN04</td><td>La renovación anticipada empieza cuando termina la vigencia actual (no se pierden días); la vencida y la reactivación empiezan el día del cobro; la primera empieza hoy o en la fecha elegida, nunca antes del alta.</td><td>M01, <code>membresia</code></td><td>App y procedimiento</td></tr>
+    <tr><td>RN05</td><td>El vencimiento es el inicio más la duración del plan, y siempre es posterior al inicio.</td><td><code>membresia</code></td><td>BD (<code>CHECK</code>, <code>fn_fecha_vencimiento</code>) y app</td></tr>
+    <tr><td>RN06</td><td>Con un método de efectivo, el efectivo recibido es obligatorio y no puede ser menor al total; el cambio es la diferencia.</td><td>M01, <code>pago</code></td><td>BD (<code>CHECK efectivo_recibido &gt;= monto</code>) y app</td></tr>
+    <tr><td>RN07</td><td>Solo se ofrecen al cobrar los planes y métodos de pago activos.</td><td>M01</td><td>App</td></tr>
+    <tr><td>RN08</td><td>Cada cobro recibe el siguiente folio de la serie (prefijo y ancho configurables, por ejemplo <code>GYM-0007</code>); se asigna al confirmar, dentro de la misma transacción.</td><td><code>folio_secuencia</code>, <code>pago.folio</code></td><td>BD (<code>UNIQUE</code>) y app</td></tr>
+    <tr><td>RN09</td><td>Una misma operación no se cobra dos veces (doble clic o reintento).</td><td><code>pago.operacion_id</code></td><td>BD (<code>UNIQUE</code>) y app</td></tr>
+    <tr><td>RN10</td><td>Los cobros y las membresías no se borran: son el historial.</td><td><code>pago</code>, <code>membresia</code></td><td>BD (triggers)</td></tr>
+    <tr><td>RN11</td><td>Una membresía pertenece al mismo socio que hizo el pago.</td><td><code>membresia</code></td><td>BD (clave foránea compuesta)</td></tr>
+    <tr><td>RN12</td><td>Socio: nombre de 3 letras o más y hasta 100 caracteres; teléfono de 10 dígitos; correo con formato válido y sin repetirse (sin distinguir mayúsculas); alta no posterior a hoy ni a su primera membresía.</td><td>C01, <code>socio</code></td><td>BD (<code>CHECK</code>, índice único) y app</td></tr>
+    <tr><td>RN13</td><td>Un socio con cobros no se elimina; conserva su historial.</td><td>C01</td><td>BD (claves foráneas sin cascada) y app</td></tr>
+    <tr><td>RN14</td><td>Plan: nombre único, duración de 1 a 730 días, precio mayor que cero y, si tiene referencia mensual, un plan de 30 días distinto de sí mismo.</td><td>C03, <code>plan_membresia</code></td><td>BD (<code>CHECK</code>, índice único) y app</td></tr>
+    <tr><td>RN15</td><td>Un plan con membresías o que es referencia de otros no se elimina: se desactiva.</td><td>C03</td><td>BD y app</td></tr>
+    <tr><td>RN16</td><td>Ahorro de un plan: meses equivalentes (365 días = 12; múltiplos de 30 = días ÷ 30) por el precio de la referencia, menos el precio del plan; el porcentaje se redondea.</td><td>C03</td><td>App (<code>PlanSavings</code>)</td></tr>
+    <tr><td>RN17</td><td>Método de pago: nombre único; uno usado en cobros no se elimina; debe quedar al menos uno activo.</td><td>C02</td><td>BD y app</td></tr>
+    <tr><td>RN18</td><td>Usuario: nombre de usuario único de 3 a 20 caracteres (minúsculas, números, punto o guion); contraseña de 8 caracteres o más, guardada solo como hash Argon2id.</td><td>C04, <code>usuario</code></td><td>BD (índice único) y app</td></tr>
+    <tr><td>RN19</td><td>Debe quedar al menos un administrador activo; nadie se desactiva ni se elimina a sí mismo; un usuario con cobros no se elimina.</td><td>C04</td><td>App (en transacción)</td></tr>
+    <tr><td>RN20</td><td>Cada rol solo puede hacer lo que su permiso indica (Tabla 1); la aplicación lo revisa en cada operación, no solo en el menú.</td><td>Todas</td><td>App (<code>Authorizer</code>)</td></tr>
+    <tr><td>RN21</td><td>Configuración: una sola fila; días de aviso de 1 a 60; días para la baja de 1 a 365; prefijo de 1 a 8 mayúsculas, números o guiones; la moneda no cambia si ya hay cobros.</td><td><code>configuracion</code></td><td>BD (<code>CHECK</code>) y app</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================================================================== 4 · 5.5 -->
+<h2 class="seccion" id="s4" data-indice>4. Arquitectura y tecnologías utilizadas</h2>
+
+<h3 id="s4-1" data-indice>4.1 Componentes de la solución</h3>
+<p>La aplicación sigue una arquitectura por capas (hexagonal): la interfaz no conoce la base de datos y los casos de uso no conocen JavaFX. Así cada regla vive en un solo lugar y se puede probar sin pantalla ni base.</p>
+<figure class="sin-borde">
+  <!--SVG:arquitectura-->
+  <figcaption><strong>Figura 1. Arquitectura de Gym Desk.</strong> La interfaz llama a casos de uso; estos aplican las reglas del dominio y piden datos por puertos que la infraestructura implementa con SQL sobre PostgreSQL. Los scripts del proyecto crean la misma base sin la aplicación.</figcaption>
+</figure>
+<ul>
+  <li><strong>Presentación</strong> (<code>ui/</code>): pantallas en JavaFX y su ViewModel, que guarda el estado y reparte los errores de cada campo. Toda consulta corre fuera del hilo de la interfaz (<code>Background</code>), así la ventana no se congela.</li>
+  <li><strong>Aplicación</strong> (<code>application/</code>): un caso de uso por operación (por ejemplo <code>ChargeMembership</code> o <code>SearchMembers</code>). Revisa el permiso del rol con <code>Authorizer</code>, valida y devuelve todos los errores juntos.</li>
+  <li><strong>Dominio</strong> (<code>domain/</code>): reglas puras, como el estado del socio y el inicio de una renovación (<code>MembershipRules</code>), el ahorro (<code>PlanSavings</code>) o el dinero (<code>Money</code>, con <code>BigDecimal</code>).</li>
+  <li><strong>Infraestructura</strong> (<code>infrastructure/</code>): repositorios con SQL explícito (JDBI) sobre las tablas, el pool de conexiones, las migraciones y el cifrado de contraseñas.</li>
+  <li><strong>Base de datos</strong>: PostgreSQL 16 en Docker, con las tablas, restricciones, funciones, procedimiento y triggers de la sección 6.</li>
+</ul>
+
+<h3 id="s4-2" data-indice>4.2 Tecnologías</h3>
+<table>
+  <caption>Tabla 6. Lenguaje, bibliotecas y herramientas</caption>
+  <thead><tr><th>Elemento</th><th>Tecnología</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td>Lenguaje</td><td>Java 25 (Maven Wrapper)</td><td>Aplicación y pruebas.</td></tr>
+    <tr><td>Interfaz</td><td>JavaFX 21.0.6</td><td>Ventana, pantallas y diálogos; temas claro y nocturno.</td></tr>
+    <tr><td>Base de datos</td><td>PostgreSQL 16 en Docker (<code>docker-compose.yml</code>)</td><td>Datos, restricciones, funciones, procedimiento y triggers.</td></tr>
+    <tr><td>Conexión</td><td>Controlador JDBC de PostgreSQL 42.7.4 y HikariCP 6.2.1</td><td>Conexiones reutilizables (pool de 5).</td></tr>
+    <tr><td>Acceso a datos</td><td>JDBI 3.47.0</td><td>Consultas SQL escritas a mano con parámetros (<code>:nombre</code>), sin SQL armado con texto.</td></tr>
+    <tr><td>Migraciones</td><td>Flyway 11.1.0</td><td>Crea y actualiza la base al arrancar (V1 a V6).</td></tr>
+    <tr><td>Contraseñas</td><td>argon2-jvm 2.11 (Argon2id)</td><td>Solo se guarda el hash.</td></tr>
+    <tr><td>Registros</td><td>SLF4J 2 y Logback 1.5.38</td><td>Errores inesperados en <code>~/.gym-desk/logs</code>.</td></tr>
+    <tr><td>Pruebas</td><td>JUnit 5.12.1 y Testcontainers 1.21.4</td><td>Pruebas por capa; las de persistencia levantan su propio PostgreSQL 16.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s4-3" data-indice>4.3 Conexión con PostgreSQL</h3>
+<p>La aplicación lee la conexión de tres variables, <code>DB_URL</code>, <code>DB_USER</code> y <code>DB_PASSWORD</code>, desde las variables del sistema o desde un archivo <code>.env</code> en la carpeta del proyecto. El <code>.env</code> no se sube al repositorio: así la contraseña de la base nunca queda publicada. <code>docker-compose.yml</code> lee el mismo archivo y publica el puerto 5432 solo en <code>127.0.0.1</code>, de modo que otros equipos de la red no pueden conectarse.</p>
+<p>Al arrancar, la aplicación abre el pool (HikariCP falla de inmediato si la base no responde), aplica con Flyway las migraciones pendientes y, si la base no tiene usuarios, crea el primer administrador con <code>ADMIN_USERNAME</code> y <code>ADMIN_PASSWORD</code>. Si algo falla, la pantalla de arranque muestra la causa y permite reintentar (Figura 3). Las operaciones que escriben corren en una transacción <code>SERIALIZABLE</code> que se reintenta si PostgreSQL detecta un conflicto con otra estación.</p>
+<figure>
+  <img src="img/01-arranque-sin-conexion.png" alt="Pantalla de arranque con el error de conexión" class="recorte">
+  <figcaption><strong>Figura 3. Arranque sin base de datos.</strong> Con PostgreSQL apagado, la aplicación explica la causa («Conexión rehusada»), indica qué revisar y ofrece «Reintentar».</figcaption>
+</figure>
+
+<h3 id="s4-4" data-indice>4.4 Flujo de información: el cobro de una membresía</h3>
+<ol>
+  <li>En <em>Cobrar membresía</em>, la persona elige al socio, el plan y el método de pago, y escribe el efectivo recibido. Con cada cambio, la pantalla pide a <code>PreviewMembershipCharge</code> el periodo, el tipo de cobro, el total y el cambio, sin guardar nada.</li>
+  <li>Al confirmar, <code>ChargeMembership</code> revisa el permiso, abre una transacción y vuelve a leer al socio, el plan, el método y la configuración (no confía en lo que mostraba la pantalla).</li>
+  <li>Con la última membresía del socio calcula el tipo de cobro y el inicio (RN03, RN04), toma el siguiente folio de <code>folio_secuencia</code> e inserta el <code>pago</code> y su <code>membresia</code>.</li>
+  <li>PostgreSQL aplica las restricciones (efectivo suficiente, folio y operación únicos, membresía del mismo socio). Si todo cumple, la transacción se confirma; si no, no queda nada a medias.</li>
+  <li>La pantalla muestra el recibo con el folio; el tablero y las consultas ya incluyen el cobro (Figuras 16 y 18, evidencia E1).</li>
+</ol>
+
+<h3 id="s4-5" data-indice>4.5 Seguridad y roles</h3>
+<p>Las contraseñas se guardan como hash Argon2id y el acceso responde en el mismo tiempo exista o no el usuario, para no revelar qué cuentas existen. Cada caso de uso revisa el permiso del rol (Tabla 1) antes de leer o escribir; el menú solo oculta lo que el rol no puede usar. Un cambio de rol o una desactivación se aplica en la siguiente operación de esa persona. Las consultas usan parámetros, nunca texto concatenado, lo que evita la inyección de SQL.</p>
+
+<!-- ===================================================================== 5 · 5.6 -->
+<h2 class="seccion" id="s5" data-indice>5. Diseño relacional y diccionario de datos</h2>
+
+<h3 id="s5-1" data-indice>5.1 Diagrama relacional</h3>
+<p>El diagrama se genera a partir de la base real (<code>scripts/docs/generar-diagrama.sh</code>): levanta un PostgreSQL temporal, aplica las migraciones y dibuja lo que encuentra en el catálogo, así que corresponde siempre con los scripts. Por su tamaño ocupa la siguiente página, en horizontal (Figura 2).</p>
+<figure class="horizontal">
+  <img src="img/diagrama-modelo-de-datos.svg" alt="Diagrama relacional de la base de datos">
+  <figcaption><strong>Figura 2. Diagrama relacional de la versión final.</strong> PK marca la clave primaria, FK las foráneas y «?» los atributos que admiten nulo; los extremos de cada línea indican la cardinalidad (1 o *). <code>configuracion</code> y <code>folio_secuencia</code> no se relacionan con otras tablas: las consulta el proceso de cobro.</figcaption>
+</figure>
+
+<h3 id="s5-2" data-indice>5.2 Esquema relacional</h3>
+<p>Notación: <strong>negrita</strong>, clave primaria; <em>cursiva</em>, clave foránea.</p>
+<ul>
+  <li>CONFIGURACION (<strong>id</strong>, nombre_gimnasio, direccion, telefono, logotipo, leyenda_recibo, moneda, dias_aviso, dias_baja_automatica)</li>
+  <li>FOLIO_SECUENCIA (<strong>serie</strong>, prefijo, ultimo, ancho)</li>
+  <li>USUARIO (<strong>id</strong>, nombre, nombre_usuario, contrasena_hash, rol, activo)</li>
+  <li>PLAN_MEMBRESIA (<strong>id</strong>, nombre, duracion_dias, precio, activo, <em>referencia_mensual_id</em>)</li>
+  <li>METODO_PAGO (<strong>id</strong>, nombre, es_efectivo, activo)</li>
+  <li>SOCIO (<strong>id</strong>, nombre, telefono, correo, fecha_alta)</li>
+  <li>PAGO (<strong>id</strong>, folio, <em>socio_id</em>, <em>usuario_id</em>, <em>metodo_pago_id</em>, monto, efectivo_recibido, fecha_hora, tipo_cobro, operacion_id)</li>
+  <li>MEMBRESIA (<strong>id</strong>, <em>socio_id</em>, <em>plan_id</em>, <em>pago_id</em>, fecha_inicio, fecha_vencimiento)</li>
+</ul>
+
+<h3 id="s5-3" data-indice>5.3 Relaciones principales y cardinalidades</h3>
+<table>
+  <caption>Tabla 7. Claves foráneas y cardinalidades</caption>
+  <thead><tr><th>Tabla</th><th>Atributos</th><th>Referencia</th><th>Cardinalidad</th></tr></thead>
+  <tbody>
+    <tr><td>PAGO</td><td>socio_id</td><td>SOCIO(id)</td><td>Un socio tiene cero o muchos pagos (1:N).</td></tr>
+    <tr><td>PAGO</td><td>usuario_id</td><td>USUARIO(id)</td><td>Un usuario registra cero o muchos pagos (1:N).</td></tr>
+    <tr><td>PAGO</td><td>metodo_pago_id</td><td>METODO_PAGO(id)</td><td>Un método se usa en cero o muchos pagos (1:N).</td></tr>
+    <tr><td>MEMBRESIA</td><td>plan_id</td><td>PLAN_MEMBRESIA(id)</td><td>Un plan está en cero o muchas membresías (1:N).</td></tr>
+    <tr><td>MEMBRESIA</td><td>(pago_id, socio_id)</td><td>PAGO(id, socio_id)</td><td>Cada pago genera exactamente una membresía (1:1), del mismo socio.</td></tr>
+    <tr><td>PLAN_MEMBRESIA</td><td>referencia_mensual_id</td><td>PLAN_MEMBRESIA(id)</td><td>Un plan mensual es referencia de cero o muchos planes (1:N, opcional, recursiva).</td></tr>
+  </tbody>
+</table>
+<p>La relación muchos a muchos entre SOCIO y PLAN_MEMBRESIA (un socio contrata varios planes a lo largo del tiempo y un plan lo contratan muchos socios) se resuelve con la tabla asociativa MEMBRESIA, que además guarda el periodo de cada contratación. <code>membresia.socio_id</code> no apunta directamente a SOCIO: llega por la clave compuesta hacia PAGO, lo que obliga a que la membresía sea del mismo socio que pagó (RN11). Ninguna clave foránea borra en cascada.</p>
+
+<h3 id="s5-4" data-indice>5.4 Claves candidatas y restricciones</h3>
+<table>
+  <caption>Tabla 8. Claves alternas</caption>
+  <thead><tr><th>Tabla</th><th>Clave alterna</th><th>Implementación</th></tr></thead>
+  <tbody>
+    <tr><td>USUARIO</td><td>nombre de usuario sin distinguir mayúsculas</td><td>Índice único sobre <code>lower(nombre_usuario)</code></td></tr>
+    <tr><td>PLAN_MEMBRESIA, METODO_PAGO</td><td>nombre sin distinguir mayúsculas</td><td>Índice único sobre <code>lower(nombre)</code></td></tr>
+    <tr><td>SOCIO</td><td>correo, solo entre los que tienen</td><td>Índice único parcial sobre <code>lower(correo)</code></td></tr>
+    <tr><td>PAGO</td><td>folio; operacion_id</td><td><code>UNIQUE</code></td></tr>
+    <tr><td>MEMBRESIA</td><td>pago_id</td><td><code>UNIQUE</code></td></tr>
+  </tbody>
+</table>
+<table>
+  <caption>Tabla 9. Restricciones de integridad por tipo</caption>
+  <thead><tr><th>Tipo</th><th>Restricciones</th></tr></thead>
+  <tbody>
+    <tr><td>Dominio</td><td>Teléfono de 10 dígitos; duración de 1 a 730; precio mayor que 0; monto no negativo; días de aviso de 1 a 60; días para la baja de 1 a 365; prefijo de folio de 1 a 8 mayúsculas, números o guiones; <code>rol</code> y <code>tipo_cobro</code> como tipos enumerados.</td></tr>
+    <tr><td>Tupla</td><td>Vencimiento posterior al inicio; efectivo recibido no menor al monto; un plan no es su propia referencia.</td></tr>
+    <tr><td>Relación</td><td>CONFIGURACION tiene una sola fila (<code>CHECK (id = 1)</code>).</td></tr>
+    <tr><td>Operación</td><td><code>pago</code> y <code>membresia</code> no admiten <code>DELETE</code> (triggers).</td></tr>
+    <tr><td>Valores por defecto</td><td><code>activo = true</code>, <code>moneda = 'MXN'</code>, <code>dias_aviso = 7</code>, <code>dias_baja_automatica = 30</code>, <code>ancho = 4</code>, <code>fecha_hora = now()</code>, claves generadas con <code>GENERATED ALWAYS AS IDENTITY</code>.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s5-5" data-indice>5.5 Normalización y datos que no se guardan</h3>
+<p>Las relaciones están en tercera forma normal: cada atributo no clave depende solo de la clave completa. <code>pago.monto</code> no es redundante: guarda el precio del plan en el momento del cobro, que puede cambiar después. <code>pago.tipo_cobro</code> tampoco: es lo que fue el cobro en su momento. El <strong>estado del socio</strong> no se guarda: se calcula con sus membresías y los plazos de <code>configuracion</code>. Guardarlo obligaría a actualizarlo cada día con un proceso programado, y cambiar el plazo de baja no recalcularía el pasado.</p>
+
+<h3 id="s5-6" data-indice>5.6 Diccionario de datos</h3>
+<p>El diccionario completo, con nombre, tipo, nulo, clave, valor predeterminado, restricciones y significado de cada atributo de las 8 tablas y los 2 tipos enumerados, está en el <strong>Anexo A</strong>. Se genera a partir de los comentarios (<code>COMMENT ON</code>) y del catálogo de la base, así que corresponde con el esquema.</p>
+
+<!-- ===================================================================== 6 · 5.7 -->
+<h2 class="seccion" id="s6" data-indice>6. Implementación de la base de datos</h2>
+
+<h3 id="s6-1" data-indice>6.1 Scripts y orden de ejecución</h3>
+<table>
+  <caption>Tabla 10. Scripts del proyecto (carpeta <code>sql/</code>)</caption>
+  <thead><tr><th>#</th><th>Archivo</th><th>Contenido</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>01_esquema.sql</code></td><td>Tipos enumerados, 8 tablas con sus restricciones, índices y comentarios (diccionario).</td></tr>
+    <tr><td>2</td><td><code>02_datos.sql</code></td><td>Datos de prueba: 4 usuarios, 4 métodos de pago, 6 planes, 12 socios y 14 cobros con sus membresías, en todos los estados.</td></tr>
+    <tr><td>3</td><td><code>03_consultas.sql</code></td><td>13 consultas del sistema (Q01–Q13).</td></tr>
+    <tr><td>4</td><td><code>04_funciones.sql</code></td><td>Funciones F01–F03, la función del trigger y los triggers T01.</td></tr>
+    <tr><td>5</td><td><code>05_procedimientos.sql</code></td><td>Procedimiento P01 <code>sp_registrar_cobro</code>.</td></tr>
+    <tr><td>6</td><td><code>06_pruebas.sql</code></td><td>Usa las funciones y el procedimiento con los datos de prueba; lo que modifica se deshace al final.</td></tr>
+  </tbody>
+</table>
+<p>El orden importa: 02 necesita las tablas de 01, y 06 usa los objetos de 04 y 05. <code>sql/crear-base.sh</code> crea la base <code>gimnasio_proyecto</code> desde cero y corre los seis archivos en orden; en otro sistema basta con <code>psql -f</code> en ese mismo orden (sección 10.4).</p>
+
+<h3 id="s6-2" data-indice>6.2 Decisiones de integridad</h3>
+<table>
+  <caption>Tabla 11. Decisiones de integridad más relevantes</caption>
+  <thead><tr><th>Decisión</th><th>Cómo se implementó</th><th>Por qué</th></tr></thead>
+  <tbody>
+    <tr><td>Los importes no pierden centavos</td><td><code>numeric(12,2)</code>, nunca <code>float</code></td><td>Los decimales binarios redondean mal el dinero.</td></tr>
+    <tr><td>Los catálogos se desactivan en vez de borrarse</td><td><code>activo boolean DEFAULT true</code> y claves foráneas sin cascada</td><td>Un plan o método usado sigue apareciendo en los recibos anteriores.</td></tr>
+    <tr><td>El historial de cobros es inalterable</td><td>Triggers <code>BEFORE DELETE</code> en <code>pago</code> y <code>membresia</code></td><td>Un borrado accidental no puede hacer desaparecer dinero cobrado.</td></tr>
+    <tr><td>La membresía es del socio que pagó</td><td>Clave foránea compuesta <code>(pago_id, socio_id)</code> hacia <code>pago(id, socio_id)</code></td><td>Sin ella, una membresía podría quedar a nombre de otro socio.</td></tr>
+    <tr><td>Un cobro no se duplica</td><td><code>operacion_id UNIQUE</code>, generado por la pantalla al abrir el cobro</td><td>Un doble clic o un reintento tras un error de red no cobra dos veces.</td></tr>
+    <tr><td>Folios consecutivos sin huecos por concurrencia</td><td>Tabla <code>folio_secuencia</code> actualizada en la misma transacción <code>SERIALIZABLE</code> que el pago</td><td>Una secuencia de PostgreSQL deja huecos si la transacción se deshace.</td></tr>
+    <tr><td>Unicidad sin distinguir mayúsculas</td><td>Índices únicos sobre <code>lower(...)</code></td><td>«Ana@gym.mx» y «ana@gym.mx» son el mismo correo.</td></tr>
+    <tr><td>Fechas con zona horaria en los cobros</td><td><code>timestamptz</code> en <code>pago.fecha_hora</code>; <code>date</code> en vigencias</td><td>La hora del cobro es un instante; la vigencia es un día de calendario.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s6-3" data-indice>6.3 Datos de prueba</h3>
+<p><code>02_datos.sql</code> carga datos suficientes para comprobar el CRUD, las relaciones, los filtros, los <code>JOIN</code>, las subconsultas, las funciones y el procedimiento. Las fechas son relativas a <code>CURRENT_DATE</code>, de modo que los estados se conservan sin importar el día en que se carguen: hay socios vigentes, por vencer, vencidos, en baja y sin membresía, cobros en efectivo y con tarjeta, un plan y un método inactivos y un usuario desactivado.</p>
+<p>Para demostrar la <strong>aplicación</strong> hay una base aparte, <code>gimnasio_demo</code>, que crea <code>scripts/demo/crear-demo.sh</code> con las migraciones de la app, las cuentas que se escriban al correrlo y <code>scripts/demo/datos-demo.sql</code>: 23 socios, 8 planes, 4 métodos y 25 cobros, 3 de ellos del día. Ese archivo se niega a cargarse en una base que no sea de demostración o que ya tenga cobros, porque los cobros no se pueden borrar.</p>
+
+<h3 id="s6-4" data-indice>6.4 Relación entre los scripts y la base de la aplicación</h3>
+<p>La aplicación crea su propia base con migraciones de Flyway (<code>src/main/resources/db/migration</code>): <code>V1</code> a <code>V5</code> equivalen a <code>01_esquema.sql</code>, y <code>V6</code> contiene <code>04_funciones.sql</code> y <code>05_procedimientos.sql</code> tal cual. La prueba <code>SqlScriptsTest</code> construye las dos bases y compara columnas, restricciones, índices, enumerados, funciones y triggers; si alguien cambia un camino sin el otro, la prueba falla. Así los scripts entregados describen exactamente la base que usa la aplicación.</p>
+
+<!-- ===================================================================== 7 · 5.8 -->
+<h2 class="seccion" id="s7" data-indice>7. Desarrollo de catálogos y módulos</h2>
+<p>Las capturas de esta sección son de la aplicación real conectada a PostgreSQL con los datos de demostración. Las tomó la prueba <code>ReporteCapturasTest</code>, que después de cada operación consultó la base para comprobar que se guardó (Anexo E).</p>
+
+<h3 id="s7-1" data-indice>7.1 Acceso y menú por rol</h3>
+<div class="dos-columnas">
+  <figure>
+    <img src="img/02-acceso.png" alt="Pantalla de acceso">
+    <figcaption><strong>Figura 4. Acceso.</strong> Usuario y contraseña; un error no revela si la cuenta existe.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/18-menu-caja.png" alt="Menú de una cuenta de Caja">
+    <figcaption><strong>Figura 5. Menú de Caja.</strong> La cuenta creada en la Figura 13 solo ve Cobrar membresía y Socios.</figcaption>
+  </figure>
+</div>
+
+<h3 id="s7-2" data-indice>7.2 C01 · Catálogo de socios</h3>
+<table>
+  <caption>Tabla 12. Operaciones CRUD de socios</caption>
+  <thead><tr><th>Operación</th><th>Cómo se hace</th><th>Caso de uso</th></tr></thead>
+  <tbody>
+    <tr><td>Registrar</td><td>«Registrar socio»: nombre, teléfono, correo opcional y fecha de alta (propone hoy). Los errores aparecen en su campo.</td><td><code>RegisterMember</code></td></tr>
+    <tr><td>Consultar</td><td>Buscador por nombre (sin mayúsculas ni acentos), correo o teléfono; filtro por estado con la cuenta de cada uno; vigencia y plan de cada socio.</td><td><code>SearchMembers</code></td></tr>
+    <tr><td>Modificar</td><td>«Editar» en la fila: corrige los datos personales; la membresía solo cambia con un cobro.</td><td><code>UpdateMember</code></td></tr>
+    <tr><td>Eliminar</td><td>«Eliminar» con confirmación; un socio con cobros se rechaza (RN13).</td><td><code>DeleteMember</code></td></tr>
+  </tbody>
+</table>
+<figure>
+  <img src="img/08-socios.png" alt="Lista de socios con filtros por estado">
+  <figcaption><strong>Figura 6. Socios.</strong> Ordenados por vencimiento, cada uno con su estado y su vigencia («Vence hoy», «Vence mañana», «Quedan 3 días»). Los filtros muestran cuántos hay en cada estado.</figcaption>
+</figure>
+<div class="dos-columnas">
+  <figure>
+    <img src="img/09-socio-registrar.png" alt="Diálogo para registrar un socio">
+    <figcaption><strong>Figura 7. Registrar socio.</strong> El teléfono se guarda sin espacios (evidencia E3).</figcaption>
+  </figure>
+  <figure>
+    <img src="img/10-socio-eliminar-rechazado.png" alt="Eliminación rechazada de un socio con cobros">
+    <figcaption><strong>Figura 8. Eliminar un socio con cobros.</strong> La búsqueda «ana lopez» encuentra a Ana López sin acentos; eliminarla se rechaza porque su historial se conserva.</figcaption>
+  </figure>
+</div>
+
+<h3 id="s7-3" data-indice>7.3 C02 · Catálogo de métodos de pago</h3>
+<p>Está en <em>Configuración</em>, en su propio panel, porque cada cambio se guarda al momento. Se puede <strong>agregar</strong> y <strong>editar</strong> (nombre y si es efectivo), <strong>consultar</strong> la lista con su estado, <strong>activar o desactivar</strong> y <strong>eliminar</strong> uno que nunca se usó. Los efectivos piden el efectivo recibido al cobrar y calculan el cambio. Debe quedar al menos un método activo (RN17).</p>
+<figure>
+  <img src="img/14-metodos-de-pago.png" alt="Panel de métodos de pago">
+  <figcaption><strong>Figura 9. Métodos de pago.</strong> «Vales» está inactivo: ya no se ofrece al cobrar. Arriba, la moneda aparece bloqueada porque ya hay cobros registrados (RN21).</figcaption>
+</figure>
+
+<h3 id="s7-4" data-indice>7.4 C03 · Catálogo de planes</h3>
+<p>Se pueden <strong>agregar</strong> y <strong>editar</strong> planes (nombre, duración, precio y plan mensual de referencia), <strong>consultarlos</strong> con su ahorro, <strong>activarlos o desactivarlos</strong> y <strong>eliminar</strong> uno que nadie ha pagado ni usa como referencia (RN15). Cambiar el precio aplica a los cobros nuevos: los anteriores conservan lo pagado.</p>
+<figure>
+  <img src="img/11-planes.png" alt="Catálogo de planes con su ahorro">
+  <figcaption><strong>Figura 10. Planes.</strong> Activos primero y por duración; el ahorro se calcula frente al plan mensual (RN16). «Promoción verano» está inactiva.</figcaption>
+</figure>
+<figure>
+  <img src="img/12-plan-agregar.png" alt="Diálogo para agregar un plan con la vista previa del ahorro" class="dialogo">
+  <figcaption><strong>Figura 11. Agregar plan.</strong> Mientras se escribe, el sistema calcula el ahorro con la referencia elegida: 2 meses de Mensual cuestan $900.00, así que el Bimestral de $850.00 ahorra $50.00 (evidencia E4).</figcaption>
+</figure>
+
+<h3 id="s7-5" data-indice>7.5 C04 · Catálogo de usuarios</h3>
+<p>Es un catálogo adicional a los tres que pide la guía. Solo lo ve el administrador. Se pueden <strong>agregar</strong> y <strong>editar</strong> cuentas (nombre, usuario, rol y contraseña; al editar, la contraseña vacía conserva la actual), <strong>consultarlas</strong>, <strong>activarlas o desactivarlas</strong> y <strong>eliminar</strong> una que nunca registró cobros. La propia cuenta no ofrece desactivar ni eliminar (RN19). La matriz de permisos sale del mismo dato que decide el menú.</p>
+<figure>
+  <img src="img/15-usuarios.png" alt="Cuentas de usuario y matriz de permisos">
+  <figcaption><strong>Figura 12. Usuarios.</strong> Las cuentas con su rol y estado, y lo que puede hacer cada rol.</figcaption>
+</figure>
+<figure>
+  <img src="img/16-usuario-agregar.png" alt="Diálogo para agregar un usuario" class="dialogo">
+  <figcaption><strong>Figura 13. Agregar usuario.</strong> Al elegir el rol se explica lo que podrá hacer. Solo el hash Argon2id llega a la base (evidencia E5).</figcaption>
+</figure>
+
+<h3 id="s7-6" data-indice>7.6 M01 · Módulo de cobro de membresías</h3>
+<table>
+  <caption>Tabla 13. Módulo de cobro: entradas, tablas, reglas y resultados</caption>
+  <tbody>
+    <tr><th>Entradas</th><td>Socio, plan, método de pago, efectivo recibido (si el método es efectivo) e inicio (solo en la primera membresía). Un identificador de operación generado al abrir el formulario.</td></tr>
+    <tr><th>Tablas</th><td>Lee <code>socio</code>, <code>membresia</code> (la última del socio), <code>plan_membresia</code>, <code>metodo_pago</code>, <code>configuracion</code> y <code>usuario</code>; actualiza <code>folio_secuencia</code>; inserta en <code>pago</code> y <code>membresia</code>.</td></tr>
+    <tr><th>Reglas</th><td>RN02 a RN09 y RN20: precio del plan, tipo de cobro, inicio de la vigencia, efectivo suficiente, solo planes y métodos activos, folio consecutivo, operación única y permiso de cobro.</td></tr>
+    <tr><th>Resultados</th><td>Pago con folio, membresía con su periodo y recibo (fecha y hora, socio, plan, periodo, método, monto, recibido, cambio y quién atendió), que puede guardarse como archivo de texto.</td></tr>
+  </tbody>
+</table>
+<p>La pantalla calcula todo antes de cobrar: el resumen de la derecha muestra el periodo, la regla aplicada, el total y el cambio o lo que falta, y «Cobrar» solo se habilita cuando todo está completo. Un segundo clic mientras cobra no cobra dos veces. El socio puede elegirse en el buscador de la pantalla, desde la búsqueda del encabezado (Figura 14) o desde el tablero (sección 7.7).</p>
+<figure>
+  <img src="img/04-busqueda.png" alt="Búsqueda de socios del encabezado">
+  <figcaption><strong>Figura 14. Búsqueda del encabezado.</strong> Muestra hasta 7 socios con su estado; elegir uno abre su cobro.</figcaption>
+</figure>
+<figure>
+  <img src="img/05-cobro-listo.png" alt="Formulario de cobro listo para cobrar">
+  <figcaption><strong>Figura 15. Cobro listo.</strong> Teresa Campos tiene la membresía vencida hace 25 días, así que la renovación empieza hoy (RN04). Con $500.00 recibidos, el cambio es de $50.00.</figcaption>
+</figure>
+<figure>
+  <img src="img/06-cobro-recibo.png" alt="Recibo del cobro registrado">
+  <figcaption><strong>Figura 16. Recibo.</strong> El cobro quedó con el folio GYM-0026; la consulta de la evidencia E1 muestra el mismo pago y su membresía en PostgreSQL.</figcaption>
+</figure>
+
+<h3 id="s7-7" data-indice>7.7 M02 · Módulo de control de vigencias</h3>
+<table>
+  <caption>Tabla 14. Módulo de control de vigencias: entradas, tablas, reglas y resultados</caption>
+  <tbody>
+    <tr><th>Entradas</th><td>La fecha de hoy y los plazos de <code>configuracion</code> (días de aviso y días para la baja).</td></tr>
+    <tr><th>Tablas</th><td><code>socio</code>, la última <code>membresia</code> de cada socio, <code>plan_membresia</code>, <code>pago</code> (cobros de hoy y últimos 8) con su <code>metodo_pago</code> y <code>usuario</code>.</td></tr>
+    <tr><th>Reglas</th><td>RN01 para el estado de cada socio; la semana termina el domingo; los ingresos del día se cuentan de las 00:00 a las 24:00 en la hora del equipo.</td></tr>
+    <tr><th>Resultados</th><td>Socios activos, por vencer (y cuántos vencen esta semana), vencidos con el día en que pasarán a baja, lo cobrado hoy, las listas para actuar y los últimos cobros. Desde cada socio por vencer o vencido se abre su cobro.</td></tr>
+  </tbody>
+</table>
+<p>El estado se calcula en la aplicación con las mismas reglas que la pantalla de Socios, así que el tablero y la lista nunca se contradicen. La función <code>fn_estado_socio</code> de la base aplica la misma regla; la prueba <code>FnEstadoSocioTest</code> comprueba que ambas dan el mismo resultado en 18 casos límite con dos configuraciones distintas (PR24).</p>
+<figure>
+  <img src="img/03-tablero.png" alt="Tablero de control de vigencias">
+  <figcaption><strong>Figura 17. Tablero.</strong> Con los datos de demostración: 15 socios activos, 6 por vencer, 4 vencidos y $1,710.00 cobrados en 3 cobros del día.</figcaption>
+</figure>
+<figure>
+  <img src="img/07-tablero-despues.png" alt="Tablero después del cobro">
+  <figcaption><strong>Figura 18. Tablero después del cobro de la Figura 16.</strong> Teresa Campos ya no aparece entre las vencidas y lo cobrado hoy sube a $2,160.00.</figcaption>
+</figure>
+
+<h3 id="s7-8" data-indice>7.8 Configuración y presentación</h3>
+<div class="dos-columnas">
+  <figure>
+    <img src="img/13-configuracion.png" alt="Configuración del gimnasio">
+    <figcaption><strong>Figura 19. Configuración.</strong> Datos del gimnasio, logotipo, plazos, moneda y folio; los cambios se guardan con «Guardar cambios».</figcaption>
+  </figure>
+  <figure>
+    <img src="img/17-tablero-nocturno.png" alt="Tablero con el tema nocturno">
+    <figcaption><strong>Figura 20. Tema nocturno.</strong> Toda la aplicación tiene tema claro y nocturno, y se puede usar con el teclado.</figcaption>
+  </figure>
+</div>
+
+<!-- ===================================================================== 8 · 5.9 -->
+<h2 class="seccion" id="s8" data-indice>8. Consultas SQL y programación almacenada</h2>
+
+<h3 id="s8-1" data-indice>8.1 Matriz de evidencias</h3>
+<p>Cada necesidad del sistema se relaciona con el recurso SQL que la resuelve, el archivo donde está y el resultado esperado con <code>02_datos.sql</code>. El SQL completo y el resultado obtenido de cada consulta están en el Anexo B; los de las funciones, el procedimiento y el trigger, en los Anexos C y D.</p>
+<table>
+  <caption>Tabla 15. Matriz de evidencias</caption>
+  <thead><tr><th>ID</th><th>Necesidad</th><th>Recurso SQL</th><th>Archivo</th><th>Resultado esperado</th></tr></thead>
+  <tbody>
+    <tr><td>Q01</td><td>Buscar socios por parte del nombre</td><td><code>WHERE</code> + <code>ILIKE</code></td><td>03_consultas.sql</td><td>Ana López</td></tr>
+    <tr><td>Q02</td><td>Planes activos en un rango de precio</td><td><code>WHERE</code> + <code>BETWEEN</code></td><td>03_consultas.sql</td><td>Estudiante, Mensual y Trimestral; no la promoción inactiva</td></tr>
+    <tr><td>Q03</td><td>Cobros en efectivo de los últimos 30 días</td><td><code>WHERE</code> + <code>IS NOT NULL</code> + fecha</td><td>03_consultas.sql</td><td>Los cobros en efectivo recientes con su cambio</td></tr>
+    <tr><td>Q04</td><td>Usuarios activos de mostrador</td><td><code>WHERE</code> + <code>IN</code></td><td>03_consultas.sql</td><td>Carlos Ruiz y Rocío Méndez; Pedro está inactivo</td></tr>
+    <tr><td>Q05</td><td>Membresías que vencen en 7 días</td><td><code>WHERE</code> + <code>BETWEEN</code> con fechas</td><td>03_consultas.sql</td><td>Las de Bruno Díaz e Irene Vega</td></tr>
+    <tr><td>Q06</td><td>Ingresos por mes y tipo de cobro</td><td><code>date_trunc</code>, <code>to_char</code>, <code>COUNT</code>, <code>SUM</code>, <code>ROUND</code></td><td>03_consultas.sql</td><td>Una fila por mes y tipo de cobro</td></tr>
+    <tr><td>Q07</td><td>Antigüedad de cada socio</td><td><code>age</code>, <code>EXTRACT</code>, <code>upper</code>, <code>COALESCE</code></td><td>03_consultas.sql</td><td>Los 12 socios con días y meses inscritos</td></tr>
+    <tr><td>Q08</td><td>Historial de cobros con sus datos relacionados</td><td><code>JOIN</code> de 6 tablas</td><td>03_consultas.sql</td><td>14 cobros con socio, plan, periodo, método y quién cobró</td></tr>
+    <tr><td>Q09</td><td>Ingresos por método de pago</td><td><code>LEFT JOIN</code> + <code>GROUP BY</code></td><td>03_consultas.sql</td><td>4 métodos; Vales con 0 cobros</td></tr>
+    <tr><td>Q10</td><td>Cobros por usuario</td><td><code>JOIN</code> + <code>GROUP BY</code></td><td>03_consultas.sql</td><td>Ana Martínez, Carlos Ruiz y Rocío Méndez con sus totales</td></tr>
+    <tr><td>Q11</td><td>Socios que nunca han pagado</td><td>Subconsulta <code>NOT EXISTS</code></td><td>03_consultas.sql</td><td>Fernando Gil</td></tr>
+    <tr><td>Q12</td><td>Cobros mayores al promedio</td><td>Subconsulta escalar con <code>AVG</code></td><td>03_consultas.sql</td><td>El anual (GYM-0001) y el trimestral (GYM-0004)</td></tr>
+    <tr><td>Q13</td><td>Última membresía de cada socio</td><td>Subconsulta correlacionada con <code>MAX</code></td><td>03_consultas.sql</td><td>11 socios con sus días restantes</td></tr>
+    <tr><td>F01</td><td>Calcular el vencimiento de una membresía</td><td>Función <code>fn_fecha_vencimiento</code></td><td>04_funciones.sql</td><td>Inicio + 30 días con el plan Mensual</td></tr>
+    <tr><td>F02</td><td>Estado de un socio en una fecha</td><td>Función <code>fn_estado_socio</code></td><td>04_funciones.sql</td><td>6 vigentes, 2 por vencer, 2 vencidos, 1 en baja, 1 sin membresía</td></tr>
+    <tr><td>F03</td><td>Formato del folio</td><td>Función <code>fn_formatear_folio</code></td><td>04_funciones.sql</td><td><code>GYM-0007</code>; <code>GYM-123456</code> sin cortarse</td></tr>
+    <tr><td>T01</td><td>Los cobros y membresías no se borran</td><td>Trigger <code>BEFORE DELETE</code></td><td>04_funciones.sql</td><td><code>DELETE</code> rechazado con su mensaje</td></tr>
+    <tr><td>P01</td><td>Registrar el cobro de una membresía</td><td>Procedimiento <code>sp_registrar_cobro</code></td><td>05_procedimientos.sql</td><td>Pago con el siguiente folio y su membresía; tipo según el estado; la misma operación no cobra dos veces</td></tr>
+    <tr><td>C01–C04</td><td>CRUD de socios, métodos de pago, planes y usuarios</td><td>Casos de uso y repositorios con <code>INSERT</code>, <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td><code>application/usecase/</code>, <code>infrastructure/persistence/</code></td><td>Operaciones persistidas (Anexo E) y pruebas PR04–PR17</td></tr>
+    <tr><td>M01</td><td>Cobro de membresías</td><td>Transacción con <code>INSERT</code> en <code>pago</code> y <code>membresia</code>; P01 en la base</td><td><code>application/usecase/billing/</code></td><td>Folio, periodo y recibo (evidencia E1, PR18–PR21)</td></tr>
+    <tr><td>M02</td><td>Control de vigencias</td><td>Consultas de membresías y cobros del día; F02 en la base</td><td><code>application/usecase/summary/</code></td><td>Estados iguales a <code>fn_estado_socio</code> (PR22–PR24)</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s8-2" data-indice>8.2 Consultas</h3>
+<p>Las 13 consultas de <code>03_consultas.sql</code> responden a necesidades de las pantallas o de los reportes del gimnasio: el buscador de Socios (Q01), las opciones del cobro (Q02), el corte de caja (Q03), el personal de mostrador (Q04), el aviso de «por vencer» del tablero (Q05), los ingresos por mes y por método (Q06, Q09), el historial de cobros de un socio y del recibo (Q08), el desempeño por usuario (Q10) y el seguimiento de socios (Q07, Q11–Q13). Los valores fijos de cada una (textos, montos, días) son los parámetros que la aplicación enviaría. Cada consulta, con su SQL y el resultado que devolvió la base al generar este reporte, está en el <strong>Anexo B</strong>.</p>
+<table>
+  <caption>Tabla 16. Recursos mínimos de la guía y cómo se cubren</caption>
+  <thead><tr><th>Recurso</th><th>Mínimo</th><th>Entregado</th></tr></thead>
+  <tbody>
+    <tr><td>Filtros con <code>WHERE</code></td><td>5</td><td>5 (Q01–Q05), con <code>ILIKE</code>, <code>BETWEEN</code>, <code>IS NOT NULL</code>, <code>IN</code> y fechas</td></tr>
+    <tr><td>Funciones de PostgreSQL</td><td>2</td><td>2 (Q06, Q07), con <code>date_trunc</code>, <code>to_char</code>, <code>COUNT</code>, <code>SUM</code>, <code>ROUND</code>, <code>age</code>, <code>EXTRACT</code>, <code>upper</code> y <code>COALESCE</code></td></tr>
+    <tr><td><code>JOIN</code></td><td>3</td><td>3 (Q08–Q10), uno de 6 tablas y un <code>LEFT JOIN</code></td></tr>
+    <tr><td>Subconsultas</td><td>2</td><td>3 (Q11–Q13): <code>NOT EXISTS</code>, escalar y correlacionada</td></tr>
+    <tr><td>Procedimiento almacenado</td><td>1</td><td>1 (P01)</td></tr>
+    <tr><td>Funciones definidas por el usuario</td><td>2</td><td>3 (F01–F03) y la función del trigger</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s8-3" data-indice>8.3 Funciones definidas por el usuario</h3>
+<table>
+  <caption>Tabla 17. Funciones propias (<code>sql/04_funciones.sql</code>)</caption>
+  <thead><tr><th>ID</th><th>Firma</th><th>Necesidad</th><th>Resultado</th></tr></thead>
+  <tbody>
+    <tr><td>F01</td><td><code>fn_fecha_vencimiento(p_inicio date, p_plan_id bigint) RETURNS date</code></td><td>Calcular hasta cuándo dura una membresía.</td><td>Inicio + duración del plan.</td></tr>
+    <tr><td>F02</td><td><code>fn_estado_socio(p_socio_id bigint, p_fecha date DEFAULT CURRENT_DATE) RETURNS varchar</code></td><td>Saber el estado de un socio en una fecha, con los plazos de la configuración (RN01).</td><td><code>SIN_MEMBRESIA</code>, <code>VIGENTE</code>, <code>POR_VENCER</code>, <code>VENCIDA</code> o <code>BAJA</code>.</td></tr>
+    <tr><td>F03</td><td><code>fn_formatear_folio(p_prefijo varchar, p_numero bigint, p_ancho integer) RETURNS varchar</code></td><td>Escribir el folio de un cobro.</td><td><code>GYM-0007</code>; un número más largo no se corta.</td></tr>
+  </tbody>
+</table>
+<p>F02 es la más usada: la llaman las consultas de seguimiento y el procedimiento P01 para decidir el tipo de cobro. Su código:</p>
+<pre class="codigo"><code>CREATE OR REPLACE FUNCTION fn_estado_socio(p_socio_id bigint, p_fecha date DEFAULT CURRENT_DATE)
+    RETURNS varchar LANGUAGE plpgsql STABLE AS $$
+DECLARE
+    v_vencimiento date;  v_aviso integer;  v_baja integer;  v_dias integer;
+BEGIN
+    SELECT MAX(fecha_vencimiento) INTO v_vencimiento FROM membresia WHERE socio_id = p_socio_id;
+    IF v_vencimiento IS NULL THEN
+        RETURN 'SIN_MEMBRESIA';
+    END IF;
+    SELECT dias_aviso, dias_baja_automatica INTO v_aviso, v_baja FROM configuracion WHERE id = 1;
+    v_dias := v_vencimiento - p_fecha;
+    IF v_dias &gt;= 0 THEN
+        RETURN CASE WHEN v_dias &lt;= v_aviso THEN 'POR_VENCER' ELSE 'VIGENTE' END;
+    END IF;
+    RETURN CASE WHEN -v_dias &gt;= v_baja THEN 'BAJA' ELSE 'VENCIDA' END;
+END;
+$$;</code></pre>
+
+<h3 id="s8-4" data-indice>8.4 Procedimiento almacenado</h3>
+<p><code>sp_registrar_cobro</code> (<code>sql/05_procedimientos.sql</code>) registra un cobro completo dentro de la base, con las mismas reglas que el módulo M01:</p>
+<pre class="codigo"><code>CALL sp_registrar_cobro(p_socio_id, p_plan_id, p_metodo_pago_id, p_usuario_id,
+                        p_efectivo numeric, p_operacion varchar, p_inicio date,
+                        INOUT p_pago_id bigint, INOUT p_folio varchar);</code></pre>
+<ol>
+  <li>Si la operación ya se registró, devuelve el mismo pago y folio (RN09).</li>
+  <li>Bloquea al socio (<code>SELECT … FOR UPDATE</code>) y valida que exista, que el plan y el método estén activos y que el efectivo cubra el precio (RN06, RN07).</li>
+  <li>Con <code>fn_estado_socio</code> decide el tipo de cobro y el inicio (RN03, RN04); calcula el vencimiento con <code>fn_fecha_vencimiento</code>.</li>
+  <li>Toma el siguiente número con <code>UPDATE folio_secuencia … RETURNING</code>, que bloquea esa fila hasta terminar la transacción, y lo escribe con <code>fn_formatear_folio</code> (RN08).</li>
+  <li>Inserta el <code>pago</code> y su <code>membresia</code> y devuelve el id y el folio.</li>
+</ol>
+<p>El código completo está en el Anexo C y su ejecución con los datos de prueba (una primera membresía, una renovación anticipada y una operación repetida), en el Anexo D.</p>
+
+<h3 id="s8-5" data-indice>8.5 Trigger</h3>
+<p><code>fn_impedir_borrado()</code> es una función de trigger que lanza una excepción; los triggers <code>trg_pago_sin_borrado</code> y <code>trg_membresia_sin_borrado</code> la ejecutan <code>BEFORE DELETE</code> en <code>pago</code> y <code>membresia</code> (RN10). En el Anexo D se ve el rechazo de <code>DELETE FROM pago</code>.</p>
+
+<h3 id="s8-6" data-indice>8.6 Relación con la aplicación</h3>
+<p>Las funciones, el procedimiento y los triggers forman parte de la base de la aplicación: la migración <code>V6</code> los instala al arrancar. Los triggers protegen todo lo que la aplicación guarda. El cobro de la aplicación está escrito en Java (<code>ChargeMembership</code>) para mostrar la vista previa, los errores en cada campo y el recibo; aplica las mismas reglas que <code>sp_registrar_cobro</code>, y las pruebas comprueban que el estado calculado por la aplicación coincide con <code>fn_estado_socio</code> (PR24).</p>
+
+<!-- ===================================================================== 9 · 5.10 -->
+<h2 class="seccion" id="s9" data-indice>9. Pruebas y resultados</h2>
+
+<h3 id="s9-1" data-indice>9.1 Pruebas automatizadas</h3>
+<p>El proyecto tiene pruebas por capa con JUnit 5. Las de persistencia levantan su propio PostgreSQL 16 con Testcontainers, aplican las migraciones y prueban cada repositorio contra la base real; las de la interfaz abren las pantallas y revisan el teclado. <code>./mvnw test</code> ejecuta 678; los 15 recorridos de pantalla (<code>CapturasUiTest</code>) se agregan con <code>-Dui.capturas=true</code> porque necesitan pantalla.</p>
+<table>
+  <caption>Tabla 18. Resultado de la última ejecución de <code>./mvnw test -Dui.capturas=true</code></caption>
+  <thead><tr><th>Capa</th><th>Qué prueban</th><th>Pruebas</th><th>Fallos</th></tr></thead>
+  <tbody>
+    <tr><td>Dominio</td><td>Reglas puras: estados, inicio de la vigencia, ahorro, dinero, folios, roles</td><td>181</td><td>0</td></tr>
+    <tr><td>Aplicación</td><td>Casos de uso con repositorios en memoria: validaciones, permisos y mensajes</td><td>214</td><td>0</td></tr>
+    <tr><td>Infraestructura</td><td>Repositorios, migraciones, scripts SQL, funciones y procedimiento contra PostgreSQL 16</td><td>135</td><td>0</td></tr>
+    <tr><td>Interfaz</td><td>ViewModels y navegación por rol (148) y recorridos de pantalla con teclado (15)</td><td>163</td><td>0</td></tr>
+    <tr><td colspan="2"><strong>Total</strong></td><td><strong>693</strong></td><td><strong>0</strong></td></tr>
+  </tbody>
+</table>
+<p><code>ReporteCapturasTest</code>, el recorrido de las capturas de este reporte sobre PostgreSQL, corre aparte con <code>-Dreporte.capturas=true</code>.</p>
+
+<h3 id="s9-2" data-indice>9.2 Registro de pruebas representativas</h3>
+<table>
+  <caption>Tabla 19. Pruebas de CRUD, módulos, consultas y objetos programados</caption>
+  <thead><tr><th>ID</th><th>Operación</th><th>Datos utilizados</th><th>Resultado esperado</th><th>Resultado obtenido</th><th>Estado</th></tr></thead>
+  <tbody>
+    <tr><td>PR01</td><td>Iniciar sesión</td><td>Usuario <code>admin</code> y su contraseña</td><td>Entra con las 6 secciones del administrador</td><td>Entró con Tablero, Cobrar, Socios, Planes, Usuarios y Configuración</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR02</td><td>Iniciar sesión con datos incorrectos</td><td>Contraseña equivocada; usuario inexistente</td><td>Mismo mensaje en ambos casos</td><td>«Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo.»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR03</td><td>Menú por rol</td><td>Cuenta <code>carlos</code> con rol Caja</td><td>Solo Cobrar membresía y Socios</td><td>Figura 5</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR04</td><td>C01 Registrar socio</td><td>Laura Medina, «555 120 3456», laura.medina@correo.mx</td><td>Fila en <code>socio</code> con el teléfono sin espacios y alta de hoy</td><td>Evidencia E3: teléfono <code>5551203456</code>, alta de hoy</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR05</td><td>C01 Registrar con errores</td><td>Nombre vacío, teléfono de 9 dígitos, correo «no-es-correo»</td><td>Tres mensajes, cada uno en su campo; no se guarda</td><td>«Escribe el nombre completo.», «El teléfono debe tener 10 dígitos; tiene 9…», «Escribe un correo válido…»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR06</td><td>C01 Consultar</td><td>Búsqueda «ana lopez» sin acentos</td><td>Encuentra a Ana López</td><td>«Mostrando 1 de 24 socios.» (Figura 8)</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR07</td><td>C01 Modificar</td><td>Ana López → Ana María López, otro teléfono</td><td>Se guardan los datos y conserva su membresía</td><td>Guardado; sigue Vigente con su plan Mensual</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR08</td><td>C01 Eliminar con cobros</td><td>Ana López</td><td>Se rechaza y su historial se conserva</td><td>«No puedes eliminar a «Ana López»: ya tiene cobros registrados y su historial se conserva.» (Figura 8)</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR09</td><td>C01 Eliminar sin cobros</td><td>Socio recién registrado</td><td>Se borra</td><td>Borrado de <code>socio</code></td><td class="ok">Cumple</td></tr>
+    <tr><td>PR10</td><td>C02 Agregar método repetido</td><td>«efectivo» cuando ya existe «Efectivo»</td><td>Error en el nombre, sin distinguir mayúsculas</td><td>«Ya existe uno con ese nombre.»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR11</td><td>C02 Eliminar un método usado</td><td>Efectivo, con cobros</td><td>Se rechaza y sugiere desactivarlo</td><td>«…ya se usó en cobros. Desactívalo para dejar de ofrecerlo.»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR12</td><td>C03 Agregar plan</td><td>Bimestral, 60 días, $850.00, referencia Mensual</td><td>Plan activo; ahorro de $50.00 (6%)</td><td>Evidencia E4 y Figura 11</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR13</td><td>C03 Eliminar plan con membresías</td><td>Mensual</td><td>Se rechaza y sugiere desactivarlo</td><td>«No puedes eliminar «Mensual»: ya tiene membresías. Desactívalo para dejar de ofrecerlo.»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR14</td><td>C03 Desactivar la referencia</td><td>Mensual, referencia de 4 planes</td><td>Deja de ofrecerse; el ahorro de los otros ya no se calcula</td><td>Los 4 planes muestran «No disponible»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR15</td><td>C04 Agregar cuenta</td><td>Carlos Ruiz, <code>carlos</code>, Caja, contraseña de 36 caracteres</td><td>Fila con hash Argon2id; la cuenta entra con el menú de Caja</td><td>Evidencia E5 (<code>$argon2id$…</code>) y Figura 5</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR16</td><td>C04 Desactivarse a sí mismo</td><td>La cuenta con la que se entró</td><td>Se rechaza</td><td>«No puedes desactivar tu propio usuario mientras lo usas.»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR17</td><td>C04 Quitar el último administrador</td><td>Único administrador activo, cambio de rol</td><td>Se rechaza</td><td>«Debe quedar al menos un administrador activo.»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR18</td><td>M01 Cobro de una membresía vencida</td><td>Teresa Campos (vencida hace 25 días), Mensual, efectivo $500.00</td><td>Renovación vencida que empieza hoy, siguiente folio, cambio $50.00</td><td>Evidencia E1: GYM-0026, <code>renovacion_vencida</code>, de hoy a +30 días; Figura 16</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR19</td><td>M01 Efectivo insuficiente</td><td>$300.00 para un plan de $450.00</td><td>No deja cobrar y dice cuánto falta</td><td>«Faltan $150.00»; «Cobrar» deshabilitado; ningún pago</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR20</td><td>M01 Doble envío</td><td>Dos clics en «Cobrar» con la misma operación</td><td>Un solo pago</td><td>1 fila en <code>pago</code></td><td class="ok">Cumple</td></tr>
+    <tr><td>PR21</td><td>M01 Renovación anticipada</td><td>Socio con 5 días de vigencia</td><td>La nueva empieza al terminar la actual</td><td>Inicio = hoy + 5; vencimiento = hoy + 35</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR22</td><td>M02 Tablero</td><td>Datos de demostración</td><td>15 activos, 6 por vencer, 4 vencidos, $1,710.00 hoy</td><td>Figura 17</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR23</td><td>M02 Después de un cobro</td><td>Cobro de PR18</td><td>Una vencida menos y el cobro en los ingresos de hoy</td><td>3 vencidas y $2,160.00 (Figura 18)</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR24</td><td>M02 Estado de la app = <code>fn_estado_socio</code></td><td>18 vencimientos límite con 7/30 y 3/10 días</td><td>El mismo estado en todos</td><td>Iguales en los 36 casos (<code>FnEstadoSocioTest</code>)</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR25</td><td>Q01–Q13</td><td><code>02_datos.sql</code></td><td>Lo indicado en la matriz (Tabla 15)</td><td>Anexo B</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR26</td><td>F01, F02 y F03</td><td><code>06_pruebas.sql</code></td><td>Vencimiento a 30 días; estados de la matriz; <code>GYM-0007</code> y <code>GYM-123456</code></td><td>Anexo D</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR27</td><td>P01</td><td>Primera de Fernando Gil, anticipada de Bruno Díaz y la misma operación repetida</td><td>Dos cobros nuevos; el repetido devuelve el primer folio</td><td>Anexo D</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR28</td><td>T01</td><td><code>DELETE FROM pago WHERE folio = 'GYM-0001'</code></td><td>Rechazado</td><td>Anexo D: «Los registros de pago no se borran…»</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR29</td><td>Scripts y migraciones</td><td>Base de los scripts y base de la app</td><td>Mismo esquema, funciones y triggers</td><td>Iguales (<code>SqlScriptsTest</code>)</td><td class="ok">Cumple</td></tr>
+    <tr><td>PR30</td><td>Sin conexión</td><td>PostgreSQL apagado</td><td>La app explica la causa y permite reintentar</td><td>Figura 3</td><td class="ok">Cumple</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s9-3" data-indice>9.3 Evidencias de persistencia</h3>
+<p>Después de cada operación de las capturas, la prueba consultó PostgreSQL y guardó el resultado (Anexo E): el cobro de la Figura 16 con su membresía (E1), el estado de la socia con <code>fn_estado_socio</code> (E2), el socio, el plan y la cuenta creados desde las pantallas (E3–E5) y el total de socios por estado al final (E6). Así se comprueba que lo que muestra la aplicación es lo que quedó en la base.</p>
+
+<!-- ===================================================================== 10 · 5.11 -->
+<h2 class="seccion" id="s10" data-indice>10. Instalación y ejecución</h2>
+
+<h3 id="s10-1" data-indice>10.1 Requisitos</h3>
+<table>
+  <caption>Tabla 20. Software necesario</caption>
+  <thead><tr><th>Software</th><th>Versión</th><th>Para qué</th></tr></thead>
+  <tbody>
+    <tr><td>JDK</td><td>25 o posterior</td><td>Compilar y ejecutar la aplicación (Maven llega con el proyecto: <code>./mvnw</code>).</td></tr>
+    <tr><td>Docker con Docker Compose</td><td>Reciente</td><td>PostgreSQL 16 de la aplicación y de las pruebas.</td></tr>
+    <tr><td>PostgreSQL 16 con <code>psql</code></td><td>Opcional</td><td>Solo si se prefiere un PostgreSQL instalado en lugar de Docker.</td></tr>
+    <tr><td>Git</td><td>Cualquiera</td><td>Obtener el código.</td></tr>
+  </tbody>
+</table>
+<p>Las demás dependencias (JavaFX, controlador de PostgreSQL, HikariCP, JDBI, Flyway, Argon2) las descarga Maven la primera vez.</p>
+
+<h3 id="s10-2" data-indice>10.2 Obtener el código y configurar la conexión</h3>
+<pre class="codigo"><code>git clone https://github.com/sizdr/gym-desk.git
+cd gym-desk
+cp .env.example .env        # en Windows: copy .env.example .env</code></pre>
+<p>En <code>.env</code> se escribe la contraseña de la base en <code>DB_PASSWORD</code>. La primera vez, también <code>ADMIN_NAME</code>, <code>ADMIN_USERNAME</code> y <code>ADMIN_PASSWORD</code> (8 caracteres o más): con ellos la aplicación crea el primer administrador si la base no tiene usuarios. <code>DB_URL</code> y <code>DB_USER</code> ya valen <code>jdbc:postgresql://localhost:5432/gimnasio</code> y <code>gimnasio</code>.</p>
+
+<h3 id="s10-3" data-indice>10.3 Levantar PostgreSQL</h3>
+<pre class="codigo"><code>docker compose up -d</code></pre>
+<p>Crea la base <code>gimnasio</code> con el usuario y la contraseña del <code>.env</code>. La contraseña queda fija la primera vez que se crea el volumen.</p>
+
+<h3 id="s10-4" data-indice>10.4 Crear la base de los scripts y cargar los datos de prueba</h3>
+<p>En Linux o macOS, con el PostgreSQL de Docker:</p>
+<pre class="codigo"><code>sql/crear-base.sh</code></pre>
+<p>En cualquier sistema (también Windows) con <code>psql</code>, en este orden:</p>
+<pre class="codigo"><code>createdb -U gimnasio gimnasio_proyecto
+psql -U gimnasio -d gimnasio_proyecto -v ON_ERROR_STOP=1 -f sql/01_esquema.sql
+psql -U gimnasio -d gimnasio_proyecto -v ON_ERROR_STOP=1 -f sql/02_datos.sql
+psql -U gimnasio -d gimnasio_proyecto -v ON_ERROR_STOP=1 -f sql/03_consultas.sql
+psql -U gimnasio -d gimnasio_proyecto -v ON_ERROR_STOP=1 -f sql/04_funciones.sql
+psql -U gimnasio -d gimnasio_proyecto -v ON_ERROR_STOP=1 -f sql/05_procedimientos.sql
+psql -U gimnasio -d gimnasio_proyecto -v ON_ERROR_STOP=1 -f sql/06_pruebas.sql</code></pre>
+<p>Con el PostgreSQL de Docker, cada línea se antepone con <code>docker compose exec -T db</code> y el archivo se pasa por la entrada estándar (<code>&lt; sql/01_esquema.sql</code>). La base <code>gimnasio_proyecto</code> queda aparte de la de la aplicación.</p>
+
+<h3 id="s10-5" data-indice>10.5 Iniciar la aplicación</h3>
+<pre class="codigo"><code>./mvnw javafx:run           # en Windows: mvnw.cmd javafx:run</code></pre>
+<p>Al arrancar, la aplicación crea o actualiza su base con las migraciones y abre la pantalla de acceso. Para la demostración con datos, <code>scripts/demo/crear-demo.sh</code> crea la base <code>gimnasio_demo</code> (pide las cuentas al correrlo) y basta con poner en el <code>.env</code> <code>DB_URL=jdbc:postgresql://localhost:5432/gimnasio_demo</code>. Para volver a la base de trabajo se quita esa línea.</p>
+
+<h3 id="s10-6" data-indice>10.6 Ejecutar las pruebas</h3>
+<pre class="codigo"><code>./mvnw test                                                   # 678 pruebas; las de persistencia necesitan Docker
+./mvnw test -Dui.capturas=true                                # las 693, con los 15 recorridos de pantalla
+./mvnw test -Dtest=ReporteCapturasTest -Dreporte.capturas=true   # capturas de este reporte
+scripts/docs/reporte/generar-reporte.sh                       # vuelve a generar este PDF</code></pre>
+
+<!-- ===================================================================== 11 · 5.12 -->
+<h2 class="seccion" id="s11" data-indice>11. Conclusiones</h2>
+
+<h3 id="s11-1" data-indice>11.1 Resultados alcanzados</h3>
+<p>Gym Desk cumple el alcance planteado: una base relacional de 8 tablas en tercera forma normal, con todas las restricciones de integridad pedidas; cuatro catálogos con CRUD completo y persistente (uno más de los tres requeridos); dos módulos integradores que relacionan socios, planes, métodos, usuarios, pagos y membresías; 13 consultas, 3 funciones propias, 1 procedimiento y 1 trigger documentados en la matriz de evidencias; y 693 pruebas automatizadas sin fallos. Las reglas del negocio se aplican en un solo lugar de la aplicación y, donde corresponde, también en la base, de modo que ni un error de programación ni un acceso directo a PostgreSQL pueden dejar datos inconsistentes.</p>
+<p>Como equipo, el proyecto mostró que las decisiones del modelo se ven después en todo el sistema: no guardar el estado del socio evitó procesos programados y contradicciones entre pantallas; la clave foránea compuesta impidió una clase completa de errores; y escribir las consultas a mano obligó a entender cada <code>JOIN</code> y cada filtro.</p>
+
+<h3 id="s11-2" data-indice>11.2 Limitaciones</h3>
+<ul>
+  <li>El recibo se guarda como archivo de texto; no se probó con una impresora física.</li>
+  <li>La aplicación no llama al procedimiento <code>sp_registrar_cobro</code>: implementa el mismo cobro en Java para dar la vista previa y los errores por campo. Ambos caminos se mantienen alineados con pruebas, pero son dos implementaciones.</li>
+  <li>Los scripts de apoyo (<code>crear-base.sh</code>, <code>crear-demo.sh</code>) son de bash; en Windows se sigue el camino manual con <code>psql</code> (sección 10.4).</li>
+  <li>Está pensada para un solo gimnasio y una sola moneda.</li>
+</ul>
+
+<h3 id="s11-3" data-indice>11.3 Aspectos pendientes</h3>
+<ul>
+  <li>Ficha histórica de cada socio con todos sus cobros, bajas y reactivaciones (el caso de uso está especificado en <code>docs/contratos.md</code>).</li>
+  <li>Control de asistencia: registrar cada entrada al gimnasio y validarla contra la vigencia.</li>
+  <li>Corte de caja diario por usuario, a partir de las consultas Q03 y Q10.</li>
+  <li>Instalador para Windows sin necesidad de Docker.</li>
+</ul>
+
+<!-- ===================================================================== Anexos -->
+<h2 class="seccion anexo" id="anexo-a" data-indice>Anexo A. Diccionario de datos</h2>
+<div class="anexo"><!--DICCIONARIO--></div>
+
+<h2 class="seccion anexo" id="anexo-b" data-indice>Anexo B. Consultas y sus resultados</h2>
+<p>Resultado de ejecutar cada consulta de <code>sql/03_consultas.sql</code> sobre la base de los scripts con <code>02_datos.sql</code>, al generar este reporte. Las fechas son relativas al día de la ejecución.</p>
+<div class="anexo"><!--CONSULTAS--></div>
+
+<h2 class="seccion anexo" id="anexo-c" data-indice>Anexo C. Código de las funciones, el procedimiento y el trigger</h2>
+<h3>C.1 sql/04_funciones.sql</h3>
+<!--ARCHIVO:sql/04_funciones.sql-->
+<h3>C.2 sql/05_procedimientos.sql</h3>
+<!--ARCHIVO:sql/05_procedimientos.sql-->
+
+<h2 class="seccion anexo" id="anexo-d" data-indice>Anexo D. Ejecución de 06_pruebas.sql</h2>
+<p>Salida de <code>psql</code> al ejecutar <code>sql/06_pruebas.sql</code> sobre la base de los scripts (los avisos <code>NOTICE</code> los escribe el procedimiento), seguida del intento de borrar un cobro.</p>
+<!--PRUEBAS-SQL-->
+
+<h2 class="seccion anexo" id="anexo-e" data-indice>Anexo E. Evidencias de persistencia desde la aplicación</h2>
+<p>Consultas que hizo <code>ReporteCapturasTest</code> a PostgreSQL después de cada operación hecha en las pantallas de la sección 7. Se numeran E1 a E6 en el orden en que aparecen.</p>
+<div class="anexo"><!--EVIDENCIAS-APP--></div>
+
+</body>
+</html>

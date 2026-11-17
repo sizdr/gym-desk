@@ -1,0 +1,126 @@
+/* Reporte técnico de Gym Desk: hoja carta, para imprimir con Chrome (generar-reporte.sh). */
+
+@font-face { font-family: "Instrument Sans"; src: url("fuentes/InstrumentSans-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Instrument Sans"; src: url("fuentes/InstrumentSans-Medium.ttf"); font-weight: 500; }
+@font-face { font-family: "Instrument Sans"; src: url("fuentes/InstrumentSans-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Instrument Sans"; src: url("fuentes/InstrumentSans-Bold.ttf"); font-weight: 700; }
+
+:root {
+    --texto: #121821;
+    --texto-2: #444e5d;
+    --texto-3: #5b6575;
+    --linea: #d5dbe3;
+    --fondo-suave: #f4f6f9;
+    --acento: #1d56cc;
+    --acento-suave: #e7eefc;
+    --aviso: #fcefd2;
+}
+
+@page {
+    size: letter;
+    margin: 22mm 20mm 22mm 20mm;
+    @bottom-left {
+        content: "Gym Desk · Reporte técnico · Bases de Datos 303-ISW";
+        font: 400 8.5pt "Instrument Sans", sans-serif;
+        color: #5b6575;
+    }
+    @bottom-right {
+        content: "Página " counter(page) " de " counter(pages);
+        font: 400 8.5pt "Instrument Sans", sans-serif;
+        color: #5b6575;
+    }
+}
+@page horizontal {
+    size: letter landscape;
+    margin: 14mm 16mm 18mm 16mm;
+}
+@page portada {
+    margin: 0;
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+}
+
+html { font-family: "Instrument Sans", sans-serif; font-size: 10.5pt; color: var(--texto); line-height: 1.5; }
+body { margin: 0; background: #ffffff; }
+
+/* ---------- Portada ---------- */
+.portada {
+    page: portada;
+    height: 279mm;
+    box-sizing: border-box;
+    padding: 34mm 26mm 26mm 26mm;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #eef3fc 0%, #ffffff 55%);
+    break-after: page;
+}
+.portada .institucion { font-size: 15pt; font-weight: 700; color: var(--texto); margin-bottom: 2mm; }
+.portada .materia { font-size: 11pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--texto-3); }
+.portada h1 { font-size: 34pt; line-height: 1.1; margin: 10mm 0 3mm 0; font-weight: 700; }
+.portada .subtitulo { font-size: 15pt; color: var(--texto-2); margin: 0; text-align: left; hyphens: manual; }
+.portada .tipo { margin-top: 8mm; font-size: 12pt; font-weight: 600; color: var(--acento); }
+.portada dl { margin-top: auto; display: grid; grid-template-columns: 52mm 1fr; row-gap: 3.2mm; font-size: 11pt; }
+.portada dt { color: var(--texto-3); }
+.portada dd { margin: 0; font-weight: 500; }
+.pendiente { background: var(--aviso); padding: 0.5mm 2mm; border-radius: 1.5mm; font-weight: 600; }
+
+/* ---------- Títulos ---------- */
+h2 { font-size: 17pt; line-height: 1.2; margin: 0 0 4mm 0; padding-bottom: 2mm; border-bottom: 2px solid var(--acento); break-after: avoid; }
+h2.seccion { break-before: page; }
+h3 { font-size: 12.5pt; margin: 7mm 0 2.5mm 0; break-after: avoid; }
+h4 { font-size: 11pt; margin: 5mm 0 2mm 0; break-after: avoid; color: var(--texto-2); }
+p { margin: 0 0 2.6mm 0; text-align: justify; hyphens: auto; }
+ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+li { margin-bottom: 1mm; }
+code { font-family: "DejaVu Sans Mono", ui-monospace, monospace; font-size: 0.86em; background: var(--fondo-suave); padding: 0 1mm; border-radius: 1mm; }
+strong { font-weight: 600; }
+
+/* ---------- Índice ---------- */
+.indice { list-style: none; padding: 0; margin: 0; }
+.indice li { margin: 0; }
+.indice a { display: flex; color: var(--texto); text-decoration: none; padding: 0.9mm 0; }
+.indice .indice-h2 a { font-weight: 600; margin-top: 2mm; }
+.indice .indice-h3 a { padding-left: 7mm; color: var(--texto-2); font-size: 9.8pt; }
+.indice .relleno { flex: 1; border-bottom: 1px dotted #aab3c0; margin: 0 2mm 1.4mm 2mm; }
+.indice .pagina { min-width: 7mm; text-align: right; }
+
+/* ---------- Tablas ---------- */
+table { border-collapse: collapse; width: 100%; margin: 2mm 0 4mm 0; font-size: 9.2pt; break-inside: auto; }
+caption { caption-side: top; text-align: left; font-weight: 600; font-size: 9.6pt; margin-bottom: 1.5mm; color: var(--texto-2); }
+th { background: var(--fondo-suave); text-align: left; font-weight: 600; }
+th, td { border: 1px solid var(--linea); padding: 1.3mm 2mm; vertical-align: top; }
+tr { break-inside: avoid; }
+thead { display: table-header-group; }
+td.ok { color: #0a6532; font-weight: 600; white-space: nowrap; }
+table.resultado, table.datos { font-size: 8.4pt; }
+table.resultado td, table.resultado th { padding: 0.8mm 1.5mm; }
+.pie-tabla { font-size: 8.5pt; color: var(--texto-3); margin-top: -2.5mm; }
+
+/* ---------- Figuras ---------- */
+figure { margin: 3mm 0 5mm 0; break-inside: avoid; text-align: center; }
+figure img, figure svg { max-width: 100%; border: 1px solid var(--linea); border-radius: 2mm; }
+figure svg { height: auto; }
+figure.sin-borde img, figure.sin-borde svg { border: none; }
+figure img.mitad { max-width: 62%; }
+figure img.dialogo { max-width: 46%; }
+/* Solo la tarjeta del centro de una captura con mucho fondo. */
+figure img.recorte { width: 105mm; object-view-box: inset(26% 28% 26% 28%); }
+/* Una figura grande en su propia página horizontal. */
+figure.horizontal { page: horizontal; break-before: page; break-after: page; margin: 0; }
+figure.horizontal img { max-height: 160mm; width: auto; max-width: 100%; }
+figcaption { font-size: 9pt; color: var(--texto-2); margin-top: 2mm; text-align: left; }
+figcaption strong { color: var(--texto); }
+
+/* ---------- Código y salidas ---------- */
+pre { font-family: "DejaVu Sans Mono", ui-monospace, monospace; font-size: 7.9pt; line-height: 1.35; background: var(--fondo-suave);
+      border: 1px solid var(--linea); border-radius: 2mm; padding: 2.5mm 3mm; white-space: pre-wrap; word-break: break-word; margin: 1.5mm 0 3mm 0; }
+pre code { background: none; padding: 0; font-size: inherit; }
+pre.salida { font-size: 7.4pt; }
+.consulta { break-inside: auto; margin-bottom: 4mm; }
+.consulta h3 { margin-top: 5mm; }
+
+/* ---------- Notas ---------- */
+.nota { background: var(--acento-suave); border-left: 3px solid var(--acento); padding: 2mm 3mm; border-radius: 1mm; margin: 2mm 0 4mm 0; text-align: left; }
+.anexo h3 { margin-top: 6mm; }
+.dos-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.dos-columnas figure { margin: 0; }

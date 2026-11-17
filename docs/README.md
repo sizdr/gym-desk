@@ -13,6 +13,16 @@ Arquitectura por capas (hexagonal): el dominio es Java puro y no depende de nada
 | `infrastructure` | Conexión a PostgreSQL, migraciones (esquema, datos iniciales, planes, cobros y el recorte del alcance), transacciones `SERIALIZABLE` con reintento, repositorios de usuarios, configuración, folios, métodos de pago, planes, socios, membresías y cobros, `Argon2PasswordHasher`, recibo como archivo de texto, lectura del `.env` y creación del primer administrador al arrancar |
 | `ui` | Arranque, acceso con `Authenticate`, menú lateral y cabecera con permisos por rol, Configuración y métodos de pago, el catálogo de Socios, y piezas comunes en `ui/common/`. El resto de las pantallas de negocio aún no existe: cada sección muestra qué le falta. Detalle y validación en [ui.md](ui.md) |
 
+## Reporte técnico
+
+[`reporte/Reporte-Gym-Desk.pdf`](reporte/Reporte-Gym-Desk.pdf) es el reporte del proyecto final, con los apartados de la guía. Su fuente es `reporte/reporte.html` (con `reporte.css`, las figuras de `reporte/img/` y las evidencias de `reporte/evidencias.md`). Se genera con:
+
+```bash
+scripts/docs/reporte/generar-reporte.sh
+```
+
+Levanta un PostgreSQL temporal en Docker con los scripts de `sql/`, corre las consultas y `06_pruebas.sql` para que los resultados del reporte salgan de la base, incluye el diccionario y lo imprime con Chrome (necesita también `pdftotext`). Las capturas salen de la app real sobre PostgreSQL con `./mvnw test -Dtest=ReporteCapturasTest -Dreporte.capturas=true` (luego se copian a `reporte/img/` y `reporte/evidencias.md`).
+
 ## Modelo de datos
 
 Tablas, relaciones y reglas de la base: [modelo-de-datos.md](modelo-de-datos.md). El DBML de origen está en [modelo-de-datos.dbml](modelo-de-datos.dbml) y el diccionario de datos, en [diccionario-de-datos.md](diccionario-de-datos.md).
