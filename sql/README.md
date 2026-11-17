@@ -45,6 +45,8 @@ La aplicación crea su base con las migraciones de Flyway (`src/main/resources/d
 
 Los usuarios de `02_datos.sql` no pueden entrar a la aplicación: su `contrasena_hash` no es un hash válido. Para entrar, crea un administrador con `scripts/dev/crear-admin-dev.sh`.
 
+`02_datos.sql` es para la base de los scripts (`gimnasio_proyecto`). Para demostrar **la aplicación** con datos, `scripts/demo/crear-demo.sh` crea aparte la base `gimnasio_demo` con las migraciones de la app, las cuentas que escribas al correrlo y los datos de `scripts/demo/datos-demo.sql` (ver [docs/README.md](../docs/README.md#base-de-demostración)).
+
 ## Matriz de evidencias
 
 Los resultados esperados corresponden a `02_datos.sql`; las fechas de los datos son relativas al día en que se cargan.

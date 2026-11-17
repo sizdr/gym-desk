@@ -40,6 +40,7 @@ gym-desk/
 ├── .github/workflows/           pruebas en GitHub Actions
 ├── docs/                        este README, contratos, modelo de datos y UI
 ├── scripts/dev/                 crear-admin-dev.sh (administrador de desarrollo)
+├── scripts/demo/                crear-demo.sh y datos-demo.sql (base aparte para la demostración)
 └── src/
     ├── main/java/dev/gimnasio/sistemagimnasio/
     │   ├── Launcher, App, Wiring        arranque y raíz de composición (conecta infraestructura y UI)
@@ -139,6 +140,19 @@ La contraseña solo se aplica cuando el volumen se crea por primera vez. Con una
 ```bash
 docker compose exec db psql -U gimnasio -d gimnasio -c '\password gimnasio'
 ```
+
+### Base de demostración
+
+Para la demostración hay una base aparte, `gimnasio_demo`, en el mismo PostgreSQL. La de trabajo (`gimnasio`) no se toca, y los cobros de prueba nunca se mezclan con los reales (en la base los cobros no se pueden borrar).
+
+```bash
+scripts/demo/crear-demo.sh             # la crea; si ya existe, se detiene sin tocarla
+scripts/demo/crear-demo.sh --rehacer   # la borra y la crea de nuevo, con las fechas de hoy
+```
+
+El script pide las cuentas para entrar (un administrador y, si quieres, una de Recepción y otra de Caja); las contraseñas no se guardan en ningún archivo, solo su hash Argon2id. Luego crea la base, le aplica las migraciones con el mismo código de la app (`MigrarDemo.java` → `Database.migrate`) y carga `scripts/demo/datos-demo.sql`: 23 socios en todos los estados, 8 planes, 4 métodos de pago y 25 cobros con los cuatro tipos, 3 de ellos de hoy. Las fechas son relativas al día en que se carga, en la zona horaria del equipo, así que siempre hay socios por vencer y vencidos.
+
+Para usarla, cambia en tu `.env` `DB_URL=jdbc:postgresql://localhost:5432/gimnasio_demo`; para volver, regrésala a `.../gimnasio` (o borra la línea). `datos-demo.sql` se niega a cargarse en una base que no sea de demostración o que ya tenga cobros. `DemoDataTest` lo carga en un PostgreSQL de prueba y comprueba con el código de la app los estados, los ingresos de hoy, los folios, los tipos de cobro y esas protecciones.
 
 ### Variables de entorno
 
